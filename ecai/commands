@@ -1,0 +1,1 @@
+/home/shashank/Documents/Copy-IITM/Research-Edited/Fast-Downward/fast-downward.py /home/shashank/Dropbox/dom.pddl /home/shashank/Dropbox/ins.pddl --heuristic h="ff()" --search "lazy_greedy(h, preferred=h)" 
