@@ -11,6 +11,8 @@
 	(has-door ?d - door ?x - location ?y - location)
 	(has-boat ?b - boat ?x - location ?y - location)
 	(has-bridge ?b - bridge ?x - location ?y - location)	
+	( NEXT ?A2 - AGENT )
+	(start-JA-sail)
 )
 
 (:action move 
@@ -39,7 +41,42 @@
 			(not (at ?a ?x)) 
 		)
 )
-
+;;-----------------------
+( :ACTION BEGIN-SAIL
+  :agent ?a1 - agent
+  :PARAMETERS ( ?A2 - AGENT ?BO - BOAT ?L1 - LOCATION ?L2 - LOCATION )
+  :PRECONDITION 
+  	( AND
+  		( AT ?A1 ?L1 ) ; PRIVATE
+  		;( AT ?BO - BOAT ?L1 - LOCATION ) ; PUBLIC
+  	)
+  :EFFECT
+  	( AND 
+  		( AT ?A1 ?L2 ) ; PRIVATE
+  		( NOT ( AT ?A1 ?L1 ) ) ; PRIVATE
+		( NEXT ?A2 ) ; PUBLIC
+		(start-JA)
+	)
+)
+;;------------------------
+( :ACTION TERMINATE-SAIL
+  :agent ?a1 - agent
+  :PARAMETERS ( ?A2 - AGENT ?BO - BOAT ?L1 - LOCATION ?L2 - LOCATION )
+  :PRECONDITION 
+  	( AND
+  		( AT ?A1 ?L1 ) ; PRIVATE
+  		;( AT ?BO - BOAT ?L1 - LOCATION ) ; PUBLIC
+  		( NEXT ?A2 ) ; PUBLIC
+  	)
+  :EFFECT
+  	( AND 
+  		( AT ?A1 ?L2 ) ; PRIVATE
+  		( NOT ( AT ?A1 ?L1 ) ) ; PRIVATE
+  		( not (start-JA-sail) ) ; public
+		;( AT ?BO - BOAT ?L2 - LOCATION ) ; PUBLIC
+	)
+)
+;;-----------------------
 (:action cross 
 	:agent ?a - agent
 	:parameters (?b - bridge ?x - location ?y - location) 
@@ -75,9 +112,9 @@
 )
 
 (:concurrency-constraint v2
-	:parameters (?b - boat ?x - location)
+	:parameters (?b - boat)
 	:bounds (2 inf)
-	:actions ( (row 1 2) )
+	:actions ( (row 1 ) (BEGIN-SAIL 1) (TERMINATE-SAIL 1) )
 )
 
 (:concurrency-constraint v3

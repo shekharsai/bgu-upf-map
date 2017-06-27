@@ -1,3 +1,4 @@
+
 // To check for memory leaks:
 // valgrind --leak-check=yes examples/serialize ../multiagent/codmap/domains/tablemover/tablemover.pddl ../multiagent/codmap/domains/tablemover/table1_1.pddl
 
@@ -60,7 +61,6 @@ int main( int argc, char *argv[] ) {
 	}
 
 	// Read multiagent domain and instance with associated concurrency network
-
 	d = new parser::multiagent::MultiagentDomain( argv[1] );
 	ins = new Instance( *d, argv[2] );
 
@@ -86,7 +86,7 @@ int main( int argc, char *argv[] ) {
 
 	// Create classical domain
 	Domain * cd = new Domain;
-	cd->name = d->name;
+	c	d->name = d->name;
 	cd->condeffects = cd->cons = cd->typed = true;
 
 	// Add types
@@ -348,5 +348,4 @@ int main( int argc, char *argv[] ) {
 	delete cd;
 	delete ins;
 	delete d;
-
 }
