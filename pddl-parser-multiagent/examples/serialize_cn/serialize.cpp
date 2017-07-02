@@ -1,4 +1,3 @@
-
 // To check for memory leaks:
 // valgrind --leak-check=yes examples/serialize ../multiagent/codmap/domains/tablemover/tablemover.pddl ../multiagent/codmap/domains/tablemover/table1_1.pddl
 
@@ -13,8 +12,9 @@ std::set< unsigned > prob;
 
 typedef std::map< unsigned, std::vector< int > > VecMap;
 
-bool deletes( const Ground * ground, const parser::multiagent::NetworkNode * n, unsigned k ) {
-	for ( unsigned i = 0; i < n->templates.size(); ++i )
+
+bool deletes_org( const Ground * ground, const parser::multiagent::NetworkNode * n, unsigned k ) {
+	for ( unsigned i = 0; i < n->templates.size(); ++i ) {		
 		if ( i != k ) {
 			Action * a = d->actions[d->actions.index( n->templates[i]->name )];
 			CondVec pres = a->precons();
@@ -25,6 +25,23 @@ bool deletes( const Ground * ground, const parser::multiagent::NetworkNode * n, 
 					return true;
 			}
 		}
+	}
+	return false;
+}
+
+// edited by shashank
+bool deletes( const Ground * ground, const parser::multiagent::NetworkNode * n, IntVec impParams ) {
+	for ( unsigned i = 0; i < n->templates.size(); ++i ) {		
+		Action * a = d->actions[d->actions.index( n->templates[i]->name )];
+		CondVec pres = a->precons();
+		for ( unsigned j = 0; j < pres.size(); ++j ) {
+			Ground * g = dynamic_cast< Ground * >( pres[j] );
+			if ( g && 
+				 g->name == ground->name &&
+			     std::find( g->params.begin(), g->params.end(), impParams[0] ) != g->params.end() ) 
+				return true;
+		}
+	}
 	return false;
 }
 
@@ -60,23 +77,43 @@ int main( int argc, char *argv[] ) {
 		exit( 1 );
 	}
 	
-	// Read multiagent domain and instance with associated concurrency network
+	// Read multiagent domain and problem with associated concurrency network
 	d = new parser::multiagent::MultiagentDomain( argv[1] );
 	ins = new Instance( *d, argv[2] );
 	
-	// Identify problematic fluents (preconditions deleted by agents) 
-	// For now, disregard edges // adapted by shashank
-	for ( unsigned i = 0; i < d->nodes.size(); ++i ) {
+	/* Identify problematic fluents (preconditions deleted by agents) 
+	   For now, disregard edges | for the network */
+	/* for ( unsigned i = 0; i < d->nodes.size(); ++i ) {
 		for ( unsigned j = 0; d->nodes[i]->upper > 1 && j < d->nodes[i]->templates.size(); ++j ) 
-		{
+		{	
 			Action * a = d->actions[ d->actions.index( d->nodes[i]->templates[j]->name ) ];
 			GroundVec dels = a->deleteEffects();
-			
+		
 			for ( unsigned k = 0; k < dels.size(); ++k ) {
 				if ( std::find( dels[k]->params.begin(), dels[k]->params.end(), 0 ) == dels[k]->params.end() &&
 				     deletes( dels[k], d->nodes[i], j ) ) {
 					prob.insert( d->preds.index( dels[k]->name ) );
 				}
+			}
+		}		
+	} */
+	
+	// Identify problematic fluents (preconditions deleted by agents) (edited by shashank) 	
+	for ( unsigned i = 0; i < d->nodes.size(); ++i ) {
+		for ( unsigned j = 0; d->nodes[i]->upper > 1 && j < d->nodes[i]->templates.size(); ++j ) 
+		{	
+			// in future impParams may contain multiple values
+			IntVec impParams =  d->nodes[i]->templates[i]->params; 
+			Action * a = d->actions[ d->actions.index( d->nodes[i]->templates[j]->name ) ];
+			GroundVec dels = a->deleteEffects();		
+			for ( unsigned k = 0; k < dels.size(); ++k ) 
+			{
+				bool choiceA = 
+						std::find( dels[k]->params.begin(), dels[k]->params.end(), impParams[0] ) != dels[k]->params.end();
+				bool choiceB = deletes( dels[k], d->nodes[i], impParams );
+				if ( choiceA && choiceB ) 	
+					// the line below is going to handle only unique names of predicates			
+					prob.insert( d->preds.index( dels[k]->name ) );
 			}
 		}		
 	}
@@ -292,7 +329,7 @@ int main( int argc, char *argv[] ) {
 						cd->addEff( 0, secondHalf, "COUNT-" + d->nodes[x]->name, incvec( size + 1, size + 2 ) );
 					}
 				} 
-				else 
+				else  // if the action is not a joint action
 				{
 					name = "DO-" + d->actions[action]->name;
 					unsigned size = d->actions[action]->params.size();
@@ -384,6 +421,7 @@ int main( int argc, char *argv[] ) {
 
 	for ( std::set< unsigned >::iterator i = prob.begin(); i != prob.end(); ++i ) {
 		std::string name = "ADD-" + d->preds[*i]->name;
+		std::cout << "params = " << d->preds[*i]->params <<"\n" <<d->typeList( d->preds[*i] ) <<"\n";
 		unsigned size = d->preds[*i]->params.size();
 		cd->createAction( name, d->typeList( d->preds[*i] ) );
 		cd->addPre( 0, name, "ATEMP" );

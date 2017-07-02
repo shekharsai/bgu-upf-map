@@ -11,30 +11,43 @@
 	(has-door ?d - door ?x - location ?y - location)
 	(has-boat ?b - boat ?x - location ?y - location)
 	(has-bridge ?b - bridge ?x - location ?y - location)	
-	(AT ?BO - BOAT ?L2 - LOCATION)
+	(disha ?BO - BOAT ?L2 - LOCATION)
 )
 
 ( :ACTION dude
   :agent ?AGENT0 - AGENT
   :PARAMETERS ( ?AGENT1 - AGENT ?BOAT2 - BOAT ?LOCATION3 - LOCATION ?LOCATION4 - LOCATION )
   :PRECONDITION
-	( AND
-		( AT ?AGENT0 ?LOCATION3 )
-		( AT ?BOAT2 ?LOCATION3 )
+	( AND		
+		( disha ?BOAT2 ?LOCATION3 )		
 	)
   :EFFECT
 	( AND
-		( AT ?AGENT0 ?LOCATION4 )
-		( NOT ( AT ?AGENT0 ?LOCATION3 ) )
-		( AT ?BOAT2 ?LOCATION4 )
-		( NOT ( AT ?BOAT2 ?LOCATION3 ) )
+		( disha ?BOAT2 ?LOCATION4 )
+		( NOT ( disha ?BOAT2 ?LOCATION3 ) )		
+	)
+)
+( :ACTION dudex
+  :agent ?AGENT0 - AGENT
+  :PARAMETERS ( ?AGENT1 - AGENT ?BOAT2 - BOAT ?LOCATION3 - LOCATION ?LOCATION4 - LOCATION )
+  :PRECONDITION
+	( AND		
+		( disha ?BOAT2 ?LOCATION3 )		
+	)
+  :EFFECT
+	( AND
+		( disha ?BOAT2 ?LOCATION4 )
+		( NOT ( disha ?BOAT2 ?LOCATION3 ) )		
 	)
 )
 
 (:concurrency-constraint v2
-	:parameters (?b - boat)
-	:bounds (2 inf)
-	:actions ( (dude 2) )
+	:parameters (?b - boat ?LOCATION3 - LOCATION)
+	:bounds (3 inf)
+	:actions ( 
+		(dude 2) 
+		(dudex 2) 
+	)
 )
 
 )
