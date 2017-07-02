@@ -251,41 +251,27 @@
   		( AT ?A1 - AGENT ?L2 - LOCATION ) ; PRIVATE
   		( NOT ( AT ?A1 - AGENT ?L1 - LOCATION ) ) ; PRIVATE
 		( AT ?BO - BOAT ?L2 - LOCATION ) ; PUBLIC
+		( NOT ( AT ?BO - BOAT ?L2 - LOCATION ) ) ; PUBLIC
 	)
-)
-
-(:CONCURRENCY-CONSTRAINT V1 
-	:PARAMETERS ( ?BO - BOAT )
-	:BOUNDS ( 1 1 )
-	:ACTIONS ( (SAIL 2) )
 )
 -----------------------------------------------------------------------------------------------
 ; FOR AGENT A2:
 ;
 ( :ACTION SAIL
-  :AGENT ?A2 - AGENT ;; just for the sake of second agent.
-  :PARAMETERS ( ?A1 - AGENT ?BO - BOAT ?L1 - LOCATION ?L2 - LOCATION )
+  :AGENT ?A1 - AGENT ;; just for the sake of second agent.
+  :PARAMETERS ( ?A2 - AGENT ?BO - BOAT ?L1 - LOCATION ?L2 - LOCATION )
   :PRECONDITION 
   	( AND
-  		( AT ?A2 - AGENT ?L1 - LOCATION ) ; PRIVATE
+  		( AT ?A1 - AGENT ?L1 - LOCATION ) ; PRIVATE
   		( AT ?BO - BOAT ?L1 - LOCATION ) ; PUBLIC
-  		( TOGETHER ?A2 - AGENT ?A1 - AGENT ?BO - BOAT) 
-  		;; PRI\PUB (Can we think of having this as it differs on the basis of JA's definition?)
   	)
   :EFFECT
   	( AND 
-  		( ?A2 - AGENT ?L2 - LOCATION ) ; PRIVATE
+  		( ?A1 - AGENT ?L2 - LOCATION ) ; PRIVATE
   		( NOT ( AT ?A1 - AGENT ?L1 - LOCATION ) ) ; PRIVATE
 		( AT ?BO - BOAT ?L2 - LOCATION ) ; PUBLIC
 	)
 )
-
-(:CONCURRENCY-CONSTRAINT V1
-	:PARAMETERS ( ?BO - BOAT )
-	:BOUNDS ( 1 1 )
-	:ACTIONS ( (SAIL 2) )
-)
-
 ---------------------------------------------------------------------------------------------
 ---------------------------------------------------------------------------------------------
 
@@ -332,9 +318,76 @@ Now the updated preactice would be:
 
 1. Have all the agents and actions in one file, where all actions means all joint actions, normal
 actions, and joint activities.
+
 2. Apart from the normal transformation; when you hit a joint action, split it on the fly in two 
 actions. This resolve the issues of having two major translations.
+
 3. Try to parse private and public things in this one shot itself, so that, when you write a new domain
 for an agent, it would be a proper domain that can be given to a MAFS planner.
    
+----------------------------------   
+( :ACTION DO-JOINT-ACTIVITY-SAIL
+  :PARAMETERS ( ?AGENT0 - AGENT ?AGENT1 - AGENT ?BOAT2 - BOAT ?LOCATION3 - LOCATION ?LOCATION4 - LOCATION ?AGENT-COUNT5 - AGENT-COUNT ?AGENT-COUNT6 - AGENT-COUNT )
+  :PRECONDITION
+	( AND
+		( AT ?AGENT0 ?LOCATION3 )
+		( AT ?BOAT2 ?LOCATION3 )
+		( ACTIVE-V2 ?LOCATION3 )
+		( NOT ( TAKEN ?AGENT0 ) )
+		( COUNT-V2 ?AGENT-COUNT5 )
+		( CONSEC ?AGENT-COUNT5 ?AGENT-COUNT6 )
+	)
+  :EFFECT
+	( AND
+		( POS-AT ?AGENT0 ?LOCATION4 )
+		( NEG-AT ?AGENT0 ?LOCATION3 )
+		( POS-AT ?BOAT2 ?LOCATION4 )
+		( NEG-AT ?BOAT2 ?LOCATION4 )
+		( TAKEN ?AGENT0 )
+		( NOT ( COUNT-V2 ?AGENT-COUNT5 ) )
+		( COUNT-V2 ?AGENT-COUNT6 )
+	)
+)
+( :ACTION DO-BEGIN-SAIL
+  :PARAMETERS ( ?AGENT0 - AGENT ?BOAT2 - BOAT ?LOCATION3 - LOCATION ?LOCATION4 - LOCATION ?AGENT-COUNT5 - AGENT-COUNT ?AGENT-COUNT6 - AGENT-COUNT )
+  :PRECONDITION
+	( AND
+		( AT ?AGENT0 ?LOCATION3 )
+		( AT ?BOAT2 ?LOCATION3 )
+		( ACTIVE-V2 ?BOAT2 )
+		( NOT ( TAKEN ?AGENT0 ) )
+		( COUNT-V2 ?AGENT-COUNT5 )
+		( CONSEC ?AGENT-COUNT5 ?AGENT-COUNT6 )
+	)
+  :EFFECT
+	( AND
+		( POS-AT ?AGENT0 ?LOCATION4 )
+		( NEG-AT ?AGENT0 ?LOCATION3 )
+		( TAKEN ?AGENT0 )
+		( NOT ( COUNT-V2 ?AGENT-COUNT5 ) )
+		( COUNT-V2 ?AGENT-COUNT6 )
+	)
+)
+( :ACTION DO-TERMINATE-SAIL
+  :PARAMETERS ( ?AGENT0 - AGENT ?BOAT2 - BOAT ?LOCATION3 - LOCATION ?LOCATION4 - LOCATION ?AGENT-COUNT5 - AGENT-COUNT ?AGENT-COUNT6 - AGENT-COUNT )
+  :PRECONDITION
+	( AND
+		( AT ?AGENT0 ?LOCATION3 )
+		( AT ?BOAT2 ?LOCATION3 )
+		( ACTIVE-V2 ?BOAT2 )
+		( NOT ( TAKEN ?AGENT0 ) )
+		( COUNT-V2 ?AGENT-COUNT5 )
+		( CONSEC ?AGENT-COUNT5 ?AGENT-COUNT6 )
+	)
+  :EFFECT
+	( AND
+		( POS-AT ?AGENT0 ?LOCATION4 )
+		( NEG-AT ?AGENT0 ?LOCATION3 )
+		( POS-AT ?BOAT2 ?LOCATION4 )
+		( TAKEN ?AGENT0 )
+		( NOT ( COUNT-V2 ?AGENT-COUNT5 ) )
+		( COUNT-V2 ?AGENT-COUNT6 )
+	)
+)
+
 

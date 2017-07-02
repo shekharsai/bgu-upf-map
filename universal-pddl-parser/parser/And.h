@@ -14,7 +14,9 @@ public:
 
 	And( const And * a, Domain & d ) {
 		for ( unsigned i = 0; i < a->conds.size(); ++i )
-			conds.push_back( a->conds[i]->copy( d ) );
+		{	
+			conds.push_back( a->conds[i]->copy(d) );
+		}
 	}
 
 	~And() {

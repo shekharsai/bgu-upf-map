@@ -369,6 +369,18 @@ public:
 		actions.insert( action );
 		return action;
 	}
+	
+	// Create a break-joint-action with the given name and parameter types (edited by Shashank)
+	Action * createBreakJointAction( const std::string & name, const StringVec & params = StringVec() ) {
+		Action * action = new Action( name );
+		// agent parameters are supposed to be together ( as we have i = i-1 ).
+		for ( unsigned i = 0; i < params.size()-1; ++i )
+			action->params.push_back( types.index( params[i+1] ) );
+		action->pre = new And;
+		action->eff = new And;
+		actions.insert( action );
+		return action;
+	}
 
 	// Set the precondition of an action to "cond", converting to "And"
 	void setPre( const std::string & act, Condition * cond ) {

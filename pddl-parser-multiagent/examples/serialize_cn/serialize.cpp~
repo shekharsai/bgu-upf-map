@@ -59,34 +59,35 @@ int main( int argc, char *argv[] ) {
 		std::cout << "Usage: ./transform <domain.pddl> <task.pddl>\n";
 		exit( 1 );
 	}
-
+	
 	// Read multiagent domain and instance with associated concurrency network
 	d = new parser::multiagent::MultiagentDomain( argv[1] );
 	ins = new Instance( *d, argv[2] );
-
-	// Identify problematic fluents (preconditions deleted by agents)
-	// For now, disregard edges
+	
+	// Identify problematic fluents (preconditions deleted by agents) 
+	// For now, disregard edges // adapted by shashank
 	for ( unsigned i = 0; i < d->nodes.size(); ++i ) {
-		for ( unsigned j = 0; d->nodes[i]->upper > 1 && j < d->nodes[i]->templates.size(); ++j ) {
-			Action * a = d->actions[d->actions.index( d->nodes[i]->templates[j]->name )];
+		for ( unsigned j = 0; d->nodes[i]->upper > 1 && j < d->nodes[i]->templates.size(); ++j ) 
+		{
+			Action * a = d->actions[ d->actions.index( d->nodes[i]->templates[j]->name ) ];
 			GroundVec dels = a->deleteEffects();
-
+			
 			for ( unsigned k = 0; k < dels.size(); ++k ) {
 				if ( std::find( dels[k]->params.begin(), dels[k]->params.end(), 0 ) == dels[k]->params.end() &&
 				     deletes( dels[k], d->nodes[i], j ) ) {
 					prob.insert( d->preds.index( dels[k]->name ) );
 				}
 			}
-		}
+		}		
 	}
 
 	VecMap ccs;
 	for ( unsigned i = 0; i < d->mf.size(); ++i )
 		ccs[d->mf[i]].push_back( i );
 
-	// Create classical domain
+	// Create a classical domain
 	Domain * cd = new Domain;
-	c	d->name = d->name;
+	cd->name = d->name;
 	cd->condeffects = cd->cons = cd->typed = true;
 
 	// Add types
@@ -125,7 +126,7 @@ int main( int argc, char *argv[] ) {
 	// Add actions
 	for ( VecMap::iterator i = ccs.begin(); i != ccs.end(); ++i ) {
 		std::set< unsigned > visited;
-		for ( unsigned j = 0; j < i->second.size(); ++j ) {
+		for ( unsigned j = 0; j < i->second.size(); ++j ) {			
 			int x = i->second[j];
 			visited.insert( x );
 
@@ -180,54 +181,166 @@ int main( int argc, char *argv[] ) {
 			}
 
 			bool concurEffs = 0;
-			for ( unsigned k = 0; k < d->nodes[x]->templates.size(); ++k ) {
+			for ( unsigned k = 0; k < d->nodes[x]->templates.size(); ++k ) 
+			{
 				int action = d->actions.index( d->nodes[x]->templates[k]->name );
-				std::string name = "DO-" + d->actions[action]->name;
-				unsigned size = d->actions[action]->params.size();
-				Action * doit = cd->createAction( name, d->typeList( d->actions[action] ) );
+				std::string name = d->actions[action]->name;
+				
+				// TODO 
+				if ( name.find("JOINT") != std::string::npos ) 
+				{
+					for ( unsigned i = 0; i < d->nodes.size(); ++i ) {
+						VecMap::iterator j = ccs.find( d->mf[i] );
+						if ( ( name.find("JOINT") != std::string::npos ) && ( j->second.size() > 1 || d->nodes[i]->upper > 1 ) ) {							
+							cd->createPredicate( "ACTIVE-" + name, d->typeList( d->nodes[i] ) );
+							// cd->createPredicate( "NEXT", StringVec( 1, "AGENT" ) );
+						}
+					}
+					
+					// creating the first half					
+					const std::string firstHalf = "BEGIN-" + name;
+					Action * doFirstPart = cd->createAction( firstHalf, d->typeList( d->actions[action] ) );				
+					unsigned size = doFirstPart->params.size();	
+						
+					// copy old preconditions
+					And * oldpre = dynamic_cast< And * >( d->actions[action]->pre );					
+					if ( oldpre ) 
+						doFirstPart->pre = new And( oldpre, *cd );
+					else {
+						And * a = new And;
+						a->add( d->actions[action]->pre->copy( *cd ) );
+						doFirstPart->pre = a;
+					}
+					
+					// copy old effects					
+					And * oldeff = dynamic_cast< And * >( d->actions[action]->eff );					
+					for ( unsigned l = 0; oldeff && l < oldeff->conds.size(); ++l )
+						concurEffs |= addEff( cd, doFirstPart, oldeff->conds[l] );
+					if ( !oldeff ) 
+						concurEffs |= addEff( cd, doFirstPart, d->actions[action]->eff );
+					
+					// add new parameters
+					if ( i->second.size() > 1 || d->nodes[x]->upper > 1 )						
+						cd->addParams( firstHalf, StringVec( 2, "AGENT-COUNT" ) );
+					
+					// add new preconditions
+					if ( i->second.size() > 1 || d->nodes[x]->upper > 1 ) {
+						cd->addPre( 0, firstHalf, "ACTIVE-" + d->nodes[x]->name, d->nodes[x]->templates[k]->params );
+						cd->addPre( 1, firstHalf, "TAKEN", IntVec( 1, 0 ) );
+						cd->addPre( 0, firstHalf, "COUNT-" + d->nodes[x]->name, incvec( size, size + 1 ) );
+						cd->addPre( 0, firstHalf, "CONSEC", incvec( size, size + 2 ) );
+						cd->addPre( 0, firstHalf, "ACTIVITY-FREE" );						
+					}
+					else 
+						cd->addPre( 0, firstHalf, "AFREE" );
+					
+					// add new effects
+					if ( i->second.size() > 1 || d->nodes[x]->upper > 1 ) {
+						// cd->addEff( 0, firstHalf, "NEXT", incvec( 1, 2 ) );
+						cd->addEff( 0, firstHalf, "ACTIVE-" + name, d->nodes[x]->templates[k]->params );
+						cd->addEff( 0, firstHalf, "TAKEN", IntVec( 1, 0 ) );
+						cd->addEff( 1, firstHalf, "ACTIVITY-FREE" );
+						cd->addEff( 1, firstHalf, "COUNT-" + d->nodes[x]->name, incvec( size, size + 1 ) );
+						cd->addEff( 0, firstHalf, "COUNT-" + d->nodes[x]->name, incvec( size + 1, size + 2 ) );
+					}	
+					
+					// creating the second half					
+					const std::string secondHalf = "TERMINATE-" + name;
+					Action * doSecondPart = cd->createAction( secondHalf, d->typeList( d->actions[action] ) );				
+					size = doSecondPart->params.size();	
+						
+					// copy old preconditions
+					oldpre = dynamic_cast< And * >( d->actions[action]->pre );					
+					if ( oldpre ) 
+						doSecondPart->pre = new And( oldpre, *cd );
+					else {
+						And * a = new And;
+						a->add( d->actions[action]->pre->copy( *cd ) );
+						doSecondPart->pre = a;
+					}
+					
+					// copy old effects					
+					oldeff = dynamic_cast< And * >( d->actions[action]->eff );					
+					for ( unsigned l = 0; oldeff && l < oldeff->conds.size(); ++l )
+						concurEffs |= addEff( cd, doSecondPart, oldeff->conds[l] );
+					if ( !oldeff ) 
+						concurEffs |= addEff( cd, doSecondPart, d->actions[action]->eff );
+					
+					// add new parameters
+					if ( i->second.size() > 1 || d->nodes[x]->upper > 1 )						
+						cd->addParams( secondHalf, StringVec( 2, "AGENT-COUNT" ) );
+					
+					// add new preconditions
+					if ( i->second.size() > 1 || d->nodes[x]->upper > 1 ) {
+						// cd->addPre( 0, secondHalf, "NEXT", incvec( 1, 2 ) );
+						cd->addPre( 0, secondHalf, "ACTIVE-" + name, d->nodes[x]->templates[k]->params );
+						cd->addPre( 0, secondHalf, "ACTIVE-" + d->nodes[x]->name, d->nodes[x]->templates[k]->params );
+						cd->addPre( 1, secondHalf, "TAKEN", IntVec( 1, 0 ) );
+						cd->addPre( 0, secondHalf, "COUNT-" + d->nodes[x]->name, incvec( size, size + 1 ) );
+						cd->addPre( 0, secondHalf, "CONSEC", incvec( size, size + 2 ) );
+					}
+					else 
+						cd->addPre( 0, secondHalf, "AFREE" );
+					
+					// add new effects
+					if ( i->second.size() > 1 || d->nodes[x]->upper > 1 ) {
+						cd->addEff( 0, secondHalf, "ACTIVITY-FREE" );	
+						cd->addEff( 1, secondHalf, "ACTIVE-" + name, d->nodes[x]->templates[k]->params );					
+						cd->addEff( 0, secondHalf, "TAKEN", IntVec( 1, 0 ) );
+						cd->addEff( 1, secondHalf, "COUNT-" + d->nodes[x]->name, incvec( size, size + 1 ) );
+						cd->addEff( 0, secondHalf, "COUNT-" + d->nodes[x]->name, incvec( size + 1, size + 2 ) );
+					}
+				} 
+				else 
+				{
+					name = "DO-" + d->actions[action]->name;
+					unsigned size = d->actions[action]->params.size();
+					Action * doit = cd->createAction( name, d->typeList( d->actions[action] ) );
+					
+					// copy old preconditions
+					And * oldpre = dynamic_cast< And * >( d->actions[action]->pre );
+					if ( oldpre ) doit->pre = new And( oldpre, *cd );
+					else {
+						And * a = new And;
+						a->add( d->actions[action]->pre->copy( *cd ) );
+						doit->pre = a;
+					}
 
-				// copy old preconditions
-				And * oldpre = dynamic_cast< And * >( d->actions[action]->pre );
-				if ( oldpre ) doit->pre = new And( oldpre, *cd );
-				else {
-					And * a = new And;
-					a->add( d->actions[action]->pre->copy( *cd ) );
-					doit->pre = a;
-				}
+					// copy old effects
+					And * oldeff = dynamic_cast< And * >( d->actions[action]->eff );
+					for ( unsigned l = 0; oldeff && l < oldeff->conds.size(); ++l )
+						concurEffs |= addEff( cd, doit, oldeff->conds[l] );
+					if ( !oldeff ) concurEffs |= addEff( cd, doit, d->actions[action]->eff );
 
-				// copy old effects
-				And * oldeff = dynamic_cast< And * >( d->actions[action]->eff );
-				for ( unsigned l = 0; oldeff && l < oldeff->conds.size(); ++l )
-					concurEffs |= addEff( cd, doit, oldeff->conds[l] );
-				if ( !oldeff ) concurEffs |= addEff( cd, doit, d->actions[action]->eff );
+					// add new parameters
+					if ( i->second.size() > 1 || d->nodes[x]->upper > 1 )
+						cd->addParams( name, StringVec( 2, "AGENT-COUNT" ) );
 
-				// add new parameters
-				if ( i->second.size() > 1 || d->nodes[x]->upper > 1 )
-					cd->addParams( name, StringVec( 2, "AGENT-COUNT" ) );
+					// add new preconditions
+					if ( i->second.size() > 1 || d->nodes[x]->upper > 1 ) {
+						cd->addPre( 0, name, "ACTIVE-" + d->nodes[x]->name, d->nodes[x]->templates[k]->params );
+						cd->addPre( 1, name, "TAKEN", IntVec( 1, 0 ) );
+						cd->addPre( 0, name, "COUNT-" + d->nodes[x]->name, incvec( size, size + 1 ) );
+						cd->addPre( 0, name, "CONSEC", incvec( size, size + 2 ) );
+					}
+					else cd->addPre( 0, name, "AFREE" );
 
-				// add new preconditions
-				if ( i->second.size() > 1 || d->nodes[x]->upper > 1 ) {
-					cd->addPre( 0, name, "ACTIVE-" + d->nodes[x]->name, d->nodes[x]->templates[k]->params );
-					cd->addPre( 1, name, "TAKEN", IntVec( 1, 0 ) );
-					cd->addPre( 0, name, "COUNT-" + d->nodes[x]->name, incvec( size, size + 1 ) );
-					cd->addPre( 0, name, "CONSEC", incvec( size, size + 2 ) );
-				}
-				else cd->addPre( 0, name, "AFREE" );
-
-				// add new effects
-				if ( i->second.size() > 1 || d->nodes[x]->upper > 1 ) {
-					cd->addEff( 0, name, "TAKEN", IntVec( 1, 0 ) );
-					cd->addEff( 1, name, "COUNT-" + d->nodes[x]->name, incvec( size, size + 1 ) );
-					cd->addEff( 0, name, "COUNT-" + d->nodes[x]->name, incvec( size + 1, size + 2 ) );
+					// add new effects
+					if ( i->second.size() > 1 || d->nodes[x]->upper > 1 ) {
+						cd->addEff( 0, name, "TAKEN", IntVec( 1, 0 ) );
+						cd->addEff( 1, name, "COUNT-" + d->nodes[x]->name, incvec( size, size + 1 ) );
+						cd->addEff( 0, name, "COUNT-" + d->nodes[x]->name, incvec( size + 1, size + 2 ) );
+					}
 				}
 			}
-
+		
 			if ( i->second.size() > 1 || d->nodes[x]->upper > 1 ) {
 				std::string name = "END-" + d->nodes[x]->name;
 				unsigned size = d->nodes[x]->params.size();
 				Action * end = cd->createAction( name, d->typeList( d->nodes[x] ) );
 				cd->addParams( name, StringVec( 1, "AGENT-COUNT" ) );
-
+				
+				cd->addPre( 0, name, "ACTIVITY-FREE" );
 				cd->addPre( 0, name, "COUNT-" + d->nodes[x]->name, incvec( size, size + 1 ) );
 				cd->addPre( 0, name, "SAT-" + d->nodes[x]->name, incvec( size, size + 1 ) );
 				cd->addPre( 0, name, "ACTIVE-" + d->nodes[x]->name, incvec( 0, size ) );
@@ -304,7 +417,6 @@ int main( int argc, char *argv[] ) {
 	std::cout << *cd;
 
 	// Generate single-agent instance
-
 	unsigned nagents = d->types.get( "AGENT" )->noObjects();
 
 	Instance * cins = new Instance( *cd );
@@ -342,7 +454,7 @@ int main( int argc, char *argv[] ) {
 		cins->addGoal( ins->goal[i]->name, d->objectList( ins->goal[i] ) );
 	cins->addGoal( "AFREE" );
 
-	std::cerr << *cins;
+	// std::cerr << *cins;
 
 	delete cins;
 	delete cd;
