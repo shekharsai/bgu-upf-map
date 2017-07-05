@@ -130,7 +130,7 @@
 (:concurrency-constraint v2
 	:parameters (?b - boat)
 	:bounds (2 inf)
-	:actions ( (ROW 1) (JOINT-ACTIVITY-SAIL 2) )
+	:actions ( (ROW 1) (JOINT-ACTIVITY-SAIL 3) )
 )
 
 (:concurrency-constraint v3

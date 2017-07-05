@@ -1,53 +1,39 @@
 (define (domain maze)
 
-(:requirements :typing :concurrency-network :multi-agent)
+(:requirements :typing :concurrency-network :multi-agent :factored-privacy :negative-preconditions)
 
-(:types agent location door bridge boat switch)
+(:types agent boat
+		location door bridge switch)
 
 (:predicates
 	(at ?a - agent ?x - location)
+	(at ?a - boat ?x - location)
 	(has-switch ?s - switch ?x - location ?y - location ?z - location)
 	(blocked ?x - location ?y - location)
 	(has-door ?d - door ?x - location ?y - location)
 	(has-boat ?b - boat ?x - location ?y - location)
 	(has-bridge ?b - bridge ?x - location ?y - location)	
-	(disha ?BO - BOAT ?L2 - LOCATION)
 )
 
-( :ACTION dude
-  :agent ?AGENT0 - AGENT
-  :PARAMETERS ( ?AGENT1 - AGENT ?BOAT2 - BOAT ?LOCATION3 - LOCATION ?LOCATION4 - LOCATION )
-  :PRECONDITION
-	( AND		
-		( disha ?BOAT2 ?LOCATION3 )		
-	)
-  :EFFECT
-	( AND
-		( disha ?BOAT2 ?LOCATION4 )
-		( NOT ( disha ?BOAT2 ?LOCATION3 ) )		
-	)
-)
-( :ACTION dudex
-  :agent ?AGENT0 - AGENT
-  :PARAMETERS ( ?AGENT1 - AGENT ?BOAT2 - BOAT ?LOCATION3 - LOCATION ?LOCATION4 - LOCATION )
-  :PRECONDITION
-	( AND		
-		( disha ?BOAT2 ?LOCATION3 )		
-	)
-  :EFFECT
-	( AND
-		( disha ?BOAT2 ?LOCATION4 )
-		( NOT ( disha ?BOAT2 ?LOCATION3 ) )		
-	)
+(:action cross 
+	:agent ?a - agent
+	:parameters (?b - bridge ?x - location ?y - location) 
+	:precondition (and
+					(at ?a ?x)
+					(has-bridge ?b ?x ?y) 
+			)
+	:effect	(and 
+					(at ?a ?y)
+					(not (at ?a ?x))
+					(not (has-bridge ?b ?x ?y))
+					(has-bridge ?b ?y ?x)
+			 )
 )
 
-(:concurrency-constraint v2
-	:parameters (?b - boat ?LOCATION3 - LOCATION)
-	:bounds (3 inf)
-	:actions ( 
-		(dude 2) 
-		(dudex 2) 
-	)
+(:concurrency-constraint v3
+	:parameters (?b - bridge)
+	:bounds (1 inf)
+	:actions ( (cross 1) )
 )
 
 )

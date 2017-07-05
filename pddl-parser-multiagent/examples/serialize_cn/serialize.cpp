@@ -8,37 +8,22 @@ using namespace parser::pddl;
 
 parser::multiagent::MultiagentDomain * d;
 Instance * ins;
-std::set< unsigned > prob;
+std::set< unsigned> prob;
+
+std::set< std::vector < unsigned > > probVector;
 
 typedef std::map< unsigned, std::vector< int > > VecMap;
 
-
-bool deletes_org( const Ground * ground, const parser::multiagent::NetworkNode * n, unsigned k ) {
-	for ( unsigned i = 0; i < n->templates.size(); ++i ) {		
-		if ( i != k ) {
-			Action * a = d->actions[d->actions.index( n->templates[i]->name )];
-			CondVec pres = a->precons();
-			for ( unsigned j = 0; j < pres.size(); ++j ) {
-				Ground * g = dynamic_cast< Ground * >( pres[j] );
-				if ( g && g->name == ground->name &&
-				     std::find( g->params.begin(), g->params.end(), 0 ) == g->params.end() )
-					return true;
-			}
-		}
-	}
-	return false;
-}
-
-// edited by shashank
+// updated by shashank
 bool deletes( const Ground * ground, const parser::multiagent::NetworkNode * n, IntVec impParams ) {
 	for ( unsigned i = 0; i < n->templates.size(); ++i ) {		
 		Action * a = d->actions[d->actions.index( n->templates[i]->name )];
-		CondVec pres = a->precons();
+		CondVec pres = a->precons();		
 		for ( unsigned j = 0; j < pres.size(); ++j ) {
 			Ground * g = dynamic_cast< Ground * >( pres[j] );
 			if ( g && 
 				 g->name == ground->name &&
-			     std::find( g->params.begin(), g->params.end(), impParams[0] ) != g->params.end() ) 
+			     std::find( g->params.begin(), g->params.end(), impParams[0] ) != g->params.end() )  			    
 				return true;
 		}
 	}
@@ -49,13 +34,21 @@ bool deletes( const Ground * ground, const parser::multiagent::NetworkNode * n, 
 bool addEff( Domain * cd, Action * a, Condition * c ) {
 	Not * n = dynamic_cast< Not * >( c );
 	Ground * g = dynamic_cast< Ground * >( c );
-	if ( n && prob.find( d->preds.index( n->cond->name ) ) != prob.end() ) {
-		cd->addEff( 0, a->name, "NEG-" + n->cond->name, n->cond->params );
-		return 1;
-	}
-	if ( g && prob.find( d->preds.index( g->name ) ) != prob.end() ) {
-		cd->addEff( 0, a->name, "POS-" + g->name, g->params );
-		return 1;
+	std::set< std::vector < unsigned > >::iterator it;
+	for ( it = probVector.begin(); it != probVector.end(); ++it ) { 
+		std::vector< unsigned > deleteChoices  = ( std::vector< unsigned > ) *it;
+		if ( n && deleteChoices[0] == (unsigned) d->preds.index( n->cond->name ) && (int) deleteChoices[1] == 1) {
+			cd->addEff( 0, a->name, "NEG-" + n->cond->name, n->cond->params );
+			return 1;
+		}
+		if ( g && deleteChoices[0] == (unsigned) d->preds.index( g->name ) && (int) deleteChoices[1] == 1 ) {
+			cd->addEff( 0, a->name, "POS-" + g->name, g->params );
+			return 1;
+		}
+		if ( n && deleteChoices[0] == (unsigned) d->preds.index( n->cond->name ) && (int) deleteChoices[1] == 2) {
+			cd->addEff( 0, a->name, "NEG-" + n->cond->name, n->cond->params );
+			return 1;
+		}
 	}
 	
 	if ( n )
@@ -81,23 +74,6 @@ int main( int argc, char *argv[] ) {
 	d = new parser::multiagent::MultiagentDomain( argv[1] );
 	ins = new Instance( *d, argv[2] );
 	
-	/* Identify problematic fluents (preconditions deleted by agents) 
-	   For now, disregard edges | for the network */
-	/* for ( unsigned i = 0; i < d->nodes.size(); ++i ) {
-		for ( unsigned j = 0; d->nodes[i]->upper > 1 && j < d->nodes[i]->templates.size(); ++j ) 
-		{	
-			Action * a = d->actions[ d->actions.index( d->nodes[i]->templates[j]->name ) ];
-			GroundVec dels = a->deleteEffects();
-		
-			for ( unsigned k = 0; k < dels.size(); ++k ) {
-				if ( std::find( dels[k]->params.begin(), dels[k]->params.end(), 0 ) == dels[k]->params.end() &&
-				     deletes( dels[k], d->nodes[i], j ) ) {
-					prob.insert( d->preds.index( dels[k]->name ) );
-				}
-			}
-		}		
-	} */
-	
 	// Identify problematic fluents (preconditions deleted by agents) (edited by shashank) 	
 	for ( unsigned i = 0; i < d->nodes.size(); ++i ) {
 		for ( unsigned j = 0; d->nodes[i]->upper > 1 && j < d->nodes[i]->templates.size(); ++j ) 
@@ -105,15 +81,29 @@ int main( int argc, char *argv[] ) {
 			// in future impParams may contain multiple values
 			IntVec impParams =  d->nodes[i]->templates[i]->params; 
 			Action * a = d->actions[ d->actions.index( d->nodes[i]->templates[j]->name ) ];
-			GroundVec dels = a->deleteEffects();		
+			GroundVec dels = a->deleteEffects();	
+			GroundVec added = a->addEffects();	
+			unsigned choice = 1;
 			for ( unsigned k = 0; k < dels.size(); ++k ) 
 			{
 				bool choiceA = 
 						std::find( dels[k]->params.begin(), dels[k]->params.end(), impParams[0] ) != dels[k]->params.end();
 				bool choiceB = deletes( dels[k], d->nodes[i], impParams );
-				if ( choiceA && choiceB ) 	
-					// the line below is going to handle only unique names of predicates			
-					prob.insert( d->preds.index( dels[k]->name ) );
+				bool choiceC = false;
+				
+				if ( choiceB )
+					for ( unsigned t = 0; t < added.size(); t++ )
+						if ( added[t]->name == dels[k]->name )
+							choiceC = true; // if only deleted, and not added proposition.
+											
+				if ( choiceA && choiceB && choiceC ) { 	
+					choice = 1;	
+					probVector.insert( { (unsigned) d->preds.index( dels[k]->name ), choice } );				
+				}
+				else if( choiceA && choiceB && !choiceC ) {					
+					choice = 2;					
+					probVector.insert( { (unsigned) d->preds.index( dels[k]->name ), choice } );
+				}
 			}
 		}		
 	}
@@ -125,8 +115,12 @@ int main( int argc, char *argv[] ) {
 	// Create a classical domain
 	Domain * cd = new Domain;
 	cd->name = d->name;
-	cd->condeffects = cd->cons = cd->typed = true;
-
+	cd->condeffects = d->condeffects; 
+	cd->cons = cd->typed = true;
+	cd->factored = d->factored;
+	cd->unfactored = d->unfactored;
+	cd->neg = d->neg;
+	
 	// Add types
 	cd->setTypes( d->copyTypes() );
 	cd->createType( "AGENT-COUNT" );
@@ -134,12 +128,21 @@ int main( int argc, char *argv[] ) {
 	// Add constants
 	cd->createConstant( "ACOUNT-0", "AGENT-COUNT" );
 
-	// Add predicates
+	// Add predicates (a huge set of bugs removed by shashank) 
 	for ( unsigned i = 0; i < d->preds.size(); ++i ) {
 		cd->createPredicate( d->preds[i]->name, d->typeList( d->preds[i] ) );
-		if ( prob.find( i ) != prob.end() ) {
-			cd->createPredicate( "POS-" + d->preds[i]->name );
-			cd->createPredicate( "NEG-" + d->preds[i]->name );
+		std::set< std::vector < unsigned > >::iterator it;
+		for ( it = probVector.begin(); it != probVector.end(); ++it ) 
+		{ 
+			std::vector< unsigned > deleteChoices  = ( std::vector< unsigned > ) *it;
+			if ( deleteChoices[0] == i && deleteChoices[1] == (unsigned) 1 ) {				
+				cd->createPredicate( "POS-" + d->preds[i]->name, d->typeList(d->preds[i]) );
+				cd->createPredicate( "NEG-" + d->preds[i]->name, d->typeList(d->preds[i]) );
+			}
+						
+			if ( deleteChoices[0] == i && deleteChoices[1] == (unsigned) 2 ) {
+				cd->createPredicate( "NEG-" + d->preds[i]->name, d->typeList(d->preds[i]) );
+			}
 		}
 	}	
 	cd->createPredicate( "AFREE" );
@@ -147,6 +150,8 @@ int main( int argc, char *argv[] ) {
 	cd->createPredicate( "ATEMP" );
 	cd->createPredicate( "TAKEN", StringVec( 1, "AGENT" ) );
 	cd->createPredicate( "CONSEC", StringVec( 2, "AGENT-COUNT" ) );
+	cd->createPredicate( "CONSEC1", StringVec( 2, "AGENT-COUNT" ) );
+	cd->createPredicate( "CONSEC1", StringVec( 1, "AGENT" ) );
 	for ( unsigned i = 0; i < d->nodes.size(); ++i ) {
 		VecMap::iterator j = ccs.find( d->mf[i] );
 		if ( j->second.size() > 1 || d->nodes[i]->upper > 1 ) {
@@ -215,7 +220,7 @@ int main( int argc, char *argv[] ) {
 				if ( !j ) cd->addEff( 1, name, "AFREE" );
 				cd->addEff( 0, name, "ACTIVE-" + d->nodes[x]->name, incvec( 0, size ) );
 				cd->addEff( 0, name, "SKIPPED-" + d->nodes[x]->name );
-				cd->addEff( 0, name, "USED-" + d->nodes[x]->name );
+				cd->addEff( 0, name, "USED-" + d->nodes[x]->name );  
 			}
 
 			bool concurEffs = 0;
@@ -225,13 +230,14 @@ int main( int argc, char *argv[] ) {
 				std::string name = d->actions[action]->name;
 				
 				// TODO 
-				if ( name.find("JOINT") != std::string::npos ) 
+				if ( name.find("ACTIVITY") != std::string::npos ) 
 				{
 					for ( unsigned i = 0; i < d->nodes.size(); ++i ) {
 						VecMap::iterator j = ccs.find( d->mf[i] );
-						if ( ( name.find("JOINT") != std::string::npos ) && ( j->second.size() > 1 || d->nodes[i]->upper > 1 ) ) {							
-							cd->createPredicate( "ACTIVE-" + name, d->typeList( d->nodes[i] ) );
-							// cd->createPredicate( "NEXT", StringVec( 1, "AGENT" ) );
+						if ( ( name.find("ACTIVITY") != std::string::npos ) && 
+											( j->second.size() > 1 || d->nodes[i]->upper > 1 ) ) 
+						{							
+							cd->createPredicate( "ACTIVE-" + name, d->typeList( d->nodes[i] ) );							
 						}
 					}
 					
@@ -310,7 +316,6 @@ int main( int argc, char *argv[] ) {
 					
 					// add new preconditions
 					if ( i->second.size() > 1 || d->nodes[x]->upper > 1 ) {
-						// cd->addPre( 0, secondHalf, "NEXT", incvec( 1, 2 ) );
 						cd->addPre( 0, secondHalf, "ACTIVE-" + name, d->nodes[x]->templates[k]->params );
 						cd->addPre( 0, secondHalf, "ACTIVE-" + d->nodes[x]->name, d->nodes[x]->templates[k]->params );
 						cd->addPre( 1, secondHalf, "TAKEN", IntVec( 1, 0 ) );
@@ -419,40 +424,69 @@ int main( int argc, char *argv[] ) {
 		}
 	}
 
-	for ( std::set< unsigned >::iterator i = prob.begin(); i != prob.end(); ++i ) {
-		std::string name = "ADD-" + d->preds[*i]->name;
-		std::cout << "params = " << d->preds[*i]->params <<"\n" <<d->typeList( d->preds[*i] ) <<"\n";
-		unsigned size = d->preds[*i]->params.size();
-		cd->createAction( name, d->typeList( d->preds[*i] ) );
-		cd->addPre( 0, name, "ATEMP" );
-		cd->addPre( 0, name, "POS-" + d->preds[*i]->name, incvec( 0, size ) );
-		cd->addPre( 1, name, "NEG-" + d->preds[*i]->name, incvec( 0, size ) );
-		cd->addEff( 0, name, d->preds[*i]->name, incvec( 0, size ) );
-		cd->addEff( 1, name, "POS-" + d->preds[*i]->name, incvec( 0, size ) );
+	std::set< std::vector < unsigned > >::iterator it;
+	for ( it = probVector.begin(); it != probVector.end(); ++it ) { 
+		std::vector< unsigned > deleteChoices  = ( std::vector< unsigned > ) *it;				
+		unsigned i = (unsigned) deleteChoices[0];
+		unsigned choice = (unsigned) deleteChoices[1];
+		if ( choice == 1 ) {
+			std::string name = "ADD-" + d->preds[i]->name;
+			unsigned size = d->preds[i]->params.size();
+			cd->createAction( name, d->typeList( d->preds[i] ) );
+			cd->addPre( 0, name, "ATEMP" );
+			cd->addPre( 0, name, "POS-" + d->preds[i]->name, incvec( 0, size ) );
+			// cd->addPre( 1, name, "NEG-" + d->preds[i]->name, incvec( 0, size ) );
+			cd->addEff( 0, name, d->preds[i]->name, incvec( 0, size ) );
+			cd->addEff( 1, name, "POS-" + d->preds[i]->name, incvec( 0, size ) );
 
-		name = "DELETE-" + d->preds[*i]->name;
-		cd->createAction( name, d->typeList( d->preds[*i] ) );
-		cd->addPre( 0, name, "ATEMP" );
-		cd->addPre( 1, name, "POS-" + d->preds[*i]->name, incvec( 0, size ) );
-		cd->addPre( 0, name, "NEG-" + d->preds[*i]->name, incvec( 0, size ) );
-		cd->addEff( 1, name, d->preds[*i]->name, incvec( 0, size ) );
-		cd->addEff( 1, name, "NEG-" + d->preds[*i]->name, incvec( 0, size ) );
+			name = "DELETE-" + d->preds[i]->name;
+			cd->createAction( name, d->typeList( d->preds[i] ) );
+			cd->addPre( 0, name, "ATEMP" );
+			// cd->addPre( 1, name, "POS-" + d->preds[i]->name, incvec( 0, size ) );
+			cd->addPre( 0, name, "NEG-" + d->preds[i]->name, incvec( 0, size ) );
+			cd->addEff( 1, name, d->preds[i]->name, incvec( 0, size ) );
+			cd->addEff( 1, name, "NEG-" + d->preds[i]->name, incvec( 0, size ) );
+		}	
+		else if ( choice == 2 ) {
+			std::string name = "DELETE-" + d->preds[i]->name;
+			unsigned size = d->preds[i]->params.size();
+			cd->createAction( name, d->typeList( d->preds[i] ) );
+			cd->addPre( 0, name, "ATEMP" );
+			cd->addPre( 0, name, "NEG-" + d->preds[i]->name, incvec( 0, size ) );
+			cd->addEff( 1, name, d->preds[i]->name, incvec( 0, size ) );
+			cd->addEff( 1, name, "NEG-" + d->preds[i]->name, incvec( 0, size ) );
+		}			
 	}
-
-	Action * freeit = cd->createAction( "FREE" );
-	cd->addPre( 0, "FREE", "ATEMP" );
-	for ( std::set< unsigned >::iterator i = prob.begin(); i != prob.end(); ++i ) {
-		Forall * f = new Forall;
-		f->params = cd->convertTypes( d->typeList( d->preds[*i] ) );
-		And * a = new And;
-		a->add( new Not( new Ground( cd->preds.get( "POS-" + d->preds[*i]->name ), incvec( 0, f->params.size() ) ) ) );
-		a->add( new Not( new Ground( cd->preds.get( "NEG-" + d->preds[*i]->name ), incvec( 0, f->params.size() ) ) ) );
-		f->cond = a;
-		dynamic_cast< And * >( freeit->pre )->add( f );
+	
+	//TODO
+	Action * freeit = cd->createAction( "POS-NEG-FREE" );
+	cd->addPre( 0, "POS-NEG-FREE", "ATEMP" );
+	for ( it = probVector.begin(); it != probVector.end(); ++it ) { 
+		std::vector< unsigned > deleteChoices  = ( std::vector< unsigned > ) *it;				
+		unsigned i = (unsigned) deleteChoices[0];
+		unsigned choice = (unsigned) deleteChoices[1];
+		if ( choice == 1 ) {		
+			Forall * f = new Forall;
+			f->params = cd->convertTypes( d->typeList( d->preds[i] ) );
+			And * a = new And;
+			a->add( new Not( new Ground( cd->preds.get( "POS-" + d->preds[i]->name ), incvec( 0, f->params.size() ) ) ) );
+			a->add( new Not( new Ground( cd->preds.get( "NEG-" + d->preds[i]->name ), incvec( 0, f->params.size() ) ) ) );
+			f->cond = a;
+			dynamic_cast< And * >( freeit->pre )->add( f );
+		}
+		else if ( choice == 2 ) {
+			Forall * f = new Forall;
+			f->params = cd->convertTypes( d->typeList( d->preds[i] ) );
+			And * a = new And;
+			// a->add( new Not( new Ground( cd->preds.get( "POS-" + d->preds[i]->name ), incvec( 0, f->params.size() ) ) ) );
+			a->add( new Not( new Ground( cd->preds.get( "NEG-" + d->preds[i]->name ), incvec( 0, f->params.size() ) ) ) );
+			f->cond = a;
+			dynamic_cast< And * >( freeit->pre )->add( f );
+		}
 	}
-	cd->addEff( 0, "FREE", "AFREE" );
-	cd->addEff( 1, "FREE", "ATEMP" );
-
+	cd->addEff( 0, "POS-NEG-FREE", "AFREE" );
+	cd->addEff( 1, "POS-NEG-FREE", "ATEMP" );
+	
 	std::cout << *cd;
 
 	// Generate single-agent instance
