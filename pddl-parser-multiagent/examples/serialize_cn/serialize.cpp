@@ -95,7 +95,6 @@ int main( int argc, char *argv[] ) {
 					for ( unsigned t = 0; t < added.size(); t++ )
 						if ( added[t]->name == dels[k]->name )
 							choiceC = true; // if only deleted, and not added proposition.
-											
 				if ( choiceA && choiceB && choiceC ) { 	
 					choice = 1;	
 					probVector.insert( { (unsigned) d->preds.index( dels[k]->name ), choice } );				
@@ -334,11 +333,11 @@ int main( int argc, char *argv[] ) {
 						cd->addEff( 0, secondHalf, "COUNT-" + d->nodes[x]->name, incvec( size + 1, size + 2 ) );
 					}
 				} 
-				else  // if the action is not a joint action
+				else  // if the action is not a joint activity
 				{
 					name = "DO-" + d->actions[action]->name;
 					unsigned size = d->actions[action]->params.size();
-					Action * doit = cd->createAction( name, d->typeList( d->actions[action] ) );
+					Action * doit = cd->createAction( name, d->typeList( d->actions[
 					
 					// copy old preconditions
 					And * oldpre = dynamic_cast< And * >( d->actions[action]->pre );
@@ -527,7 +526,7 @@ int main( int argc, char *argv[] ) {
 		cins->addGoal( ins->goal[i]->name, d->objectList( ins->goal[i] ) );
 	cins->addGoal( "AFREE" );
 
-	// std::cerr << *cins;
+	std::cerr << *cins;
 
 	delete cins;
 	delete cd;
