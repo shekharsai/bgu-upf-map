@@ -32,10 +32,25 @@
 	)
 )
 
+(:action row 
+	:agent ?a - agent
+	:parameters (?b - boat ?x - location ?y - location)
+	:precondition (and
+				(at ?a ?x)
+				(has-boat ?b ?x ?y)
+			 )
+	:effect	(and 
+			(at ?a ?y)
+			(not (at ?a ?x)) 
+			( not (has-boat ?b ?x ?y) )
+			(has-boat ?b ?y ?x)
+		)
+)
+
 (:concurrency-constraint v1
 	:parameters (?d - boat)
 	:bounds (1 2)
-	:actions ( (JOINT-ACTIVITY-SAIL 1) )
+	:actions ( (JOINT-ACTIVITY-SAIL 2) )
 )
 
 )

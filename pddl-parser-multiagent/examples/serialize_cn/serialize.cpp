@@ -78,7 +78,7 @@ int main( int argc, char *argv[] ) {
 	for ( unsigned i = 0; i < d->nodes.size(); ++i ) {
 		for ( unsigned j = 0; d->nodes[i]->upper > 1 && j < d->nodes[i]->templates.size(); ++j ) 
 		{	
-			// in future impParams may contain multiple values
+			// in future impParams may contain multiple values TODO
 			IntVec impParams =  d->nodes[i]->templates[i]->params; 
 			Action * a = d->actions[ d->actions.index( d->nodes[i]->templates[j]->name ) ];
 			GroundVec dels = a->deleteEffects();	
@@ -86,15 +86,17 @@ int main( int argc, char *argv[] ) {
 			unsigned choice = 1;
 			for ( unsigned k = 0; k < dels.size(); ++k ) 
 			{
+				std::cout << impParams[0] << "\t" <<  dels[k]->params << "\n";
 				bool choiceA = 
 						std::find( dels[k]->params.begin(), dels[k]->params.end(), impParams[0] ) != dels[k]->params.end();
 				bool choiceB = deletes( dels[k], d->nodes[i], impParams );
 				bool choiceC = false;
-				
+								
 				if ( choiceB )
 					for ( unsigned t = 0; t < added.size(); t++ )
 						if ( added[t]->name == dels[k]->name )
 							choiceC = true; // if only deleted, and not added proposition.
+				std::cout << "choices " << choiceA << choiceB << choiceC << "\n";
 				if ( choiceA && choiceB && choiceC ) { 	
 					choice = 1;	
 					probVector.insert( { (unsigned) d->preds.index( dels[k]->name ), choice } );				
@@ -221,14 +223,14 @@ int main( int argc, char *argv[] ) {
 				cd->addEff( 0, name, "SKIPPED-" + d->nodes[x]->name );
 				cd->addEff( 0, name, "USED-" + d->nodes[x]->name );  
 			}
-
+			
 			bool concurEffs = 0;
 			for ( unsigned k = 0; k < d->nodes[x]->templates.size(); ++k ) 
 			{
 				int action = d->actions.index( d->nodes[x]->templates[k]->name );
 				std::string name = d->actions[action]->name;
 				
-				// TODO 
+				// TODO // the below is for splitting a joint activity
 				if ( name.find("ACTIVITY") != std::string::npos ) 
 				{
 					for ( unsigned i = 0; i < d->nodes.size(); ++i ) {
@@ -240,7 +242,7 @@ int main( int argc, char *argv[] ) {
 						}
 					}
 					
-					// creating the first half					
+					// creating the first half of the joint action									
 					const std::string firstHalf = "BEGIN-" + name;
 					Action * doFirstPart = cd->createAction( firstHalf, d->typeList( d->actions[action] ) );				
 					unsigned size = doFirstPart->params.size();	
@@ -287,7 +289,7 @@ int main( int argc, char *argv[] ) {
 						cd->addEff( 0, firstHalf, "COUNT-" + d->nodes[x]->name, incvec( size + 1, size + 2 ) );
 					}	
 					
-					// creating the second half					
+					// creating the second half	of the joint action				
 					const std::string secondHalf = "TERMINATE-" + name;
 					Action * doSecondPart = cd->createAction( secondHalf, d->typeList( d->actions[action] ) );				
 					size = doSecondPart->params.size();	
@@ -333,8 +335,7 @@ int main( int argc, char *argv[] ) {
 						cd->addEff( 0, secondHalf, "COUNT-" + d->nodes[x]->name, incvec( size + 1, size + 2 ) );
 					}
 				} 
-				else  // if the action is not a joint activity
-				{
+				else { 	// if the action is not a joint activity				
 					name = "DO-" + d->actions[action]->name;
 					unsigned size = d->actions[action]->params.size();
 					Action * doit = cd->createAction( name, d->typeList( d->actions[action] ) );
@@ -376,6 +377,7 @@ int main( int argc, char *argv[] ) {
 				}
 			}
 		
+			// A lot of changes needed fro the upf version for our END- version
 			if ( i->second.size() > 1 || d->nodes[x]->upper > 1 ) {
 				std::string name = "END-" + d->nodes[x]->name;
 				unsigned size = d->nodes[x]->params.size();
@@ -393,7 +395,8 @@ int main( int argc, char *argv[] ) {
 				if ( i->second.size() > 1 ) {
 					cd->addEff( 0, name, "DONE-" + d->nodes[x]->name );
 				}
-				else {
+				else 
+				{
 					// cd->addEff( 0, name, concurEffs ? "ATEMP" : "AFREE" );
 					cd->addEff( 0, name, "AFREE" );
 					cd->addEff( 1, name, "ACTIVE-" + d->nodes[x]->name, incvec( 0, size ) );
@@ -485,7 +488,7 @@ int main( int argc, char *argv[] ) {
 			}
 		}
 	}
-	/*
+	
 	std::set< std::vector < unsigned > >::iterator it;
 	for ( it = probVector.begin(); it != probVector.end(); ++it ) { 
 		std::vector< unsigned > deleteChoices  = ( std::vector< unsigned > ) *it;				
@@ -550,7 +553,7 @@ int main( int argc, char *argv[] ) {
 	}
 	cd->addEff( 0, "POS-NEG-FREE", "AFREE" );
 	cd->addEff( 1, "POS-NEG-FREE", "ATEMP" );
-	*/
+	
 	std::cout << *cd;
 
 	// Generate single-agent instance
@@ -591,7 +594,7 @@ int main( int argc, char *argv[] ) {
 		cins->addGoal( ins->goal[i]->name, d->objectList( ins->goal[i] ) );
 	cins->addGoal( "AFREE" );
 
-	// std::cerr << *cins;
+	std::cerr << *cins;
 
 	delete cins;
 	delete cd;
