@@ -488,75 +488,10 @@ int main( int argc, char *argv[] ) {
 			}
 		}
 	}
-	
-	std::set< std::vector < unsigned > >::iterator it;
-	for ( it = probVector.begin(); it != probVector.end(); ++it ) { 
-		std::vector< unsigned > deleteChoices  = ( std::vector< unsigned > ) *it;				
-		unsigned i = (unsigned) deleteChoices[0];
-		unsigned choice = (unsigned) deleteChoices[1];
-		if ( choice == 1 ) {
-			std::string name = "ADD-" + d->preds[i]->name;
-			unsigned size = d->preds[i]->params.size();
-			cd->createAction( name, d->typeList( d->preds[i] ) );
-			cd->addPre( 0, name, "ATEMP" );
-			cd->addPre( 0, name, "POS-" + d->preds[i]->name, incvec( 0, size ) );
-			// cd->addPre( 1, name, "NEG-" + d->preds[i]->name, incvec( 0, size ) );
-			cd->addEff( 0, name, d->preds[i]->name, incvec( 0, size ) );
-			cd->addEff( 1, name, "POS-" + d->preds[i]->name, incvec( 0, size ) );
-
-			name = "DELETE-" + d->preds[i]->name;
-			cd->createAction( name, d->typeList( d->preds[i] ) );
-			cd->addPre( 0, name, "ATEMP" );
-			// cd->addPre( 1, name, "POS-" + d->preds[i]->name, incvec( 0, size ) );
-			cd->addPre( 0, name, "NEG-" + d->preds[i]->name, incvec( 0, size ) );
-			cd->addEff( 1, name, d->preds[i]->name, incvec( 0, size ) );
-			cd->addEff( 1, name, "NEG-" + d->preds[i]->name, incvec( 0, size ) );
-		}	
-		else if ( choice == 2 ) {
-			std::string name = "DELETE-" + d->preds[i]->name;
-			unsigned size = d->preds[i]->params.size();
-			cd->createAction( name, d->typeList( d->preds[i] ) );
-			cd->addPre( 0, name, "ATEMP" );
-			cd->addPre( 0, name, "NEG-" + d->preds[i]->name, incvec( 0, size ) );
-			cd->addEff( 1, name, d->preds[i]->name, incvec( 0, size ) );
-			cd->addEff( 1, name, "NEG-" + d->preds[i]->name, incvec( 0, size ) );
-		}			
-	}
-	
-	//TODO
-	Action * freeit = cd->createAction( "POS-NEG-FREE" );
-	cd->addPre( 0, "POS-NEG-FREE", "ATEMP" );
-	for ( it = probVector.begin(); it != probVector.end(); ++it ) { 
-		std::vector< unsigned > deleteChoices  = ( std::vector< unsigned > ) *it;				
-		unsigned i = (unsigned) deleteChoices[0];
-		unsigned choice = (unsigned) deleteChoices[1];
-		if ( choice == 1 ) {		
-			std::cout << "in choice 1 \n";
-			Forall * f = new Forall;
-			f->params = cd->convertTypes( d->typeList( d->preds[i] ) );
-			And * a = new And;
-			a->add( new Not( new Ground( cd->preds.get( "POS-" + d->preds[i]->name ), incvec( 0, f->params.size() ) ) ) );
-			a->add( new Not( new Ground( cd->preds.get( "NEG-" + d->preds[i]->name ), incvec( 0, f->params.size() ) ) ) );
-			f->cond = a;
-			dynamic_cast< And * >( freeit->pre )->add( f );
-		}
-		else if ( choice == 2 ) {
-			std::cout << "in choice 2 \n";
-			Forall * f = new Forall;
-			f->params = cd->convertTypes( d->typeList( d->preds[i] ) );
-			And * a = new And;
-			// a->add( new Not( new Ground( cd->preds.get( "POS-" + d->preds[i]->name ), incvec( 0, f->params.size() ) ) ) );
-			a->add( new Not( new Ground( cd->preds.get( "NEG-" + d->preds[i]->name ), incvec( 0, f->params.size() ) ) ) );
-			f->cond = a;
-			dynamic_cast< And * >( freeit->pre )->add( f );
-		}
-	}
-	cd->addEff( 0, "POS-NEG-FREE", "AFREE" );
-	cd->addEff( 1, "POS-NEG-FREE", "ATEMP" );
-	
+			
 	std::cout << *cd;
 
-	// Generate single-agent instance
+	// generate single-agent instance file
 	unsigned nagents = d->types.get( "AGENT" )->noObjects();
 
 	Instance * cins = new Instance( *cd );

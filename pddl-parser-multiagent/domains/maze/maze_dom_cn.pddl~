@@ -50,7 +50,7 @@
 (:concurrency-constraint v1
 	:parameters (?d - boat)
 	:bounds (1 2)
-	:actions ( (JOINT-ACTIVITY-SAIL 2) (row 1))
+	:actions ( (JOINT-ACTIVITY-SAIL 2) )
 )
 
 )
