@@ -337,7 +337,7 @@ int main( int argc, char *argv[] ) {
 				{
 					name = "DO-" + d->actions[action]->name;
 					unsigned size = d->actions[action]->params.size();
-					Action * doit = cd->createAction( name, d->typeList( d->actions[
+					Action * doit = cd->createAction( name, d->typeList( d->actions[action] ) );
 					
 					// copy old preconditions
 					And * oldpre = dynamic_cast< And * >( d->actions[action]->pre );
@@ -381,22 +381,85 @@ int main( int argc, char *argv[] ) {
 				unsigned size = d->nodes[x]->params.size();
 				Action * end = cd->createAction( name, d->typeList( d->nodes[x] ) );
 				cd->addParams( name, StringVec( 1, "AGENT-COUNT" ) );
-				
+
+				// preconditions
 				cd->addPre( 0, name, "ACTIVITY-FREE" );
 				cd->addPre( 0, name, "COUNT-" + d->nodes[x]->name, incvec( size, size + 1 ) );
 				cd->addPre( 0, name, "SAT-" + d->nodes[x]->name, incvec( size, size + 1 ) );
 				cd->addPre( 0, name, "ACTIVE-" + d->nodes[x]->name, incvec( 0, size ) );
-
+				
+				// effects
 				cd->addEff( 1, name, "COUNT-" + d->nodes[x]->name, incvec( size, size + 1 ) );
-				if ( i->second.size() > 1 )
+				if ( i->second.size() > 1 ) {
 					cd->addEff( 0, name, "DONE-" + d->nodes[x]->name );
+				}
 				else {
-					cd->addEff( 0, name, concurEffs ? "ATEMP" : "AFREE" );
+					// cd->addEff( 0, name, concurEffs ? "ATEMP" : "AFREE" );
+					cd->addEff( 0, name, "AFREE" );
 					cd->addEff( 1, name, "ACTIVE-" + d->nodes[x]->name, incvec( 0, size ) );
-					Forall * f = new Forall;
+					Forall * f = new Forall;					
 					f->params = cd->convertTypes( StringVec( 1, "AGENT" ) );
 					f->cond = new Not( new Ground( cd->preds.get( "TAKEN" ), incvec( size + 1, size + 2 ) ) );
 					dynamic_cast< And * >( end->eff )->add( f );
+					
+					/* addition of quantifiers */					
+					std::set< std::vector < unsigned > >::iterator it;
+					for ( it = probVector.begin(); it != probVector.end(); ++it ) 
+					{ 
+						std::vector< unsigned > deleteChoices  = ( std::vector< unsigned > ) *it;				
+						unsigned i = (unsigned) deleteChoices[0];
+						unsigned choice = (unsigned) deleteChoices[1];
+						Forall * f1 = new Forall;
+						And * andFormula = new And;							
+						When * ss = new When;
+						And * a1 = new And;
+						StringVec vec;
+						for (int p = 0; p < (int) d->typeList( d->preds[i] ).size(); p++) {
+							for (int q = 0; q < (int) d->typeList( d->nodes[x] ).size(); q++) {
+								if ( ! ( d->typeList( d->preds[i] )[p] == d->typeList( d->nodes[x] )[q] ) ) {
+									vec.push_back(d->typeList( d->preds[i] )[p]);							
+								}
+							}
+						}	
+						IntVec integerVec;
+						f1->params = cd->convertTypes( vec );
+						unsigned f1Size = f1->params.size();
+						for (int p = 0; p < (int) (size + f1Size + 1); p++ ) {
+							if ( p!= (int) size)
+								integerVec.push_back(p);							 
+						}
+					
+						StringVec vector = d->typeList( d->preds[i] );
+						if ( choice == 1 ) {			
+							ss->pars = new Ground ( cd->preds.get( "POS-" + d->preds[i]->name ), integerVec );							
+							a1->add( new Ground ( cd->preds.get( d->preds[i]->name ), {0,2,3} ) );
+							a1->add( new Not ( new Ground( cd->preds.get( "POS-" + d->preds[i]->name ), integerVec ) ) );
+							ss->cond = a1;							
+							andFormula->add(ss);	
+														
+							ss = new When;							
+							ss->pars = new Ground( cd->preds.get( "NEG-" + d->preds[i]->name ), integerVec );
+							a1 = new And;
+							a1->add( new Not( new Ground( cd->preds.get( d->preds[i]->name ), integerVec ) ) );
+							a1->add( new Not( new Ground( cd->preds.get( "NEG-" + d->preds[i]->name ), integerVec ) ) );
+							ss->cond = a1;
+							andFormula->add(ss);
+							f1->cond = andFormula;
+							dynamic_cast< And * >( end->eff )->add( f1 );													
+						}
+						else if ( choice == 2 ) {		
+							f1 = new Forall;
+							f1->params = cd->convertTypes( vec );
+							ss = new When;							
+							ss->pars = new Ground( cd->preds.get( "NEG-" + d->preds[i]->name ), integerVec );
+							a1 = new And;
+							a1->add( new Not( new Ground( cd->preds.get( d->preds[i]->name ), integerVec ) ) );
+							a1->add( new Not( new Ground( cd->preds.get( "NEG-" + d->preds[i]->name ), integerVec ) ) );
+							ss->cond = a1;
+							f1->cond = ss;
+							dynamic_cast< And * >( end->eff )->add( f1 );	
+						}						
+					}
 				}
 			}
 
@@ -422,7 +485,7 @@ int main( int argc, char *argv[] ) {
 			}
 		}
 	}
-
+	/*
 	std::set< std::vector < unsigned > >::iterator it;
 	for ( it = probVector.begin(); it != probVector.end(); ++it ) { 
 		std::vector< unsigned > deleteChoices  = ( std::vector< unsigned > ) *it;				
@@ -465,6 +528,7 @@ int main( int argc, char *argv[] ) {
 		unsigned i = (unsigned) deleteChoices[0];
 		unsigned choice = (unsigned) deleteChoices[1];
 		if ( choice == 1 ) {		
+			std::cout << "in choice 1 \n";
 			Forall * f = new Forall;
 			f->params = cd->convertTypes( d->typeList( d->preds[i] ) );
 			And * a = new And;
@@ -474,6 +538,7 @@ int main( int argc, char *argv[] ) {
 			dynamic_cast< And * >( freeit->pre )->add( f );
 		}
 		else if ( choice == 2 ) {
+			std::cout << "in choice 2 \n";
 			Forall * f = new Forall;
 			f->params = cd->convertTypes( d->typeList( d->preds[i] ) );
 			And * a = new And;
@@ -485,7 +550,7 @@ int main( int argc, char *argv[] ) {
 	}
 	cd->addEff( 0, "POS-NEG-FREE", "AFREE" );
 	cd->addEff( 1, "POS-NEG-FREE", "ATEMP" );
-	
+	*/
 	std::cout << *cd;
 
 	// Generate single-agent instance
@@ -526,7 +591,7 @@ int main( int argc, char *argv[] ) {
 		cins->addGoal( ins->goal[i]->name, d->objectList( ins->goal[i] ) );
 	cins->addGoal( "AFREE" );
 
-	std::cerr << *cins;
+	// std::cerr << *cins;
 
 	delete cins;
 	delete cd;

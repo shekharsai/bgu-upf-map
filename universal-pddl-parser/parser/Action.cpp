@@ -3,7 +3,8 @@
 
 namespace parser { namespace pddl {
 
-void Action::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::string > & ts, const Domain & d ) const {
+void Action::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::string > & ts, const Domain & d ) const 
+{
 	if ( name.find("ACTIVITY") != std::string::npos ) {
 		bool token = true;
 		s << "( :ACTION " << name << "\n";
@@ -26,6 +27,7 @@ void Action::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< st
 
 		s << ")\n";
 	}
+	
 	else {
 		s << "( :ACTION " << name << "\n";
 

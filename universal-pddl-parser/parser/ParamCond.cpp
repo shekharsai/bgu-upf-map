@@ -16,17 +16,18 @@ void ParamCond::printParams( unsigned first, std::ostream & s, TokenStruct< std:
 }
 
 void ParamCond::printParams( unsigned first, std::ostream & s, TokenStruct< std::string > & ts, const Domain & d, bool token) const {
-	s << "(";
-	for ( unsigned i = first; i < params.size(); ++i ) {
-		std::stringstream ss;
-		if (i!=1)
-			ss << "?" << d.types[params[i]]->getName() << ts.size();
-		ts.insert( ss.str() );
-		s << " " << ss.str();
-		if ( d.typed && i!=1) s << " - " << d.types[params[i]]->name;
-	}
-	s << " )\n";
+	if (token) {
+		s << "(";
+		for ( unsigned i = first; i < params.size(); ++i ) {
+			std::stringstream ss;
+			if (i!=1)
+				ss << "?" << d.types[params[i]]->getName() << ts.size();
+			ts.insert( ss.str() );
+			s << " " << ss.str();
+			if ( d.typed && i!=1) s << " - " << d.types[params[i]]->name;
+		}
+		s << " )\n";
+	} 
 }
-
 
 } } // namespaces
