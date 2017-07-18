@@ -12,23 +12,23 @@
 	(has-boat ?b - boat ?x - location ?y - location)
 	(has-bridge ?b - bridge ?x - location ?y - location)	
 	(NEXT ?A2 - AGENT)	
-	(AT ?BO - BOAT ?L2 - LOCATION)
+	(atboat ?BO - BOAT ?L2 - LOCATION)
 )
 
-( :ACTION JOINT-ACTIVITY-SAIL
+( :ACTION ACTIVITY-SAIL
   :agent ?AGENT0 - AGENT
-  :PARAMETERS ( ?AGENT1 - AGENT ?BOAT2 - BOAT ?LOCATION3 - LOCATION ?LOCATION4 - LOCATION )
+  :PARAMETERS (?AGENT1 - AGENT ?AGENT4 - AGENT ?AGENT3 - AGENT ?BOAT2 - BOAT ?LOCATION3 - LOCATION ?LOCATION4 - LOCATION )
   :PRECONDITION
 	( AND
 		( AT ?AGENT0 ?LOCATION3 )
-		( AT ?BOAT2 ?LOCATION4 )
+		( atboat ?BOAT2 ?LOCATION3 )
 	)
   :EFFECT
 	( AND
 		( AT ?AGENT0 ?LOCATION4 )
 		( Not ( AT ?AGENT0 ?LOCATION3 ) )
-		( AT ?BOAT2 ?LOCATION4 )
-		( not ( AT ?BOAT2 ?LOCATION3 ) )
+		( atboat ?BOAT2 ?LOCATION4 )
+		( not ( atboat ?BOAT2 ?LOCATION3 ) )
 	)
 )
 
@@ -50,7 +50,10 @@
 (:concurrency-constraint v1
 	:parameters (?d - boat)
 	:bounds (1 2)
-	:actions ( (JOINT-ACTIVITY-SAIL 2) )
+	:actions ( 
+				( ACTIVITY-SAIL 4 ) 
+				;( ROW 1 )	
+			)
 )
 
 )

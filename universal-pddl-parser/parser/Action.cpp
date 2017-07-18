@@ -6,14 +6,19 @@ namespace parser { namespace pddl {
 void Action::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::string > & ts, const Domain & d ) const 
 {
 	if ( name.find("ACTIVITY") != std::string::npos ) {
-		bool token = true;
 		s << "( :ACTION " << name << "\n";
 
 		s << "  :PARAMETERS ";
-
-		TokenStruct< std::string > astruct;		
-
-		printParams( 0, s, astruct, d, token);
+		TokenStruct< std::string > astruct;
+		
+		/* changes for printing the parameters */
+		unsigned noOfAgents = 0;
+		for ( unsigned i = 0; i < params.size(); ++i ) {
+			if ( d.types[params[i]]->getName().find("AGENT") != std::string::npos )
+				if ( ! ( d.types[params[i]]->getName().find("AGENT-") != std::string::npos ) )
+					noOfAgents++;
+		}
+		printParams( 0, s, astruct, d, noOfAgents);
 		
 		s << "  :PRECONDITION\n";
 		if ( pre ) pre->PDDLPrint( s, 1, astruct, d );
@@ -26,8 +31,7 @@ void Action::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< st
 		s << "\n";
 
 		s << ")\n";
-	}
-	
+	}	
 	else {
 		s << "( :ACTION " << name << "\n";
 

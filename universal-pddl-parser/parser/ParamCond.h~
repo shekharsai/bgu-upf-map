@@ -33,7 +33,7 @@ public:
 	}
 
 	void printParams( unsigned first, std::ostream & s, TokenStruct< std::string > & ts, const Domain & d ) const;
-	void printParams( unsigned first, std::ostream & s, TokenStruct< std::string > & ts, const Domain & d, bool ) const;
+	void printParams( unsigned first, std::ostream & s, TokenStruct< std::string > & ts, const Domain & d, unsigned ) const;
 };
 
 typedef std::vector< ParamCond * > ParamCondVec;

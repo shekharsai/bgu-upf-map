@@ -371,7 +371,7 @@ public:
 			action->params.push_back( types.index( params[i] ) );
 		action->pre = new And;
 		action->eff = new And;
-		actions.insert( action );
+		actions.insert( action );		
 		return action;
 	}
 	
