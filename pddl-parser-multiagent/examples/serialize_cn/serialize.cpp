@@ -12,6 +12,7 @@ This is a better place to write some important issues.
 	extend though. Also, it splits blindly, which means, to have correct splits of a Joint activity,
 	make sure that there is no predicates specifying other agents in the eff or preconditions. 
 	Little more work is needed to resolve this limitation. 
+	5. //TODO During translation an action cannot be public or private. So, remove IN-JOINT from the preconditions in the Shlomi's code.
 **/
 
 // To check for memory leaks:
@@ -30,15 +31,43 @@ std::set< std::vector < unsigned > > probVector;
 
 typedef std::map< unsigned, std::vector< int > > VecMap;
 
+// step-2 that is finding conflicting actions e.g. (A1->a,!b, and A2->c,b)
+std::map < std::string, std::vector< std::string > > ambiguousActions( const parser::multiagent::NetworkNode * n) {
+	std::map < std::string, std::vector < std::string > > listOfAmbiguousActions;
+	for ( unsigned i = 0; i < n->templates.size(); ++i ) {			
+		Action * legal_a = d->actions[d->actions.index( n->templates[i]->name )];
+		bool ambiguous = false;
+		std::vector < std::string > ambActions;		
+		for ( unsigned j = 0; j < n->templates.size(); j++) {		
+			if (i!=j) 
+			{			
+				Action * probably_legal_a = d->actions[d->actions.index( n->templates[j]->name )];			
+				for ( unsigned k = 0; k < legal_a->addEffects().size(); ++k ) 			
+					for ( unsigned l = 0; l < probably_legal_a->deleteEffects().size(); ++l ) 
+						if ( ( (dynamic_cast< Ground * > (legal_a->addEffects()[k]))->name == 
+								(dynamic_cast< Ground * > (probably_legal_a->deleteEffects()[l]))->name) ) { 
+							ambiguous = true; 	
+							break;												
+						}													
+				if (ambiguous) 
+				{
+					ambActions.push_back( (std::string) probably_legal_a->name );
+				}
+			}
+		}
+		listOfAmbiguousActions[ (std::string) legal_a->name ] = ambActions;		
+	}		
+	return listOfAmbiguousActions;
+}
+
 // updated by shashank
 bool deletes( const Ground * ground, const parser::multiagent::NetworkNode * n, IntVec impParams ) {
-	for ( unsigned i = 0; i < n->templates.size(); ++i ) {		
-		Action * a = d->actions[d->actions.index( n->templates[i]->name )];
+	for ( unsigned i = 0; i < n->templates.size(); ++i ) {			
+		Action * a = d->actions[d->actions.index( n->templates[i]->name )];		
 		CondVec pres = a->precons();		
 		for ( unsigned j = 0; j < pres.size(); ++j ) {
 			Ground * g = dynamic_cast< Ground * >( pres[j] );
-			if ( g && 
-				 g->name == ground->name &&
+			if ( g && g->name == ground->name &&
 			     std::find( g->params.begin(), g->params.end(), impParams[0] ) != g->params.end() )  			    
 				return true;
 		}
@@ -46,7 +75,7 @@ bool deletes( const Ground * ground, const parser::multiagent::NetworkNode * n, 
 	return false;
 }
 
-// returns true if at least one instance of "POS-" or "NEG-" added
+// returns true if at least one instance of "POS-" or "NEG-" gets added
 bool addEff( Domain * cd, Action * a, Condition * c ) {
 	Not * n = dynamic_cast< Not * >( c );
 	Ground * g = dynamic_cast< Ground * >( c );
@@ -90,19 +119,27 @@ int main( int argc, char *argv[] ) {
 	d = new parser::multiagent::MultiagentDomain( argv[1] );
 	ins = new Instance( *d, argv[2] );
 	
+	// added by shashank, for identifying problematic action pairs
+	std::vector< std::map< std::string, std::map< std::string, std::vector< std::string > > > > pairOfProbActions;
+	for ( unsigned i = 0; i < d->nodes.size(); ++i ) {
+	 	std::map< std::string, std::map < std::string, std::vector < std::string > > > pair;	
+		pair[d->nodes[i]->name] = ambiguousActions( d->nodes[i] );	
+		pairOfProbActions.push_back( pair );	
+	}
+	
 	// Identify problematic fluents (preconditions deleted by agents) (edited by shashank) 	
 	for ( unsigned i = 0; i < d->nodes.size(); ++i ) {
 		for ( unsigned j = 0; d->nodes[i]->upper > 1 && j < d->nodes[i]->templates.size(); ++j ) 
 		{	
-			// in future impParams may contain multiple values TODO
-			IntVec impParams =  d->nodes[i]->templates[i]->params; 
+			// In future impParams may contain multiple entries // TODO
+			IntVec impParams;
+			impParams = d->nodes[i]->templates[j]->params; 			
 			Action * a = d->actions[ d->actions.index( d->nodes[i]->templates[j]->name ) ];
 			GroundVec dels = a->deleteEffects();	
 			GroundVec added = a->addEffects();	
 			unsigned choice = 1;
 			for ( unsigned k = 0; k < dels.size(); ++k ) 
-			{
-				std::cout << impParams[0] << "\t" <<  dels[k]->params << "\n";
+			{				
 				bool choiceA = 
 						std::find( dels[k]->params.begin(), dels[k]->params.end(), impParams[0] ) != dels[k]->params.end();
 				bool choiceB = deletes( dels[k], d->nodes[i], impParams );
@@ -111,8 +148,7 @@ int main( int argc, char *argv[] ) {
 				if ( choiceB )
 					for ( unsigned t = 0; t < added.size(); t++ )
 						if ( added[t]->name == dels[k]->name )
-							choiceC = true; // if only deleted, and not added proposition.
-				// std::cout << "choices " << choiceA << choiceB << choiceC << "\n";
+							choiceC = true; // if only gets deleted, but does not get added any propositions.
 				if ( choiceA && choiceB && choiceC ) { 	
 					choice = 1;	
 					probVector.insert( { (unsigned) d->preds.index( dels[k]->name ), choice } );				
@@ -124,7 +160,7 @@ int main( int argc, char *argv[] ) {
 			}
 		}		
 	}
-
+	
 	VecMap ccs;
 	for ( unsigned i = 0; i < d->mf.size(); ++i )
 		ccs[d->mf[i]].push_back( i );
@@ -162,7 +198,7 @@ int main( int argc, char *argv[] ) {
 			}
 		}
 	}		
-	// cd->createPredicate( "ATEMP" );
+	
 	cd->createPredicate( "TAKEN", StringVec( 1, "AGENT" ) );
 	cd->createPredicate( "CONSEC", StringVec( 2, "AGENT-COUNT" ) );
 	
@@ -182,11 +218,10 @@ int main( int argc, char *argv[] ) {
 	cd->createPredicate( "AFREE" );
 	cd->createPredicate( "IN-JOINT" ); // in case if a joint activity can also participate
 	
-	// Add actions
+	// generate the updated actions
 	for ( VecMap::iterator i = ccs.begin(); i != ccs.end(); ++i ) {
 		std::set< unsigned > visited;
-		for ( unsigned j = 0; j < i->second.size(); ++j ) 
-		{			
+		for ( unsigned j = 0; j < i->second.size(); ++j ) {			
 			int x = i->second[j];
 			visited.insert( x );
 
@@ -240,31 +275,21 @@ int main( int argc, char *argv[] ) {
 				cd->addEff( 0, name, "USED-" + d->nodes[x]->name );  
 			}
 			
+			// the actual action list starts from here
 			bool concurEffs = 0;
-			for ( unsigned k = 0; k < d->nodes[x]->templates.size(); ++k ) 
-			{
+			for ( unsigned k = 0; k < d->nodes[x]->templates.size(); ++k ) {			
 				int action = d->actions.index( d->nodes[x]->templates[k]->name );
 				std::string name = d->actions[action]->name;
 				
-				// TODO // the below is for splitting a joint activity
+				// TODO // Code below is for splitting a joint activity
 				if ( name.find("ACTIVITY") != std::string::npos ) 
-				{
-					// once we hit an activity, we need to split it to multiple single agent actions
-					for ( unsigned i = 0; i < d->nodes.size(); ++i ) {
-						VecMap::iterator j = ccs.find( d->mf[i] );
-						if ( ( name.find("ACTIVITY") != std::string::npos ) && 
-											( j->second.size() > 1 || d->nodes[i]->upper > 1 ) );
-							// cd->createPredicate( "ACTIVE-" + name, d->typeList( d->nodes[i] ) );
-					}
-					
+				{										
 					// creating the start part of the Joint Activity									
 					const std::string start_JA = name + "-1";
 					StringVec ja_type_list = d->typeList( d->actions[action] );
-					// StringVec ja_new_type_list;
 					int noOfAgents = 0;
 					 
 					// updated parameter list : one of the ways to do it
-					// ja_new_type_list.push_back("AGENT");
 					for ( unsigned p = 0; p < ja_type_list.size(); p++ )
 						if ( ja_type_list[p] == "AGENT" )
 							noOfAgents++;					
@@ -300,11 +325,26 @@ int main( int argc, char *argv[] ) {
 					
 					// add new preconditions
 					if ( i->second.size() > 1 || d->nodes[x]->upper > 1 ) {
+						// ecai 2014
 						cd->addPre( 1, start_JA, "IN-JOINT" );	
 						cd->addPre( 0, start_JA, "ACTIVE-" + d->nodes[x]->name, d->nodes[x]->templates[k]->params );						
 						cd->addPre( 1, start_JA, "TAKEN", IntVec( 1, 0 ) );
 						cd->addPre( 0, start_JA, "COUNT-" + d->nodes[x]->name, incvec( size, size + 1 ) );
-						cd->addPre( 0, start_JA, "CONSEC", incvec( size, size + 2 ) );																
+						cd->addPre( 0, start_JA, "CONSEC", incvec( size, size + 2 ) );
+						
+						// additional, as per step 2 pairOfProbActions
+						for (unsigned t = 0; t < pairOfProbActions.size(); t++) {
+							std::map < std::string, std::vector < std::string > > > mappedProbActions;
+							mappedProbActions = pairOfProbActions[t][d->nodes[x]->name];							
+						 	std::vector< std::string > listAction = mappedProbActions[x][(std::string) name];
+						 	if ( listAction.size() > 0 ) {
+						 		for (unsigned y = 0; y < listAction.size(); y++) {	
+						 			cd->createPredicate( "P-"+listAction[y] );						
+						 			cd->addPre( 1, start_JA, "P-"+listAction[y] );
+						 		}
+						 	}
+						 	break;
+						}							
 					}
 					else 
 						cd->addPre( 0, start_JA, "AFREE" );
@@ -317,9 +357,12 @@ int main( int argc, char *argv[] ) {
 						cd->addEff( 0, start_JA, "IN-JOINT" );
 						std::stringstream convert; convert << 2;
 						cd->addEff( 0, start_JA, "NEXT-"+ name + "-" + convert.str());		
+						// step-2
+						cd->createPredicate( "P-" + name );	
+						cd->addEff( 0, start_JA, "P-" + name );
 					}	
 					
-					/*---------------------- Intermediate Actions ------------------------*/
+					/*--------- Intermediate Actions ----------*/
 					for ( unsigned agent = 2; agent < (unsigned) noOfAgents; agent++ ) {
 						std::stringstream convert;
 						convert << agent;
@@ -447,11 +490,27 @@ int main( int argc, char *argv[] ) {
 
 					// add new preconditions
 					if ( i->second.size() > 1 || d->nodes[x]->upper > 1 ) {
-						cd->addPre( 1, name, "IN-JOINT" );
+						cd->addPre( 1, name, "IN-JOINT" ); 
 						cd->addPre( 0, name, "ACTIVE-" + d->nodes[x]->name, d->nodes[x]->templates[k]->params );
 						cd->addPre( 1, name, "TAKEN", IntVec( 1, 0 ) );
 						cd->addPre( 0, name, "COUNT-" + d->nodes[x]->name, incvec( size, size + 1 ) );
 						cd->addPre( 0, name, "CONSEC", incvec( size, size + 2 ) );
+						
+						// additional, as per step 2 pairOfProbActions
+						/*
+						std::vector< std::map < std::string, std::vector < std::string > > > mappedProbActions;												
+						mappedProbActions = pairOfProbActions[d->nodes[x]->name];
+						for (unsigned x = 0; x < mappedProbActions.size(); x++) {							
+						 	std::vector< std::string > listAction = mappedProbActions[x][(std::string) name];
+						 	if ( listAction.size() > 0 ) {
+						 		for (unsigned y = 0; y < listAction.size(); y++) {	
+						 			cd->createPredicate( "P-"+listAction[y] );						
+						 			cd->addPre( 1, name, "P-"+listAction[y] );
+						 		}
+						 	}
+						 	break;
+						}
+						*/							
 					}
 					else cd->addPre( 0, name, "AFREE" );
 
@@ -460,11 +519,14 @@ int main( int argc, char *argv[] ) {
 						cd->addEff( 0, name, "TAKEN", IntVec( 1, 0 ) );
 						cd->addEff( 1, name, "COUNT-" + d->nodes[x]->name, incvec( size, size + 1 ) );
 						cd->addEff( 0, name, "COUNT-" + d->nodes[x]->name, incvec( size + 1, size + 2 ) );
+						// step-2
+						cd->createPredicate( "P-" + name );	
+						cd->addEff( 0, name, "P-" + name );
 					}
 				}
 			}
 		
-			// A lot of changes needed fro the upf version for our END- version
+			// A lot of changes needed from the upf version for our END- version
 			if ( i->second.size() > 1 || d->nodes[x]->upper > 1 ) {
 				std::string name = "END-" + d->nodes[x]->name;
 				unsigned size = d->nodes[x]->params.size();
@@ -497,7 +559,7 @@ int main( int argc, char *argv[] ) {
 						std::vector< unsigned > deleteChoices  = ( std::vector< unsigned > ) *it;				
 						unsigned i = (unsigned) deleteChoices[0];
 						unsigned choice = (unsigned) deleteChoices[1];
-						std::cout << " i = "<< i << " choice "  << choice <<"\n";
+						
 						Forall * f1 = new Forall;
 						And * andFormula = new And;							
 						When * ss = new When;
@@ -510,8 +572,8 @@ int main( int argc, char *argv[] ) {
 									vec.push_back(d->typeList( d->preds[i] )[p]);							
 								}
 							}
-						}	
-						std::cout << " vec " << vec << "\n";
+						}
+						
 						IntVec integerVec;
 						f1->params = cd->convertTypes( vec );
 						unsigned f1Size = f1->params.size();
@@ -523,7 +585,7 @@ int main( int argc, char *argv[] ) {
 						StringVec vector = d->typeList( d->preds[i] );
 						if ( choice == 1 ) {			
 							ss->pars = new Ground ( cd->preds.get( "POS-" + d->preds[i]->name ), integerVec );							
-							a1->add( new Ground ( cd->preds.get( d->preds[i]->name ), {0,2,3} ) );
+							a1->add( new Ground ( cd->preds.get( d->preds[i]->name ), integerVec ) );
 							a1->add( new Not ( new Ground( cd->preds.get( "POS-" + d->preds[i]->name ), integerVec ) ) );
 							ss->cond = a1;							
 							andFormula->add(ss);	

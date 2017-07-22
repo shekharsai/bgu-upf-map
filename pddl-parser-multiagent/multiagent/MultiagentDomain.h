@@ -24,9 +24,9 @@ public:
 	bool multiagent, unfact, fact, net; // whether domain is multiagent and unfactored/factored/networked
 	
 	pddl::TokenStruct< NetworkNode * > nodes; // nodes of concurrency network
-	PairVec edges;                            // edges of concurrency network
+	PairVec edges;	// edges of concurrency network
 
-	UnsignedVec mf;                     // merge-find for connected components
+	UnsignedVec mf; // merge-find for connected components
 
 	MultiagentDomain() : Base() {}
 

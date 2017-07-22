@@ -2,7 +2,7 @@
 
 (:requirements :typing :concurrency-network :multi-agent)
 
-(:types agent location door bridge boat switch)
+(:types agent boat location door bridge switch)
 
 (:predicates
 	(at ?a - agent ?x - location)
@@ -11,24 +11,24 @@
 	(has-door ?d - door ?x - location ?y - location)
 	(has-boat ?b - boat ?x - location ?y - location)
 	(has-bridge ?b - bridge ?x - location ?y - location)	
-	(NEXT ?A2 - AGENT)	
-	(atboat ?BO - BOAT ?L2 - LOCATION)
+	(next ?a - agent)	
+	(at ?b - boat ?l - location)
 )
 
 ( :ACTION ACTIVITY-SAIL
-  :agent ?AGENT0 - AGENT
-  :PARAMETERS (?AGENT1 - AGENT ?AGENT4 - AGENT ?AGENT3 - AGENT ?BOAT2 - BOAT ?LOCATION3 - LOCATION ?LOCATION4 - LOCATION )
+  :agent ?agent0 - agent
+  :PARAMETERS (?agent1 - AGENT ?BOAT2 - BOAT ?LOCATION3 - LOCATION ?LOCATION4 - LOCATION )
   :PRECONDITION
 	( AND
 		( AT ?AGENT0 ?LOCATION3 )
-		( atboat ?BOAT2 ?LOCATION3 )
+		( at ?BOAT2 ?LOCATION3 )
 	)
   :EFFECT
 	( AND
 		( AT ?AGENT0 ?LOCATION4 )
-		( Not ( AT ?AGENT0 ?LOCATION3 ) )
-		( atboat ?BOAT2 ?LOCATION4 )
-		( not ( atboat ?BOAT2 ?LOCATION3 ) )
+		( not ( AT ?AGENT0 ?LOCATION3 ) )		
+		( not ( at ?BOAT2 ?LOCATION3 ) )
+		( at ?BOAT2 ?LOCATION4 )
 	)
 )
 
@@ -47,13 +47,34 @@
 		)
 )
 
+(:action cross 
+	:agent ?a - agent
+	:parameters (?b - bridge ?x - location ?y - location) 
+	:precondition (and
+					(at ?a ?x)
+					(has-bridge ?b ?x ?y) 
+			)
+	:effect	(and 
+					(at ?a ?y)
+					(not (at ?a ?x))
+					(not (has-bridge ?b ?x ?y))
+					(not (has-bridge ?b ?y ?x))
+			 )
+)
+
 (:concurrency-constraint v1
 	:parameters (?d - boat)
-	:bounds (1 2)
+	:bounds (1 1)
 	:actions ( 
-				( ACTIVITY-SAIL 4 ) 
-				;( ROW 1 )	
+				( ACTIVITY-SAIL 2 ) 
+				( ROW 1 )	
 			)
 )
 
+(:concurrency-constraint v2
+	:parameters (?b - bridge)
+	:bounds (1 1)
+	:actions ( (cross 1) )
+)
+	
 )
