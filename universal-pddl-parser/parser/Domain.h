@@ -499,6 +499,11 @@ public:
 		return types.get( type )->parseConstant( name ).second;
 	}
 
+	// returns predicates
+	TokenStruct< Lifted * > listOfPredicates() {
+		return preds;
+	}
+	
 	//! Prints a PDDL representation of the object to the given stream.
 	friend std::ostream& operator<<(std::ostream &os, const Domain& o) { return o.print(os); }
 	virtual std::ostream& print(std::ostream& os) const {
