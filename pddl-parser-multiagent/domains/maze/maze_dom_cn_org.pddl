@@ -103,10 +103,23 @@
 	:effect	(and 
 					(at ?a ?y)
 					(not (at ?a ?x))
-					(not (has-bridge ?b ?x ?y))
-					(not (has-bridge ?b ?y ?x))
+					(not (has-bridge ?b ?x ?y))					
 			 )
 )
+
+(:action build 
+	:agent ?a - agent
+	:parameters (?b - bridge ?x - location ?y - location) 
+	:precondition (and
+					(at ?a ?x) 
+			)
+	:effect	(and 
+					(at ?a ?y)
+					(not (at ?a ?x))
+					(has-bridge ?b ?x ?y)
+			 )
+)
+
 
 (:action pushswitch
 	:agent ?a - agent

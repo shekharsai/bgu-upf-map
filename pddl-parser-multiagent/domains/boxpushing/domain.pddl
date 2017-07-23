@@ -64,8 +64,6 @@
 	  		)
 	  )
 	  
-	  
-
 
 (:concurrency-constraint v2
     :parameters (?box - box) 
