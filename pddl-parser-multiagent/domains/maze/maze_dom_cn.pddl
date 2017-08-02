@@ -13,6 +13,12 @@
 	(has-bridge ?b - bridge ?x - location ?y - location)	
 	(next ?a - agent)	
 	(at ?b - boat ?l - location)
+	
+	(:private
+		( loocha-pr ?drv - agent )
+		( ghatiya-pr ?drv - agent )  
+		( kutta-pr ?drv - agent ) 
+	)
 )
 
 ( :ACTION ACTIVITY-SAIL
@@ -58,23 +64,29 @@
 					(at ?a ?y)
 					(not (at ?a ?x))
 					(not (has-bridge ?b ?x ?y))
-					(not (has-bridge ?b ?y ?x))
+					(has-bridge ?b ?y ?x))
 			 )
 )
 
-(:concurrency-constraint v1
-	:parameters (?d - boat)
-	:bounds (1 1)
-	:actions ( 
-				( ACTIVITY-SAIL 2 ) 
-				( ROW 1 )	
+(:action build 
+	:agent ?a - agent
+	:parameters (?b - bridge ?x - location ?y - location) 
+	:precondition (and
+					(at ?a ?x)					
 			)
+	:effect	(and 
+					(at ?a ?y)
+					(not (at ?a ?x))
+					;(has-bridge ?b ?x ?y)
+					;( not (has-bridge ?b ?y ?x))
+			 )
 )
+
 
 (:concurrency-constraint v2
 	:parameters (?b - bridge)
-	:bounds (1 1)
-	:actions ( (cross 1) )
+	:bounds (1 2)
+	:actions ( (cross 1) (build 1) )
 )
 	
 )

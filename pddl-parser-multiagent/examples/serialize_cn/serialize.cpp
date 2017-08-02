@@ -1,4 +1,5 @@
-/** Some Important Issues
+/** 
+				Some Important Issues
 This is a better place to write some important issues.
 	1. Have all predicates with different names. Why?
 		(a) As POS- NEG- specifically been put using only predicate names.
@@ -12,7 +13,7 @@ This is a better place to write some important issues.
 	extend though. Also, it splits blindly, which means, to have correct splits of a Joint activity,
 	make sure that there is no predicates specifying other agents in the eff or preconditions. 
 	Little more work is needed to resolve this limitation. 
-	5. //TODO During translation an action cannot be public or private. So, remove IN-JOINT from the preconditions in the Shlomi's code.
+	5. TODO During translation an action cannot be public or private. So, remove IN-JOINT from the preconditions in the Shlomi's code.
 **/
 
 // To check for memory leaks:
@@ -31,30 +32,48 @@ std::set< std::vector < unsigned > > probVector;
 
 typedef std::map< unsigned, std::vector< int > > VecMap;
 
+bool doTheyTargetTheSameObjectSubset( IntVec network, IntVec legal, IntVec illegal ) {
+	bool decision = false;
+	unsigned count = 0;
+	for( int &i : network )
+		for( int &j : legal )
+			if( i == j )
+				for( int &k : illegal )
+					if( i == k )
+						count++;
+	if( count == network.size() )
+		decision = true;	
+	return decision;
+}
+
 // step-2 that is finding conflicting actions e.g. (A1->a,!b, and A2->c,b)
-std::map < std::string, std::vector< std::string > > ambiguousActions( const parser::multiagent::NetworkNode * n) {
+std::map < std::string, std::vector< std::string > > ambiguousActions( const parser::multiagent::NetworkNode * n, const Domain & cd) {
 	std::map < std::string, std::vector < std::string > > listOfAmbiguousActions;
 	for ( unsigned i = 0; i < n->templates.size(); ++i ) {			
 		Action * legal_a = d->actions[d->actions.index( n->templates[i]->name )];
 		bool ambiguous = false;
 		std::vector < std::string > ambActions;		
-		for ( unsigned j = 0; j < n->templates.size(); j++) {		
-			if (i!=j) 
-			{			
+		for ( unsigned j = 0; j < n->templates.size(); j++)	
+			if (i!=j) {			
 				Action * probably_legal_a = d->actions[d->actions.index( n->templates[j]->name )];			
 				for ( unsigned k = 0; k < legal_a->addEffects().size(); ++k ) 			
 					for ( unsigned l = 0; l < probably_legal_a->deleteEffects().size(); ++l ) 
+					{
+						std::cout << "legal_a->addEffects()[k] " << legal_a->addEffects()[k]->params <<"\n";	
 						if ( ( (dynamic_cast< Ground * > (legal_a->addEffects()[k]))->name == 
 								(dynamic_cast< Ground * > (probably_legal_a->deleteEffects()[l]))->name) ) { 
-							ambiguous = true; 	
-							break;												
-						}													
+							{	
+								ambiguous = doTheyTargetTheSameObjectSubset (
+														n->templates[0]->params,
+														legal_a->addEffects()[k]->params,
+														probably_legal_a->deleteEffects()[l]->params );
+								break;												
+							}
+						}
+					}													
 				if (ambiguous) 
-				{
 					ambActions.push_back( (std::string) probably_legal_a->name );
-				}
-			}
-		}
+			}		
 		listOfAmbiguousActions[ (std::string) legal_a->name ] = ambActions;		
 	}		
 	return listOfAmbiguousActions;
@@ -75,7 +94,7 @@ bool deletes( const Ground * ground, const parser::multiagent::NetworkNode * n, 
 	return false;
 }
 
-// returns true if at least one instance of "POS-" or "NEG-" gets added
+// returns true if (>=1) instances of "POS-" or "NEG-" get(s) added, related to the constrained object
 bool addEff( Domain * cd, Action * a, Condition * c ) {
 	Not * n = dynamic_cast< Not * >( c );
 	Ground * g = dynamic_cast< Ground * >( c );
@@ -123,7 +142,7 @@ int main( int argc, char *argv[] ) {
 	std::vector< std::map< std::string, std::map< std::string, std::vector< std::string >>> > pairOfProbActions;
 	for ( unsigned i = 0; i < d->nodes.size(); ++i ) {
 	 	std::map< std::string, std::map < std::string, std::vector < std::string > > > pair;	
-		pair[d->nodes[i]->name] = ambiguousActions( d->nodes[i] );	
+		pair[d->nodes[i]->name] = ambiguousActions( d->nodes[i], *d);	
 		pairOfProbActions.push_back( pair );	
 	}
 	
@@ -183,7 +202,7 @@ int main( int argc, char *argv[] ) {
 
 	// Add predicates (a huge set of bugs removed by shashank) 
 	for ( unsigned i = 0; i < d->preds.size(); ++i ) {
-		cd->createPredicate( d->preds[i]->name, d->typeList( d->preds[i] ) );
+		cd->createPredicate( d->preds[i]->name, d->typeList( d->preds[i] ) );		
 		std::set< std::vector < unsigned > >::iterator it;
 		for ( it = probVector.begin(); it != probVector.end(); ++it ) 
 		{ 
@@ -666,15 +685,15 @@ int main( int argc, char *argv[] ) {
 	Instance * cins = new Instance( *cd );
 	cins->name = ins->name;
 
-	// add objects
-	StringVec counts( 1, "ACOUNT-0" );
+	// add objects	
+	StringVec counts( 1, "ACOUNT-0" );	
 	for ( unsigned i = 1; i <= nagents; ++i ) {
 		std::stringstream ss;
 		ss << "ACOUNT-" << i;
 		counts.push_back( ss.str() );
 		cins->addObject( counts[i], "AGENT-COUNT" );
 	}
-
+	
 	// create initial state
 	for ( unsigned i = 0; i < ins->init.size(); ++i )
 		if ( d->preds.index( ins->init[i]->name ) >= 0 )

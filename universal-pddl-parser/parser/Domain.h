@@ -235,7 +235,7 @@ public:
 				f.assert_token( ":PRIVATE" );
 				f.parseTypedList( true, types, "(" );
 
-				// CURRENT HACK: TOTALLY IGNORE PRIVATE !!!
+				// CURRENT HACK: TOTALLY IGNORES PRIVATE !!!
 				--f.c;
 				parsePredicates( f );
 			}
@@ -533,9 +533,21 @@ public:
 
 		os << "( :PREDICATES\n";
 		for ( unsigned i = 0; i < preds.size(); ++i ) {
-			preds[i]->PDDLPrint( os, 1, TokenStruct< std::string >(), *this );
-			os << "\n";
+			if( (preds[i]->name).find("-PR") == std::string::npos) {
+				preds[i]->PDDLPrint( os, 1, TokenStruct< std::string >(), *this );
+				os << "\n";
+			}
+		}		
+		tabindent( os, 1 );
+		os << "( :PRIVATE\n";
+		for ( unsigned i = 0; i < preds.size(); ++i ) {
+			if( (preds[i]->name).find("-PR") != std::string::npos) {
+				preds[i]->PDDLPrint( os, 2, TokenStruct< std::string >(), *this );
+				os << "\n";
+			}
 		}
+		tabindent( os, 1 );
+		os << ")\n";		
 		os << ")\n";
 
 		if ( funcs.size() ) {

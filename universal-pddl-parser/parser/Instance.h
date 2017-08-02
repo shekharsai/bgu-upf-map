@@ -27,25 +27,31 @@ public:
 			delete goal[i];
 	}
 
-	void parse( const std::string &s) {
+	void parse( const std::string &s) {		
 		Filereader f( s );
 		name = f.parseName( "PROBLEM" );
-
-		if ( DOMAIN_DEBUG ) std::cout << name << "\n";
-    
+		if ( DOMAIN_DEBUG ) 
+			std::cout << name << "\n";
 		for ( ; f.getChar() != ')'; f.next() ) {
 			f.assert_token( "(" );
 			f.assert_token( ":" );
 			std::string t = f.getToken();
 
-			if ( DOMAIN_DEBUG ) std::cout << t << "\n";
-
-			if ( t == "DOMAIN" ) parseDomain( f );
-			else if ( t == "OBJECTS" ) parseObjects( f );
-			else if ( t == "INIT" ) parseInit( f );
-			else if ( t == "GOAL" ) parseGoal( f );
-			else if ( t == "METRIC" ) parseMetric( f );
-			else f.tokenExit( t );
+			if ( DOMAIN_DEBUG ) 
+				std::cout << t << "\n";			
+			
+			if ( t == "DOMAIN" ) 
+				parseDomain( f );
+			else if ( t == "OBJECTS" ) 				
+				parseObjects( f );
+			else if ( t == "INIT" ) 
+				parseInit( f );
+			else if ( t == "GOAL" ) 
+				parseGoal( f );
+			else if ( t == "METRIC" ) 
+				parseMetric( f );
+			else 
+				f.tokenExit( t );
 		}
 	}
 
@@ -57,10 +63,10 @@ public:
 		f.assert_token( ")" );
 	}
 
-	void parseObjects( Filereader & f ) {
-		TokenStruct< std::string > ts = f.parseTypedList( true, d.types );
-
-		for ( unsigned i = 0; i < ts.size(); ++i ) {
+	void parsePrivateObjects( Filereader & f ) {	
+		// std::cout << "\nparsing privates";			
+		TokenStruct< std::string > ts = f.parseTypedList( true, d.types );		
+		for ( unsigned i = 0; i < ts.size(); ++i ) {			
 			Type * type = d.getType( ts.types[i] );
 			std::pair< bool, unsigned > pair = type->parseObject( ts[i] );
 			if ( pair.first == false )
@@ -74,6 +80,47 @@ public:
 				std::cout << " " << d.types[i]->objects[j];
 			std::cout << "\n";
 		}
+	}
+	
+	void parseObjects( Filereader & f ) {
+		// Need to work on :private
+		TokenStruct< std::string > ts = f.parseTypedList( true, d.types );		
+		for ( unsigned i = 0; i < ts.size(); ++i ) {			
+			Type * type = d.getType( ts.types[i] );
+			std::pair< bool, unsigned > pair = type->parseObject( ts[i] );
+			if ( pair.first == false )
+				type->objects.insert( ts[i] );
+		}
+
+		for ( unsigned i = 0; DOMAIN_DEBUG && i < d.types.size(); ++i ) {
+			std::cout << " ";
+			if ( d.typed ) std::cout << " " << d.types[i] << ":";
+			for ( unsigned j = 0; j < d.types[i]->objects.size(); ++j )
+				std::cout << " " << d.types[i]->objects[j];
+			std::cout << "\n";
+		}	
+		/*
+		std::cout << "f.getChar() obj \t" << f.getChar() <<" yes\n";
+		for ( f.next(); f.getChar() != ')'; f.next() ) {
+			if ( f.getChar() == '(' ) {					
+			std::cout << "\nf.getChar() in \t" << f.getChar() <<" no\n";
+			f.assert_token( "(" );
+			f.assert_token( ":" );	
+			std::string t1 = f.getToken();				
+			std::cout << "\nf.getChar() in \t" << f.getChar() <<" now\n";
+			// f.assert_token( "PRIVATE" );
+			std::cout << "sub-token\t" << t1 << "\n";
+			//std::string t1 = f.getToken();
+			// --f.c;
+			std::cout << "\nf.getChar() in \t" << f.getChar() <<" now too\n";
+				parseObjects( f );
+			//if ( t1 == "PRIVATE" ) 
+			//--f.c;
+			}
+			else
+				parseObjects( f );
+		}
+		*/
 	}
 
 
@@ -198,13 +245,41 @@ public:
 
 		stream << "( :OBJECTS\n";
 		for ( unsigned i = 0; i < d.types.size(); ++i )
-			if ( d.types[i]->objects.size() ) {
-				stream << "\t";
-				for ( unsigned j = 0; j < d.types[i]->objects.size(); ++j )
-					stream << d.types[i]->objects[j] << " ";
-				if ( d.typed ) stream << "- " << d.types[i]->name;
-				stream << "\n";
+			if ( d.types[i]->objects.size() ) {				
+				bool ifNotPrivate = false;
+				int count = 0;
+				for ( unsigned j = 0; j < d.types[i]->objects.size(); ++j ) { 
+					if ( d.types[i]->objects[j].find( "-PR" ) == std::string::npos) {
+						if ( ++count == 1 )
+							stream << "\t";						
+						stream << d.types[i]->objects[j] << " ";
+						ifNotPrivate = true;
+					}
+				}
+				if ( d.typed && ifNotPrivate ) {
+					stream << "- " << d.types[i]->name;
+					stream << "\n";
+				}
 			}
+		stream << "\t( :PRIVATE\n";
+		for ( unsigned i = 0; i < d.types.size(); ++i )
+			if ( d.types[i]->objects.size() ) {				
+				bool ifPrivate = false;		
+				int count = 0;		
+				for ( unsigned j = 0; j < d.types[i]->objects.size(); ++j ) {					
+					if ( d.types[i]->objects[j].find("-PR") != std::string::npos) {						
+						if ( ++count == 1 )
+							stream << "\t\t";
+						stream << d.types[i]->objects[j].substr( 0, d.types[i]->objects[j].size() - 3 ) << " ";
+						ifPrivate = true;
+					}
+				}
+				if ( d.typed && ifPrivate ) {
+					stream << "- " << d.types[i]->name;
+					stream << "\n";
+				}
+			}
+		stream << "\t)\n";
 		stream << ")\n";
 
 		stream << "( :INIT\n";

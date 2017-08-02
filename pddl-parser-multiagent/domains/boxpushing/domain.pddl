@@ -1,4 +1,6 @@
-;; Box-Pushing domain
+;;
+;; 			Box-Pushing domain
+;
 (define (domain boxpushing)
 	(:requirements :typing :concurrency-network :multi-agent :factored-privacy) 
   	(:types		

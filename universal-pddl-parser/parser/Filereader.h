@@ -71,7 +71,7 @@ public:
 	}
 
 	// get next non-ignored character
-	void next() {
+	void next() {		
 		for ( ; c < s.size() && ignore( s[c] ); ++c );
 		while ( c == s.size() || s[c] == ';' ) {
 			++r;
