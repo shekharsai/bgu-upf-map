@@ -46,8 +46,8 @@ bool doTheyTargetTheSameObjectSubset( IntVec network, IntVec legal, IntVec illeg
 	return decision;
 }
 
-// step-2 that is finding conflicting actions e.g. (A1->a,!b, and A2->c,b)
 std::map < std::string, std::vector< std::string > > ambiguousActions( const parser::multiagent::NetworkNode * n, const Domain & cd) {
+	std::cout << " good "<<"\n";
 	std::map < std::string, std::vector < std::string > > listOfAmbiguousActions;
 	for ( unsigned i = 0; i < n->templates.size(); ++i ) {			
 		Action * legal_a = d->actions[d->actions.index( n->templates[i]->name )];
