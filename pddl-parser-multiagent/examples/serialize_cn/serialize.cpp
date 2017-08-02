@@ -1,6 +1,6 @@
 /** 
-				Some Important Issues
-This is a better place to write some important issues.
+NOTE - Some Important Issues
+This is good place to write these issues.
 	1. Have all predicates with different names. Why?
 		(a) As POS- NEG- specifically been put using only predicate names.
 	2. Have all the agents together in the action parameter list.
