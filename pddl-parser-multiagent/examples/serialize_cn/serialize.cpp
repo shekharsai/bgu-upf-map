@@ -1,6 +1,9 @@
-/** 
-NOTE - Some Important Issues
-	This is good place to write these issues.
+/**
+*
+***************** @author - Shashank Shekhar 
+***************** Email - shashankshekhar2010@gmail.com
+ 
+NOTE - Some Important Issues. Right place to write them.
 	1. Have all predicates with different names. Why?
 		(a) As POS- NEG- specifically been put using only predicate names.
 	2. Have all the agents together in the action parameter list.
@@ -32,50 +35,45 @@ std::set< std::vector < unsigned > > probVector;
 
 typedef std::map< unsigned, std::vector< int > > VecMap;
 
-bool doTheyTargetTheSameObjectSubset( IntVec network, IntVec legal, IntVec illegal ) {
-	std::cout << "network = " << network <<"\n";
-	std::cout << "legal = " << legal <<"\n";
-	std::cout << "illegal = " << illegal <<"\n";
+bool doTheyTargetTheSameObjectSubset( IntVec network, IntVec legal, IntVec legalActionParams, IntVec illegal, IntVec illegalActionParams ) {
 	bool decision = false;
 	unsigned count = 0;
 	for( int &i : network )
 		for( int &j : legal )
-			if( i == j )
+			if( legalActionParams[i] == legalActionParams[j] )
 				for( int &k : illegal )
-					if( i == k )
+					if( legalActionParams[i] == illegalActionParams[k] )
 						count++;
 	if( count == network.size() )
 		decision = true;
-	std::cout << " decision " << decision <<"\n";
+		
 	return decision;
 }
 
 std::map < std::string, std::vector< std::string > > ambiguousActions( const parser::multiagent::NetworkNode * n, const Domain & cd) {
-
-	std::cout << n << "\n";
 	std::map < std::string, std::vector < std::string > > listOfAmbiguousActions;
 	for ( unsigned i = 0; i < n->templates.size(); ++i ) {
-		std::cout << "\n \n\n new template \n";				
 		Action * legal_a = d->actions[d->actions.index( n->templates[i]->name )];		
-		bool ambiguous1 = false;
-		bool ambiguous2 = false;
-		std::vector < std::string > ambActions;		
+		bool ambiguous1 = false; bool ambiguous2 = false;
+		std::vector < std::string > ambActions;			
 		for ( unsigned j = 0; j < n->templates.size(); j++)	
 			if (i!=j) {			
 				Action * probably_legal_a = d->actions[d->actions.index( n->templates[j]->name )];	
-				std::cout << "\nlegal_a " << legal_a <<"\n";
-				std::cout << "probably_legal_a " << probably_legal_a <<"\n";		
 				for ( unsigned k = 0; k < legal_a->addEffects().size(); ++k ) 			
 					for ( unsigned l = 0; l < probably_legal_a->deleteEffects().size(); ++l ) 
 					{
 						if ( ( (dynamic_cast< Ground * > (legal_a->addEffects()[k]))->name == 
 								(dynamic_cast< Ground * > (probably_legal_a->deleteEffects()[l]))->name) ) { 
 							{	
-								ambiguous1 = doTheyTargetTheSameObjectSubset (
-														cd->n->templates[i]->params,
+								ambiguous1 = doTheyTargetTheSameObjectSubset ( 
+														n->templates[i]->params,
 														legal_a->addEffects()[k]->params,
-														probably_legal_a->deleteEffects()[l]->params );
-								break;												
+														legal_a->params,
+														probably_legal_a->deleteEffects()[l]->params,
+														probably_legal_a->params 
+														);
+								if( ambiguous1 )
+									break;												
 							}
 						}
 					}
@@ -86,24 +84,27 @@ std::map < std::string, std::vector< std::string > > ambiguousActions( const par
 							if ( ( (dynamic_cast< Ground * > (legal_a->deleteEffects()[k]))->name == 
 									(dynamic_cast< Ground * > (probably_legal_a->addEffects()[l]))->name) ) { 
 								{	
-									ambiguous2 = doTheyTargetTheSameObjectSubset (
-															n->templates[i]->params,
-															legal_a->deleteEffects()[k]->params,
-															probably_legal_a->addEffects()[l]->params );
-									break;												
+									ambiguous2 = doTheyTargetTheSameObjectSubset (															
+														n->templates[i]->params,
+														legal_a->deleteEffects()[k]->params,
+														legal_a->params,
+														probably_legal_a->addEffects()[l]->params,
+														probably_legal_a->params 
+														);
+									if( ambiguous2 )
+										break;												
 								}
 							}
 						}
-				}									
+				}	
 				if ( ambiguous1 || ambiguous2 ) 
 					ambActions.push_back( (std::string) probably_legal_a->name );
 			}		
 		listOfAmbiguousActions[ (std::string) legal_a->name ] = ambActions;		
-	}		
+	}
 	return listOfAmbiguousActions;
 }
 
-// updated by shashank
 bool deletes( const Ground * ground, const parser::multiagent::NetworkNode * n, IntVec impParams ) {
 	for ( unsigned i = 0; i < n->templates.size(); ++i ) {			
 		Action * a = d->actions[d->actions.index( n->templates[i]->name )];		
@@ -118,7 +119,7 @@ bool deletes( const Ground * ground, const parser::multiagent::NetworkNode * n, 
 	return false;
 }
 
-// returns true if (>=1) instances of "POS-" or "NEG-" get(s) added, related to the constrained object
+// TODO returns true if (>=1) instances of "POS-" or "NEG-" get(s) added, related to the constrained object
 bool addEff( Domain * cd, Action * a, Condition * c ) {
 	Not * n = dynamic_cast< Not * >( c );
 	Ground * g = dynamic_cast< Ground * >( c );
@@ -158,11 +159,9 @@ int main( int argc, char *argv[] ) {
 		exit( 1 );
 	}
 	
-	// Read multiagent domain and problem with associated concurrency network
 	d = new parser::multiagent::MultiagentDomain( argv[1] );
 	ins = new Instance( *d, argv[2] );
 	
-	// added by shashank, for identifying problematic action pairs
 	std::vector< std::map< std::string, std::map< std::string, std::vector< std::string >>> > pairOfProbActions;
 	for ( unsigned i = 0; i < d->nodes.size(); ++i ) {
 	 	std::map< std::string, std::map < std::string, std::vector < std::string > > > pair;	
@@ -170,11 +169,7 @@ int main( int argc, char *argv[] ) {
 		pairOfProbActions.push_back( pair );	
 	}
 	
-	std::cout << "listAction \t " << pairOfProbActions <<"\n";
-	
-	return 0;
-	
-	// Identify problematic fluents (preconditions deleted by agents) (edited by shashank) 	
+	// Identify problematic fluents (preconditions deleted by agents)  	
 	for ( unsigned i = 0; i < d->nodes.size(); ++i ) {
 		for ( unsigned j = 0; d->nodes[i]->upper > 1 && j < d->nodes[i]->templates.size(); ++j ) {
 			// In future impParams may contain multiple entries // TODO

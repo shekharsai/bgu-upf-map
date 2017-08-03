@@ -48,13 +48,13 @@
 	:parameters (?x - location ?b - bridge ?y - location) 
 	:precondition (and
 					(at ?a ?x)
-					;(has-bridge ?b ?x ?y) 
+					(has-bridge ?b ?x ?y) 
 			)
 	:effect	(and 
 					(at ?a ?y)
 					(not (at ?a ?x))
 					(has-bridge ?b ?x ?y)
-					;(has-bridge ?b ?y ?x)
+					(has-bridge ?b ?y ?x)
 			 )
 )
 
