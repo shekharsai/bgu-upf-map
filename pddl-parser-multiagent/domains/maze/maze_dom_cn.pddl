@@ -28,40 +28,40 @@
 			 )
 )
 
-(:action destroy-activity 
+(:action build-activity 
 	:agent ?a - agent
-	:parameters (?a - agent ?x - location ?y - location ?b - bridge) 
+	:parameters (?a - agent ?b - bridge ?x - location ?y - location) 
 	:precondition (and
 					(at ?a ?x)
-					(has-bridge ?b ?x ?y) 
+					;(has-bridge ?b ?x ?y) 
 			)
 	:effect	(and 
 					(at ?a ?y)
-					(not (at ?a ?x))
+					;(not (at ?a ?x))
 					(has-bridge ?b ?x ?y)
-					(not (has-bridge ?b ?y ?x))
+					;(not (has-bridge ?b ?y ?x))
 			 )
 )
 
 (:action build
 	:agent ?a - agent
-	:parameters (?x - location ?b - bridge ?y - location) 
+	:parameters (?b - bridge ?x - location ?y - location) 
 	:precondition (and
 					(at ?a ?x)
-					(has-bridge ?b ?x ?y) 
+					;(has-bridge ?b ?x ?y) 
 			)
 	:effect	(and 
 					(at ?a ?y)
-					(not (at ?a ?x))
-					(has-bridge ?b ?x ?y)
-					(has-bridge ?b ?y ?x)
+					;(not (at ?a ?x))
+					;(has-bridge ?b ?x ?y)
+					;(has-bridge ?b ?y ?x)
 			 )
 )
 
 (:concurrency-constraint v3
 	:parameters (?b - bridge)
 	:bounds (1 3)
-	:actions ( (build 2) (cross 1) (destroy-activity 4) )
+	:actions ( (build 1) (build-activity 2) )
 )
 
 )

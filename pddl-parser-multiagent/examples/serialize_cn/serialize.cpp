@@ -8,15 +8,13 @@ NOTE - Some Important Issues. Right place to write them.
 		(a) As POS- NEG- specifically been put using only predicate names.
 	2. Have all the agents together in the action parameter list.
 		(a) Joint-Activity (a1, a2, a3, ..., ak, objs)
-		(b) Irrespective of any type Truck or Plane use AGENT as I have string comparison using 
-		this word.
-	3. The name of an activity should have "ACTIVITY" string in it. Also, you need to specify more 
-	than one agent.  
-	4. Currently, it handles constraints over only one object, e.g. a boat, a bridge etc. Easy to 
-	extend though. Also, it splits blindly, which means, to have correct splits of a Joint activity,
-	make sure that there is no predicates specifying other agents in the eff or preconditions. 
-	Little more work is needed to resolve this limitation. 
+		(b) Irrespective of any type Truck or Plane use AGENT as I have string comparison using this word.
+	3. The name of an activity should have "ACTIVITY" string in it. Also, you need to specify more than one agent.  
+	4. Currently, it handles constraints over only one object, e.g. a boat, a bridge etc. Easy to extend though. 
+	Also, it splits blindly, which means, to have correct splits of a Joint activity, make sure that there is no predicates specifying 
+	other agents in the eff or preconditions. Little more work is needed to resolve this limitation. 
 	5. TODO During translation an action cannot be public or private. So, remove IN-JOINT from the preconditions in the Shlomi's code.
+	6. Simplification - the single agent action name will appear in the joint activity, it is part of. E.g. push, and push-activity.
 **/
 
 // To check for memory leaks:
@@ -104,6 +102,47 @@ std::map < std::string, std::vector< std::string > > ambiguousActions( const par
 	}
 	return listOfAmbiguousActions;
 }
+
+// returns true is action possibleComp appears in the Joint Activity, jointActivity.
+// how many push or push clean??
+bool isActionAComponentOfJA( Action * jointActivity,  Action * possibleComp ) {
+	bool decision = false;
+	int counter = 0;
+	if( ( jointActivity->name ).find( possibleComp->name ) != std::string::npos ) {
+		for( int &i : possibleComp->params )
+			for( int &j : jointActivity->params )
+				if( i==j ) { 
+					counter++;
+					break;
+				}
+		if( counter == (int) ( possibleComp->params ).size() )
+			decision = true;		
+	}
+	return decision; 
+}
+
+// just handles |< push, 2-push (JA) >| or |< push, clean, <push-clean (JA) >>|
+// action-component-name will appear in JA, along with its whole paramList() 
+std::map < std::string, std::vector< std::string > > findComponentsOfJointActivities( const parser::multiagent::NetworkNode * n ) {
+	std::map < std::string, std::vector < std::string > > listOfJointActivityComponents;
+	for ( unsigned i = 0; i < n->templates.size(); ++i ) {
+		std::vector< std::string > listOfComp;
+		Action * jointActivity = d->actions[ d->actions.index( n->templates[i]->name ) ];
+		if ( ( jointActivity->name ).find( "ACTIVITY" ) != std::string::npos ) 
+			for ( unsigned j = 0; j < n->templates.size(); ++j ) 
+				if ( i != j ) {
+					Action * possibleComp = d->actions[d->actions.index( n->templates[j]->name )];
+					if ( ( possibleComp->name ).find( "ACTIVITY" ) == std::string::npos ) {
+						bool decision = isActionAComponentOfJA( jointActivity, possibleComp );	
+						if (decision) {
+							listOfComp.push_back( possibleComp->name );
+						}
+					}
+				}
+	}
+	return listOfJointActivityComponents;
+}
+
 
 bool deletes( const Ground * ground, const parser::multiagent::NetworkNode * n, IntVec impParams ) {
 	for ( unsigned i = 0; i < n->templates.size(); ++i ) {			
