@@ -1,8 +1,7 @@
 /**
 *
 ***************** @author - Shashank Shekhar 
-***************** Email - shashankshekhar2010@gmail.com
- 
+***************** Email - shashankshekhar2010@gmail.com 
 NOTE - Some Important Issues. Right place to write them.
 	1. Have all predicates with different names. Why?
 		(a) As POS- NEG- specifically been put using only predicate names.
