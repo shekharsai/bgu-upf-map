@@ -531,23 +531,29 @@ public:
 			os << ")\n";
 		}
 
+		bool privatePreds = false;
 		os << "( :PREDICATES\n";
 		for ( unsigned i = 0; i < preds.size(); ++i ) {
 			if( (preds[i]->name).find("-PR") == std::string::npos) {
 				preds[i]->PDDLPrint( os, 1, TokenStruct< std::string >(), *this );
 				os << "\n";
 			}
-		}		
-		tabindent( os, 1 );
-		os << "( :PRIVATE\n";
-		for ( unsigned i = 0; i < preds.size(); ++i ) {
-			if( (preds[i]->name).find("-PR") != std::string::npos) {
-				preds[i]->PDDLPrint( os, 2, TokenStruct< std::string >(), *this );
-				os << "\n";
+			else if( (preds[i]->name).find("-PR") != std::string::npos) {
+				privatePreds = true;
 			}
-		}
-		tabindent( os, 1 );
-		os << ")\n";		
+		}		
+		if ( privatePreds ) {
+			tabindent( os, 1 );
+			os << "( :PRIVATE\n";
+			for ( unsigned i = 0; i < preds.size(); ++i ) {
+				if( (preds[i]->name).find("-PR") != std::string::npos) {
+					preds[i]->PDDLPrint( os, 2, TokenStruct< std::string >(), *this );
+					os << "\n";
+				}
+			}
+			tabindent( os, 1 );
+			os << ")\n";	
+		}	
 		os << ")\n";
 
 		if ( funcs.size() ) {

@@ -1,56 +1,16 @@
 (define (domain maze)
-
 (:requirements :typing :concurrency-network :multi-agent)
-
-(:types agent boat location door bridge switch)
-
+(:types agent location door boat switch bridge)
 (:predicates
 	(at ?a - agent ?x - location)
 	(has-switch ?s - switch ?x - location ?y - location ?z - location)
 	(blocked ?x - location ?y - location)
 	(has-door ?d - door ?x - location ?y - location)
 	(has-boat ?b - boat ?x - location ?y - location)
-	(has-bridge ?b - bridge ?x - location ?y - location)	
-	(next ?a - agent)	
-	(at ?b - boat ?l - location)
-	
+	(has-bridge ?b - bridge ?x - location ?y - location)
 	(:private
-		( loocha-pr ?drv - agent )
-		( ghatiya-pr ?drv - agent )  
-		( kutta-pr ?drv - agent ) 
+		(kamina-pr)
 	)
-)
-
-( :ACTION ACTIVITY-SAIL
-  :agent ?agent0 - agent
-  :PARAMETERS (?agent1 - AGENT ?BOAT2 - BOAT ?LOCATION3 - LOCATION ?LOCATION4 - LOCATION )
-  :PRECONDITION
-	( AND
-		( AT ?AGENT0 ?LOCATION3 )
-		( at ?BOAT2 ?LOCATION3 )
-	)
-  :EFFECT
-	( AND
-		( AT ?AGENT0 ?LOCATION4 )
-		( not ( AT ?AGENT0 ?LOCATION3 ) )		
-		( not ( at ?BOAT2 ?LOCATION3 ) )
-		( at ?BOAT2 ?LOCATION4 )
-	)
-)
-
-(:action row 
-	:agent ?a - agent
-	:parameters (?b - boat ?x - location ?y - location)
-	:precondition (and
-				(at ?a ?x)
-				(has-boat ?b ?x ?y)
-			 )
-	:effect	(and 
-			(at ?a ?y)
-			(not (at ?a ?x)) 
-			( not (has-boat ?b ?x ?y) )
-			(has-boat ?b ?y ?x)
-		)
 )
 
 (:action cross 
@@ -64,29 +24,44 @@
 					(at ?a ?y)
 					(not (at ?a ?x))
 					(not (has-bridge ?b ?x ?y))
-					(has-bridge ?b ?y ?x))
+					(not (has-bridge ?b ?y ?x))
 			 )
 )
 
-(:action build 
+(:action destroy-activity 
 	:agent ?a - agent
-	:parameters (?b - bridge ?x - location ?y - location) 
+	:parameters (?a - agent ?x - location ?y - location ?b - bridge) 
 	:precondition (and
-					(at ?a ?x)					
+					(at ?a ?x)
+					(has-bridge ?b ?x ?y) 
 			)
 	:effect	(and 
 					(at ?a ?y)
 					(not (at ?a ?x))
-					;(has-bridge ?b ?x ?y)
-					;( not (has-bridge ?b ?y ?x))
+					(has-bridge ?b ?x ?y)
+					(not (has-bridge ?b ?y ?x))
 			 )
 )
 
-
-(:concurrency-constraint v2
-	:parameters (?b - bridge)
-	:bounds (1 2)
-	:actions ( (cross 1) (build 1) )
+(:action build
+	:agent ?a - agent
+	:parameters (?x - location ?b - bridge ?y - location) 
+	:precondition (and
+					(at ?a ?x)
+					;(has-bridge ?b ?x ?y) 
+			)
+	:effect	(and 
+					(at ?a ?y)
+					(not (at ?a ?x))
+					(has-bridge ?b ?x ?y)
+					;(has-bridge ?b ?y ?x)
+			 )
 )
-	
+
+(:concurrency-constraint v3
+	:parameters (?b - bridge)
+	:bounds (1 3)
+	:actions ( (build 2) (cross 1) (destroy-activity 4) )
+)
+
 )

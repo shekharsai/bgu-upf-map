@@ -1,6 +1,6 @@
 /** 
 NOTE - Some Important Issues
-This is good place to write these issues.
+	This is good place to write these issues.
 	1. Have all predicates with different names. Why?
 		(a) As POS- NEG- specifically been put using only predicate names.
 	2. Have all the agents together in the action parameter list.
@@ -33,6 +33,9 @@ std::set< std::vector < unsigned > > probVector;
 typedef std::map< unsigned, std::vector< int > > VecMap;
 
 bool doTheyTargetTheSameObjectSubset( IntVec network, IntVec legal, IntVec illegal ) {
+	std::cout << "network = " << network <<"\n";
+	std::cout << "legal = " << legal <<"\n";
+	std::cout << "illegal = " << illegal <<"\n";
 	bool decision = false;
 	unsigned count = 0;
 	for( int &i : network )
@@ -42,36 +45,57 @@ bool doTheyTargetTheSameObjectSubset( IntVec network, IntVec legal, IntVec illeg
 					if( i == k )
 						count++;
 	if( count == network.size() )
-		decision = true;	
+		decision = true;
+	std::cout << " decision " << decision <<"\n";
 	return decision;
 }
 
 std::map < std::string, std::vector< std::string > > ambiguousActions( const parser::multiagent::NetworkNode * n, const Domain & cd) {
-	std::cout << " good "<<"\n";
+
+	std::cout << n << "\n";
 	std::map < std::string, std::vector < std::string > > listOfAmbiguousActions;
-	for ( unsigned i = 0; i < n->templates.size(); ++i ) {			
-		Action * legal_a = d->actions[d->actions.index( n->templates[i]->name )];
-		bool ambiguous = false;
+	for ( unsigned i = 0; i < n->templates.size(); ++i ) {
+		std::cout << "\n \n\n new template \n";				
+		Action * legal_a = d->actions[d->actions.index( n->templates[i]->name )];		
+		bool ambiguous1 = false;
+		bool ambiguous2 = false;
 		std::vector < std::string > ambActions;		
 		for ( unsigned j = 0; j < n->templates.size(); j++)	
 			if (i!=j) {			
-				Action * probably_legal_a = d->actions[d->actions.index( n->templates[j]->name )];			
+				Action * probably_legal_a = d->actions[d->actions.index( n->templates[j]->name )];	
+				std::cout << "\nlegal_a " << legal_a <<"\n";
+				std::cout << "probably_legal_a " << probably_legal_a <<"\n";		
 				for ( unsigned k = 0; k < legal_a->addEffects().size(); ++k ) 			
 					for ( unsigned l = 0; l < probably_legal_a->deleteEffects().size(); ++l ) 
 					{
-						std::cout << "legal_a->addEffects()[k] " << legal_a->addEffects()[k]->params <<"\n";	
 						if ( ( (dynamic_cast< Ground * > (legal_a->addEffects()[k]))->name == 
 								(dynamic_cast< Ground * > (probably_legal_a->deleteEffects()[l]))->name) ) { 
 							{	
-								ambiguous = doTheyTargetTheSameObjectSubset (
-														n->templates[0]->params,
+								ambiguous1 = doTheyTargetTheSameObjectSubset (
+														cd->n->templates[i]->params,
 														legal_a->addEffects()[k]->params,
 														probably_legal_a->deleteEffects()[l]->params );
 								break;												
 							}
 						}
-					}													
-				if (ambiguous) 
+					}
+				if ( !ambiguous1 ) {
+					for ( unsigned k = 0; k < legal_a->deleteEffects().size(); ++k ) 			
+						for ( unsigned l = 0; l < probably_legal_a->addEffects().size(); ++l ) 
+						{
+							if ( ( (dynamic_cast< Ground * > (legal_a->deleteEffects()[k]))->name == 
+									(dynamic_cast< Ground * > (probably_legal_a->addEffects()[l]))->name) ) { 
+								{	
+									ambiguous2 = doTheyTargetTheSameObjectSubset (
+															n->templates[i]->params,
+															legal_a->deleteEffects()[k]->params,
+															probably_legal_a->addEffects()[l]->params );
+									break;												
+								}
+							}
+						}
+				}									
+				if ( ambiguous1 || ambiguous2 ) 
 					ambActions.push_back( (std::string) probably_legal_a->name );
 			}		
 		listOfAmbiguousActions[ (std::string) legal_a->name ] = ambActions;		
@@ -146,10 +170,13 @@ int main( int argc, char *argv[] ) {
 		pairOfProbActions.push_back( pair );	
 	}
 	
+	std::cout << "listAction \t " << pairOfProbActions <<"\n";
+	
+	return 0;
+	
 	// Identify problematic fluents (preconditions deleted by agents) (edited by shashank) 	
 	for ( unsigned i = 0; i < d->nodes.size(); ++i ) {
-		for ( unsigned j = 0; d->nodes[i]->upper > 1 && j < d->nodes[i]->templates.size(); ++j ) 
-		{	
+		for ( unsigned j = 0; d->nodes[i]->upper > 1 && j < d->nodes[i]->templates.size(); ++j ) {
 			// In future impParams may contain multiple entries // TODO
 			IntVec impParams;
 			impParams = d->nodes[i]->templates[j]->params; 			
@@ -157,8 +184,7 @@ int main( int argc, char *argv[] ) {
 			GroundVec dels = a->deleteEffects();	
 			GroundVec added = a->addEffects();	
 			unsigned choice = 1;
-			for ( unsigned k = 0; k < dels.size(); ++k ) 
-			{				
+			for ( unsigned k = 0; k < dels.size(); ++k ) {				
 				bool choiceA = 
 						std::find( dels[k]->params.begin(), dels[k]->params.end(), impParams[0] ) != dels[k]->params.end();
 				bool choiceB = deletes( dels[k], d->nodes[i], impParams );
@@ -300,10 +326,10 @@ int main( int argc, char *argv[] ) {
 				int action = d->actions.index( d->nodes[x]->templates[k]->name );
 				std::string name = d->actions[action]->name;
 				
-				// TODO // Code below is for splitting a joint activity
-				if ( name.find("ACTIVITY") != std::string::npos ) 
-				{										
-					// creating the start part of the Joint Activity									
+				// TODO 
+				// Code below is for splitting a joint activity
+				if ( name.find("ACTIVITY") != std::string::npos ) {										
+					// creating the first part of the Joint Activity									
 					const std::string start_JA = name + "-1";
 					StringVec ja_type_list = d->typeList( d->actions[action] );
 					int noOfAgents = 0;
@@ -318,6 +344,7 @@ int main( int argc, char *argv[] ) {
 						std::stringstream convert; convert << p;
 						cd->createPredicate( "NEXT-"+ name + "-" + convert.str() );						
 					}
+					
 					Action * do_start_part = cd->createAction( start_JA, d->typeList( d->actions[action] ) );
 					unsigned size = do_start_part->params.size();	
 															
@@ -352,20 +379,28 @@ int main( int argc, char *argv[] ) {
 						cd->addPre( 0, start_JA, "COUNT-" + d->nodes[x]->name, incvec( size, size + 1 ) );
 						cd->addPre( 0, start_JA, "CONSEC", incvec( size, size + 2 ) );
 						
-						// additional, as per step 2 pairOfProbActions
+						// additional, as per step-2 "pairOfProbActions"
+						// std::cout << "pairOfProbActions.size() " << pairOfProbActions <<"\n";
 						for (unsigned t = 0; t < pairOfProbActions.size(); t++) {
 							std::map < std::string, std::vector < std::string > > mappedProbActions;
 							mappedProbActions = pairOfProbActions[t][d->nodes[x]->name];							
 						 	std::vector< std::string > listAction = mappedProbActions[(std::string) name];
+						 	// std::cout << "listAction.size() " << listAction.size() <<"\n";
 						 	if ( listAction.size() > 0 ) 
 						 		for (unsigned y = 0; y < listAction.size(); y++) {
 						 			bool exists = false;
 						 			for (unsigned z = 0; z < predcts.size(); z++) 
-						 				if (predcts[z]->name == "P-" + listAction[y]) 
+						 				if ( predcts[z]->name == "P-" + listAction[y] ) 
 						 					exists = true;						 			
-						 			if (! exists)
-						 				cd->createPredicate( "P-" + listAction[y] );						
-						 			cd->addPre( 1, start_JA, "P-" + listAction[y] );
+						 			if (! exists) {		
+						 				std::cout << "create pre " << "P-" + listAction[y] << " " << d->typeList( d->nodes[x] ) <<"\n";  				 				
+						 				cd->createPredicate( "P-" + listAction[y], d->typeList( d->nodes[x] ) );						
+						 			}
+						 			for ( unsigned s = 0; s < d->nodes[x]->templates.size(); s++) {
+			 							if ( d->nodes[x]->templates[s]->name == name ) {
+			 								cd->addPre( 1, start_JA, "P-" + listAction[y], d->nodes[x]->templates[s]->params );
+						 				}
+						 			}
 						 		}
 						 	break;
 						}							
@@ -385,11 +420,17 @@ int main( int argc, char *argv[] ) {
 						// step-2: aaai2018 
 						bool exists = false;
 			 			for (unsigned z = 0; z < predcts.size(); z++) 
-			 				if (predcts[z]->name == "P-" + name) 
+			 				if ( predcts[z]->name == "P-" + name ) 
 			 					exists = true;						 			
-			 			if (! exists)
-			 				cd->createPredicate( "P-" + name );
-						cd->addEff( 0, start_JA, "P-" + name );
+			 			if (! exists) {
+			 				std::cout << "create eff " << "P-" + name << " " << d->typeList( d->nodes[x] ) <<"\n";
+			 				cd->createPredicate( "P-" + name, d->typeList( d->nodes[x] ) );
+			 			}
+			 			for ( unsigned s = 0; s < d->nodes[x]->templates.size(); s++) {
+			 				if ( d->nodes[x]->templates[s]->name == name ) {			 					
+								cd->addEff( 0, start_JA, "P-" + name, d->nodes[x]->templates[s]->params );
+							}
+						}
 					}	
 					
 					// intermediate split action
@@ -527,39 +568,48 @@ int main( int argc, char *argv[] ) {
 						cd->addPre( 0, name, "COUNT-" + d->nodes[x]->name, incvec( size, size + 1 ) );
 						cd->addPre( 0, name, "CONSEC", incvec( size, size + 2 ) );
 
-						// additional, as per step-2, pairOfProbActions
+						// additional, as per step-2, pairOfProbActions						
 						for (unsigned t = 0; t < pairOfProbActions.size(); t++) {
 							std::map < std::string, std::vector < std::string > > mappedProbActions;
-							mappedProbActions = pairOfProbActions[t][d->nodes[x]->name];							
+							mappedProbActions = pairOfProbActions[t][d->nodes[x]->name];
+							//std::cout << pairOfProbActions <<"\n";
+							//std::cout << mappedProbActions <<"\n";														
 						 	std::vector< std::string > listAction = mappedProbActions [(std::string) d->actions[action]->name];
-						 	if ( listAction.size() > 0 ) {
-						 		for (unsigned y = 0; y < listAction.size(); y++) {
-						 			bool exists = false;
-						 			for (unsigned z = 0; z < predcts.size(); z++) 
-						 				if (predcts[z]->name == "P-" + listAction[y]) 
-						 					exists = true;						 			
-						 			if (! exists)
-						 				cd->createPredicate( "P-" + listAction[y] );
-						 			cd->addPre( 1, name, "P-" + listAction[y] );
-						 		}
-						 	}
+						 	for (unsigned y = 0; y < listAction.size(); y++) {
+					 			bool exists = false;
+					 			for (unsigned z = 0; z < predcts.size(); z++) {
+					 				if ( predcts[z]->name == "P-" + listAction[y] ) {
+					 					exists = true;						 		
+					 				}	
+					 			}
+					 			if (! exists) {
+					 				cd->createPredicate( "P-" + listAction[y], d->typeList( d->nodes[x] ) );
+					 			}
+					 			for ( unsigned s = 0; s < d->nodes[x]->templates.size(); s++) {
+			 						if ( d->nodes[x]->templates[s]->name == d->actions[action]->name )
+					 					cd->addPre( 1, name, "P-" + listAction[y], d->nodes[x]->templates[s]->params);
+					 			}
+					 		}
 						}							
 					}
 					else cd->addPre( 0, name, "AFREE" );
 
-					// add new effects ( updated effects )
 					if ( i->second.size() > 1 || d->nodes[x]->upper > 1 ) {
 						cd->addEff( 0, name, "TAKEN", IntVec( 1, 0 ) );
 						cd->addEff( 1, name, "COUNT-" + d->nodes[x]->name, incvec( size, size + 1 ) );
 						cd->addEff( 0, name, "COUNT-" + d->nodes[x]->name, incvec( size + 1, size + 2 ) );										
-						// step-2: aaai2018 
 						bool exists = false;
-			 			for (unsigned z = 0; z < predcts.size(); z++) 
-			 				if (predcts[z]->name == "P-" + name) 
+			 			for (unsigned z = 0; z < predcts.size(); z++) {
+			 				if ( predcts[z]->name == "P-" + d->actions[action]->name ) 
 			 					exists = true;						 			
-			 			if (! exists)
-			 				cd->createPredicate( "P-" + d->actions[action]->name );
-						cd->addEff( 0, name, "P-" + d->actions[action]->name );
+			 			}
+			 			if (! exists) {
+			 				cd->createPredicate( "P-" + d->actions[action]->name, d->typeList( d->nodes[x] ) );
+			 			}
+			 			for ( unsigned s = 0; s < d->nodes[x]->templates.size(); s++) {
+			 				if ( d->nodes[x]->templates[s]->name == d->actions[action]->name )
+								cd->addEff( 0, name, "P-" + d->actions[action]->name, d->nodes[x]->templates[s]->params );
+						}
 					}
 				}
 			}

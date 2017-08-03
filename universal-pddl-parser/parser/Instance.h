@@ -243,6 +243,7 @@ public:
 		stream << "( DEFINE ( PROBLEM " << name << " )\n";
 		stream << "( :DOMAIN " << d.name << " )\n";
 
+		bool privateObjs = false;
 		stream << "( :OBJECTS\n";
 		for ( unsigned i = 0; i < d.types.size(); ++i )
 			if ( d.types[i]->objects.size() ) {				
@@ -255,31 +256,35 @@ public:
 						stream << d.types[i]->objects[j] << " ";
 						ifNotPrivate = true;
 					}
+					else if ( d.types[i]->objects[j].find( "-PR" ) != std::string::npos)
+						privateObjs = true;
 				}
 				if ( d.typed && ifNotPrivate ) {
 					stream << "- " << d.types[i]->name;
 					stream << "\n";
 				}
 			}
-		stream << "\t( :PRIVATE\n";
-		for ( unsigned i = 0; i < d.types.size(); ++i )
-			if ( d.types[i]->objects.size() ) {				
-				bool ifPrivate = false;		
-				int count = 0;		
-				for ( unsigned j = 0; j < d.types[i]->objects.size(); ++j ) {					
-					if ( d.types[i]->objects[j].find("-PR") != std::string::npos) {						
-						if ( ++count == 1 )
-							stream << "\t\t";
-						stream << d.types[i]->objects[j].substr( 0, d.types[i]->objects[j].size() - 3 ) << " ";
-						ifPrivate = true;
+		if ( privateObjs ) {
+			stream << "\t( :PRIVATE\n";
+			for ( unsigned i = 0; i < d.types.size(); ++i )
+				if ( d.types[i]->objects.size() ) {				
+					bool ifPrivate = false;		
+					int count = 0;		
+					for ( unsigned j = 0; j < d.types[i]->objects.size(); ++j ) {					
+						if ( d.types[i]->objects[j].find("-PR") != std::string::npos) {						
+							if ( ++count == 1 )
+								stream << "\t\t";
+							stream << d.types[i]->objects[j].substr( 0, d.types[i]->objects[j].size() - 3 ) << " ";
+							ifPrivate = true;
+						}
+					}
+					if ( d.typed && ifPrivate ) {
+						stream << "- " << d.types[i]->name;
+						stream << "\n";
 					}
 				}
-				if ( d.typed && ifPrivate ) {
-					stream << "- " << d.types[i]->name;
-					stream << "\n";
-				}
-			}
-		stream << "\t)\n";
+			stream << "\t)\n";
+		}
 		stream << ")\n";
 
 		stream << "( :INIT\n";
