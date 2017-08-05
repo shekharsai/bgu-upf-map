@@ -28,9 +28,9 @@
 			 )
 )
 
-(:action activity 
+(:action clean-build-activity 
 	:agent ?a - agent
-	:parameters (?a - agent ?b - bridge ?x - location ?y - location) 
+	:parameters (?a1 - agent ?x - location ?b - bridge ?y - location) 
 	:precondition (and
 					(at ?a ?x)
 					;(has-bridge ?b ?x ?y) 
@@ -39,7 +39,7 @@
 					(at ?a ?y)
 					;(not (at ?a ?x))
 					(has-bridge ?b ?x ?y)
-					;(not (has-bridge ?b ?y ?x))
+					(not (has-bridge ?b ?y ?x))
 			 )
 )
 
@@ -54,7 +54,7 @@
 					(at ?a ?y)
 					;(not (at ?a ?x))
 					(has-bridge ?b ?x ?y)
-					(not (has-bridge ?b ?y ?x))
+					;(not (has-bridge ?b ?y ?x))
 			 )
 )
 
@@ -69,7 +69,7 @@
 					(at ?a ?y)
 					;(not (at ?a ?x))
 					(has-bridge ?b ?x ?y)
-					;(has-bridge ?b ?y ?x)
+					(has-bridge ?b ?y ?x)
 			 )
 )
 
@@ -77,7 +77,7 @@
 (:concurrency-constraint v3
 	:parameters (?b - bridge)
 	:bounds (1 3)
-	:actions ( (build 1) (clean 3) (activity 2) )
+	:actions ( (build 1) (clean 3) (clean-build-activity  3) )
 )
 
 )
