@@ -45,7 +45,7 @@
 
 (:action build
 	:agent ?a - agent
-	:parameters (?b - bridge ?x - location ?y - location) 
+	:parameters (?b - bridge ?x - location ?y - location)  
 	:precondition (and
 					(at ?a ?x)
 					;(has-bridge ?b ?x ?y) 

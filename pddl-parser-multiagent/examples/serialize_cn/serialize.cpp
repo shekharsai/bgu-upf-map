@@ -17,7 +17,7 @@ NOTE - Some Important Issues. Right place to write them.
 ***/
 
 /** To check for memory leaks:
-* 	valgrind --leak-check=yes examples/serialize ../multiagent/codmap/domains/tablemover/tablemover.pddl ../multiagent/codmap/domains/tablemover/table1_1.pddl
+* valgrind --leak-check=yes examples/serialize ../multiagent/codmap/domains/tablemover/tablemover.pddl ../multiagent/codmap/domains/tablemover/table1_1.pddl
 ***/
 
 #include <parser/Instance.h>
