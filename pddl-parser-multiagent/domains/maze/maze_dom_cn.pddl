@@ -9,7 +9,7 @@
 	(has-boat ?b - boat ?x - location ?y - location)
 	(has-bridge ?b - bridge ?x - location ?y - location)
 	(:private
-		(kamina-pr)
+		(tired-agent-pr ?agent - agent )
 	)
 )
 
@@ -39,7 +39,7 @@
 					(at ?a ?y)
 					;(not (at ?a ?x))
 					(has-bridge ?b ?x ?y)
-					(not (has-bridge ?b ?y ?x))
+					;(not (has-bridge ?b ?y ?x))
 			 )
 )
 
@@ -54,7 +54,7 @@
 					(at ?a ?y)
 					;(not (at ?a ?x))
 					(has-bridge ?b ?x ?y)
-					;(not (has-bridge ?b ?y ?x))
+					(not (has-bridge ?b ?y ?x))
 			 )
 )
 
@@ -77,7 +77,11 @@
 (:concurrency-constraint v3
 	:parameters (?b - bridge)
 	:bounds (1 3)
-	:actions ( (build 1) (clean 3) (clean-build-activity  3) )
+	:actions ( 
+				(build 1) 
+				(clean 3) 
+				(clean-build-activity  3) 
+			 )
 )
 
 )

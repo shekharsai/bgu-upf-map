@@ -2,14 +2,14 @@
 ***
 ***************** @author - Shashank Shekhar 
 ***************** Email - shashankshekhar2010@gmail.com 
-NOTE - Some Important Issues. Right place to write them.
+NOTE - Some Important Issues. 
 	1. Have all predicates with different names. Why?
 		(a) As POS- NEG- specifically been put using only predicate names.
-	2. Have all the agents together in the action parameter list.
-		(a) Joint-Activity (a1, a2, a3, ..., ak, objs)
-		(b) Irrespective of any type Truck or Plane use AGENT as I have string comparison using this word.
+	2. Have all the agents together in the activity parameter list.
+		(a) A joint activity, e.g., (a1, a2, a3, ..., ak, objs)
+		(b) Irrespective of any type Truck or Plane use AGENT as it has string comparisons using this word, specially for a JA.
 	3. The name of an activity should have "ACTIVITY" string in it. Also, you need to specify more than one agent.  
-	4. Currently, it handles constraints over only one object, e.g. a boat, a bridge etc. Easy to extend though. 
+	4. Currently, it handles constraints over only one object, e.g., a boat, a bridge etc. Easy to extend though. 
 	Also, it splits blindly, which means, to have correct splits of a Joint activity, make sure that there is no predicates specifying 
 	other agents in the eff or preconditions. Little more work is needed to resolve this limitation. 
 	5. TODO During translation an action cannot be public or private. So, remove IN-JOINT from the preconditions in the Shlomi's code.
@@ -22,16 +22,17 @@ NOTE - Some Important Issues. Right place to write them.
 
 #include <parser/Instance.h>
 #include <multiagent/MultiagentDomain.h>
+#include <vector>
 
 using namespace parser::pddl;
+
 
 parser::multiagent::MultiagentDomain * d;
 Instance * ins;
 std::set< unsigned> prob;
-
 std::set< std::vector < unsigned > > probVector;
-
 typedef std::map< unsigned, std::vector< int > > VecMap;
+
 
 bool doTheyTargetTheSameObjectSubset( IntVec network, IntVec legal, IntVec legalActionParams, IntVec illegal, IntVec illegalActionParams ) {
 	bool decision = false;
@@ -48,8 +49,8 @@ bool doTheyTargetTheSameObjectSubset( IntVec network, IntVec legal, IntVec legal
 	return decision;
 }
 
-std::map< std::string, std::vector< std::string > > ambiguousActions( const parser::multiagent::NetworkNode * n, const Domain & cd) {
-	std::map < std::string, std::vector < std::string > > listOfAmbiguousActions;
+std::map< std::string, std::vector< std::string > > ambiguousActions( const parser::multiagent::NetworkNode * n, const Domain & cd ) {
+	std::map< std::string, std::vector < std::string > > listOfAmbiguousActions;
 	for( unsigned i = 0; i < n->templates.size(); ++i ) {
 		Action * legal_a = d->actions[ d->actions.index( n->templates[i]->name ) ];			
 		std::vector< std::string > ambActions;			
@@ -82,7 +83,6 @@ std::map< std::string, std::vector< std::string > > ambiguousActions( const pars
 							if ( ( (dynamic_cast< Ground * > (legal_a->deleteEffects()[k]))->name == 
 									(dynamic_cast< Ground * > (probably_legal_a->addEffects()[l]))->name) ) { 
 								{	
-									//ambiguous2 = false;
 									ambiguous2 = doTheyTargetTheSameObjectSubset (															
 														n->templates[i]->params,
 														legal_a->deleteEffects()[k]->params,
@@ -107,15 +107,19 @@ std::map< std::string, std::vector< std::string > > ambiguousActions( const pars
 // returns true is action possibleComp appears in the Joint Activity, jointActivity.
 bool isActionAComponentOfJA( Action * jointActivity,  Action * possibleComp ) {
 	bool decision = false;
-	int counter = 0;
+	int counter = 0;	
+	std::vector< int > activityParams;
+	for( int &j : jointActivity->params )
+		activityParams.push_back( j );
 	if( ( jointActivity->name ).find( possibleComp->name ) != std::string::npos ) {
-		for( int &i : possibleComp->params )
-			for( int &j : jointActivity->params )
-				if( i==j ) { 
+		for( unsigned i = 0; i < possibleComp->params.size(); i++ )
+			for( unsigned j = 0; j < activityParams.size(); j++ ) 
+				if( possibleComp->params[i] == activityParams[j] ) { 					
 					counter++;
+					activityParams.erase( activityParams.begin() + j );
 					break;
 				}
-		if( counter == (int) ( possibleComp->params ).size() )
+		if( counter == (int) possibleComp->params.size() )
 			decision = true;		
 	}
 	return decision; 
@@ -123,21 +127,21 @@ bool isActionAComponentOfJA( Action * jointActivity,  Action * possibleComp ) {
 
 // just handles |< push, 2-push (JA) >| or |< push, clean, <push-clean (JA) >>|
 // action-component-name should always appear in JA, along with its whole paramList() 
-std::map < std::string, std::vector< std::string > > findComponentsOfJointActivities( const parser::multiagent::NetworkNode * n ) {
+std::map< std::string, std::vector< std::string > > findComponentsOfJointActivities( const parser::multiagent::NetworkNode * n ) {
 	std::map < std::string, std::vector < std::string > > listOfJointActivityComponents;
-	for ( unsigned i = 0; i < n->templates.size(); ++i ) {
+	for( unsigned i = 0; i < n->templates.size(); ++i ) {
 		std::vector< std::string > listOfComp;
 		Action * jointActivity = d->actions[ d->actions.index( n->templates[i]->name ) ];		
-		if ( ( jointActivity->name ).find( "ACTIVITY" ) != std::string::npos ) {
+		if( ( jointActivity->name ).find( "ACTIVITY" ) != std::string::npos ) {
 			for ( unsigned j = 0; j < n->templates.size(); ++j ) 
 				if ( i != j ) {
-					Action * possibleComp = d->actions[d->actions.index( n->templates[j]->name )];					
+					Action * possibleComp = d->actions[ d->actions.index( n->templates[j]->name ) ];					
 					bool decision = isActionAComponentOfJA( jointActivity, possibleComp );	
 					if (decision) {
 						listOfComp.push_back( possibleComp->name );
 					}				
 				}
-			listOfJointActivityComponents[jointActivity->name] = listOfComp;
+			listOfJointActivityComponents[ jointActivity->name ] = listOfComp;
 		}
 	}
 	return listOfJointActivityComponents;
@@ -226,7 +230,7 @@ int main( int argc, char *argv[] ) {
 		pairOfProbActions.push_back( pair );	
 	}
 	
-	// currently contains mazimum 2 SA actions, e.g. push:push and clean:push.
+	// currently contains a maximum 2 SA actions, e.g., push:push and clean:push.
 	std::vector< std::map< std::string, std::map< std::string, std::vector< std::string >>> > listOfJointActivityComponents;
 	for ( unsigned i = 0; i < d->nodes.size(); ++i ) {
 	 	std::map< std::string, std::map < std::string, std::vector < std::string >>> pair;	
@@ -663,9 +667,9 @@ int main( int argc, char *argv[] ) {
 									}
 							}	
 							for( const auto& key : arrKeys ) {
-								std::vector< std::string > listAction = mappedCompActions[ key ];								
+								std::vector< std::string > listAction = mappedCompActions[ key ];	
 								if( listAction.size() == 1 ) {
-					 				bool exists = false;
+									bool exists = false;
 					 				predcts = cd->listOfPredicates();					 				
 						 			for( unsigned z = 0; z < predcts.size(); z++ ) {
 						 				if( predcts[z]->name == "P-" + listAction[0] ) {
