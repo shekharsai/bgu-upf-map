@@ -1,4 +1,5 @@
-(define (problem maze5_4_1) (:domain maze)
+(define (problem maze5_4_1) 
+(:domain maze)
 (:objects
 	; does not efectively parse private
 	:private			

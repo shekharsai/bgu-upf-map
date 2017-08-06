@@ -33,11 +33,11 @@
 	:parameters (?a1 - agent ?x - location ?b - bridge ?y - location) 
 	:precondition (and
 					(at ?a ?x)
-					;(has-bridge ?b ?x ?y) 
+					(has-bridge ?b ?x ?y) 
 			)
 	:effect	(and 
 					(at ?a ?y)
-					;(not (at ?a ?x))
+					(not (at ?a ?x))
 					(has-bridge ?b ?x ?y)
 					;(not (has-bridge ?b ?y ?x))
 			 )
@@ -48,11 +48,11 @@
 	:parameters (?b - bridge ?x - location ?y - location)  
 	:precondition (and
 					(at ?a ?x)
-					;(has-bridge ?b ?x ?y) 
+					(has-bridge ?b ?x ?y) 
 			)
 	:effect	(and 
 					(at ?a ?y)
-					;(not (at ?a ?x))
+					(not (at ?a ?x))
 					(has-bridge ?b ?x ?y)
 					;(not (has-bridge ?b ?y ?x))
 			 )
@@ -67,9 +67,9 @@
 			)
 	:effect	(and 
 					(at ?a ?y)
-					;(not (at ?a ?x))
-					(has-bridge ?b ?x ?y)
-					;(has-bridge ?b ?y ?x)
+					(not (at ?a ?x))
+					(not (has-bridge ?b ?x ?y))
+					(has-bridge ?b ?y ?x)
 			 )
 )
 
@@ -78,9 +78,9 @@
 	:parameters (?b - bridge ?l - location)
 	:bounds (1 3)
 	:actions ( 
-				(build 1 2) 
+				;(build 1 2) 
 				(clean 3 2) 
-				(clean-build-activity  3 4) 
+				;(clean-build-activity  3 4) 
 			 )
 )
 
