@@ -57,8 +57,8 @@ public:
 	}
 
 	CondVec precons();
-
-	GroundVec addEffects();
+	
+	GroundVec addEffects();	
 
 	GroundVec deleteEffects();
 

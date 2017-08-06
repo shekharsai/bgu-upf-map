@@ -54,34 +54,35 @@
 					(at ?a ?y)
 					;(not (at ?a ?x))
 					(has-bridge ?b ?x ?y)
-					(not (has-bridge ?b ?y ?x))
+					;(not (has-bridge ?b ?y ?x))
 			 )
 )
 
 (:action clean
 	:agent ?a - agent
-	:parameters (?x - location ?y - location ?b - bridge ) 
+	:parameters (?x - location ?y - location ?b - bridge) 
 	:precondition (and
 					(at ?a ?x)
-					;(has-bridge ?b ?x ?y) 
+					(has-bridge ?b ?x ?y) 
 			)
 	:effect	(and 
 					(at ?a ?y)
 					;(not (at ?a ?x))
 					(has-bridge ?b ?x ?y)
-					(has-bridge ?b ?y ?x)
+					;(has-bridge ?b ?y ?x)
 			 )
 )
 
 
 (:concurrency-constraint v3
-	:parameters (?b - bridge)
+	:parameters (?b - bridge ?l - location)
 	:bounds (1 3)
 	:actions ( 
-				(build 1) 
-				(clean 3) 
-				(clean-build-activity  3) 
+				(build 1 2) 
+				(clean 3 2) 
+				(clean-build-activity  3 4) 
 			 )
 )
 
 )
+

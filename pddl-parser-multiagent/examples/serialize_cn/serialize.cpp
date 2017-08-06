@@ -37,18 +37,25 @@ typedef std::map< unsigned, std::vector< int > > VecMap;
 bool doTheyTargetTheSameObjectSubset( IntVec network, IntVec legal, IntVec legalActionParams, IntVec illegal, IntVec illegalActionParams ) {
 	bool decision = false;
 	unsigned count = 0;
-	for( int &i : network )
-		for( int &j : legal )
-			if( legalActionParams[i] == legalActionParams[j] )
+	for( int &i : network ) {
+		bool flag = false;
+		for( int &j : legal ) {
+			if( i == legalActionParams[j] )
 				for( int &k : illegal )
-					if( legalActionParams[i] == illegalActionParams[k] )
-						count++;
+					if( i == illegalActionParams[k] ) {
+						count++; flag = true; break;
+					}
+			if( flag )
+				break;
+		}
+	}
 	if( count == network.size() )
 		decision = true;
-		
+	
 	return decision;
 }
 
+// sets of conflicting actions in a network node.
 std::map< std::string, std::vector< std::string > > ambiguousActions( const parser::multiagent::NetworkNode * n, const Domain & cd ) {
 	std::map< std::string, std::vector < std::string > > listOfAmbiguousActions;
 	for( unsigned i = 0; i < n->templates.size(); ++i ) {
@@ -62,10 +69,10 @@ std::map< std::string, std::vector< std::string > > ambiguousActions( const pars
 					for ( unsigned l = 0; l < probably_legal_a->deleteEffects().size(); ++l ) 
 					{
 						if ( ( (dynamic_cast< Ground * > (legal_a->addEffects()[k]))->name == 
-								(dynamic_cast< Ground * > (probably_legal_a->deleteEffects()[l]))->name) ) { 
+								(dynamic_cast< Ground * > (probably_legal_a->deleteEffects()[l]))->name ) ) { 
 							{
-								ambiguous1 = doTheyTargetTheSameObjectSubset ( 
-														n->templates[i]->params,
+								ambiguous1 = doTheyTargetTheSameObjectSubset( 
+														n->params,
 														legal_a->addEffects()[k]->params,
 														legal_a->params,
 														probably_legal_a->deleteEffects()[l]->params,
@@ -83,8 +90,8 @@ std::map< std::string, std::vector< std::string > > ambiguousActions( const pars
 							if ( ( (dynamic_cast< Ground * > (legal_a->deleteEffects()[k]))->name == 
 									(dynamic_cast< Ground * > (probably_legal_a->addEffects()[l]))->name) ) { 
 								{	
-									ambiguous2 = doTheyTargetTheSameObjectSubset (															
-														n->templates[i]->params,
+									ambiguous2 = doTheyTargetTheSameObjectSubset(															
+														n->params,
 														legal_a->deleteEffects()[k]->params,
 														legal_a->params,
 														probably_legal_a->addEffects()[l]->params,
@@ -95,7 +102,7 @@ std::map< std::string, std::vector< std::string > > ambiguousActions( const pars
 								}
 							}
 						}
-				}	
+				}
 				if ( ambiguous1 || ambiguous2 ) 
 					ambActions.push_back( (std::string) probably_legal_a->name );
 			}		
@@ -147,22 +154,47 @@ std::map< std::string, std::vector< std::string > > findComponentsOfJointActivit
 	return listOfJointActivityComponents;
 }
 
-
+// Currently, only the deleted effects are being checked against the preconditions
+// not elegantly done, just for the sake of the aaai deadline!
 bool deletes( const Ground * ground, const parser::multiagent::NetworkNode * n, IntVec impParams ) {
-	for ( unsigned i = 0; i < n->templates.size(); ++i ) {			
-		Action * a = d->actions[d->actions.index( n->templates[i]->name )];		
-		CondVec pres = a->precons();		
-		for ( unsigned j = 0; j < pres.size(); ++j ) {
-			Ground * g = dynamic_cast< Ground * >( pres[j] );
-			if ( g && g->name == ground->name &&
-			     std::find( g->params.begin(), g->params.end(), impParams[0] ) != g->params.end() )  			    
-				return true;
-		}
+	IntVec networkParams = n->params;
+	for( unsigned i = 0; i < n->templates.size(); ++i ) {			
+		Action * a = d->actions[ d->actions.index( n->templates[i]->name )];		
+		IntVec currActParams = a->params;
+		CondVec pres = a->precons();				
+		for( unsigned j = 0; j < pres.size(); ++j ) {
+			Ground * g = dynamic_cast< Ground * >( pres[j] );			
+			int counter = 0;						
+			if( g && g->name == ground->name ) {
+				for( int d1 = 0; d1 < (int) networkParams.size(); d1++ ) {   			    
+					std::vector< int > list;
+					for( int d2 = 0; d2 < (int) currActParams.size(); d2++)
+						if( networkParams[d1] == currActParams[d2] ) 
+							list.push_back(d2);				
+					bool decision = false;
+					for( int &h : list ) {						
+						std::stringstream number;
+						number << h << std::endl;
+						std::stringstream precond1;
+						precond1 << pres[j] << std::endl;												
+						std::string s2 = number.str();
+						s2.erase(0, s2.find_first_not_of(" \n\r\t"));
+						s2.erase(s2.find_last_not_of(" \n\r\t")+1);						
+						if( precond1.str().find( s2 ) != std::string::npos )
+						 	decision = true;
+					}
+					if( decision )
+						counter++;					
+				}
+				if( counter == (int) networkParams.size() )		
+					return true;
+			}
+		}		
 	}
 	return false;
 }
 
-// TODO returns true if (>=1) instances of "POS-" or "NEG-" get(s) added, related to the constrained object
+// TODO returns true if (>=1) instances of "POS-" or "NEG-" or both get added, related to the constrained object
 bool addEff( Domain * cd, Action * a, Condition * c ) {
 	Not * n = dynamic_cast< Not * >( c );
 	Ground * g = dynamic_cast< Ground * >( c );
@@ -203,7 +235,6 @@ bool canAddNewCondition( Domain * cd, std::string actaualAction, std::string con
 		{			
 			std::vector< Condition * > condSet = cd->actions[i7]->precons();
 			for( unsigned int i8 = 0; i8 < condSet.size(); i8++ ) {
-				// could have been a more effective way of doing it.
 				std::stringstream buffer;
 				buffer << condSet[i8] << std::endl;
 				if( ( buffer.str() ).find(cond) != std::string::npos )
@@ -224,41 +255,42 @@ int main( int argc, char *argv[] ) {
 	
 	// Actions with conflicting effects, e.g., <stack, [unstack,pickup]>
 	std::vector< std::map< std::string, std::map< std::string, std::vector< std::string >>> > pairOfProbActions;
-	for ( unsigned i = 0; i < d->nodes.size(); ++i ) {
+	for( unsigned i = 0; i < d->nodes.size(); ++i ) {
 	 	std::map< std::string, std::map < std::string, std::vector < std::string >>> pair;	
 		pair[d->nodes[i]->name] = ambiguousActions( d->nodes[i], *d);	
 		pairOfProbActions.push_back( pair );	
 	}
-	
-	// currently contains a maximum 2 SA actions, e.g., push:push and clean:push.
+		
+	// Currently contains a maximum 2 SA actions, e.g., push:push and clean:push.
 	std::vector< std::map< std::string, std::map< std::string, std::vector< std::string >>> > listOfJointActivityComponents;
-	for ( unsigned i = 0; i < d->nodes.size(); ++i ) {
+	for( unsigned i = 0; i < d->nodes.size(); ++i ) {
 	 	std::map< std::string, std::map < std::string, std::vector < std::string >>> pair;	
-		pair[d->nodes[i]->name] = findComponentsOfJointActivities( d->nodes[i] );	
+		pair[ d->nodes[i]->name ] = findComponentsOfJointActivities( d->nodes[i] );	
 		listOfJointActivityComponents.push_back( pair );	
 	}
 	
-	// The below code snippet is for identifying problematic fluents (preconditions deleted), halts parallel execution.  	
-	for ( unsigned i = 0; i < d->nodes.size(); ++i ) {
-		for ( unsigned j = 0; d->nodes[i]->upper > 1 && j < d->nodes[i]->templates.size(); ++j ) {
+	// The below code snippet is for identifying problematic fluents (preconditions deleted), that halts parallel execution.  	
+	for( unsigned i = 0; i < d->nodes.size(); ++i ) {
+		for( unsigned j = 0; d->nodes[i]->upper > 1 && j < d->nodes[i]->templates.size(); ++j ) {
 			// In future impParams may contain multiple entries // TODO
 			IntVec impParams;
 			impParams = d->nodes[i]->templates[j]->params; 			
+			
 			Action * a = d->actions[ d->actions.index( d->nodes[i]->templates[j]->name ) ];
 			GroundVec dels = a->deleteEffects();	
 			GroundVec added = a->addEffects();	
 			unsigned choice = 1;
-			for ( unsigned k = 0; k < dels.size(); ++k ) {				
+			for( unsigned k = 0; k < dels.size(); ++k ) {				
 				bool choiceA = 
 						std::find( dels[k]->params.begin(), dels[k]->params.end(), impParams[0] ) != dels[k]->params.end();
 				bool choiceB = deletes( dels[k], d->nodes[i], impParams );
 				bool choiceC = false;
 								
-				if ( choiceB )
-					for ( unsigned t = 0; t < added.size(); t++ )
-						if ( added[t]->name == dels[k]->name )
+				if( choiceB )
+					for( unsigned t = 0; t < added.size(); t++ )
+						if( added[t]->name == dels[k]->name )
 							choiceC = true; // if only gets deleted, but does not get added any propositions.
-				if ( choiceA && choiceB && choiceC ) { 	
+				if( choiceA && choiceB && choiceC ) { 	
 					choice = 1;	
 					probVector.insert( { (unsigned) d->preds.index( dels[k]->name ), choice } );				
 				}
