@@ -843,36 +843,55 @@ int main( int argc, char *argv[] ) {
 						
 
 						IntVec predParams;
-						for( int &d1 : cd->convertTypes(vec) ) 
+						IntVec predParams1;
+						for( int &d1 : cd->convertTypes(vec) ) {
 							predParams.push_back(d1);
+							predParams1.push_back(d1);
+						}
 						IntVec nodeParams = d->nodes[x]->params; // expected nodeParams <= predParams
-						
 						for( unsigned d1 = 0; d1 < nodeParams.size(); d1++ )
 							for( unsigned d2 = 0; d2 < predParams.size(); d2++ )
 								if( nodeParams[d1] == predParams[d2] ) {
 									predParams.erase( predParams.begin() + d2 );
 									break;
-								}
+								}			
 						
-						IntVec integerVec;												
+						IntVec index;
 						unsigned f1Size = predParams.size();
+						for( int p = 0; p < (int)(size + f1Size); p++ ) 
+							index.push_back( -1 );						
+						
+						int ind = nodeParams.size();
+						for( unsigned d1 = 0; d1 < cd->convertTypes(vec).size(); d1++ ) {
+							int index1 = -1;
+							for( unsigned d2 = 0; d2 < nodeParams.size(); d2++ )
+								if( predParams1.size() > d1 && ( nodeParams[d2] == predParams1[d1] ) ) {
+									index1 = d2; predParams1.erase( predParams1.begin() + d1 ); break;									
+								} 
+							if( index1 != -1 )
+								index[d1] = index1;
+							else 
+								index[d1] = ++ind;								
+						}
+																			
+						IntVec integerVec;																		
 						for( int p = 0; p < (int)(size + f1Size + 1); p++ ) 
 							if( p!= (int) size )
 								integerVec.push_back(p);							 
 						
 						if ( choice == 1 ) {	
 							f1->params = predParams;		
-							ss->pars = new Ground ( cd->preds.get( "POS-" + d->preds[i]->name ), integerVec );							
-							a1->add( new Ground ( cd->preds.get( d->preds[i]->name ), integerVec ) );
-							a1->add( new Not ( new Ground( cd->preds.get( "POS-" + d->preds[i]->name ), integerVec ) ) );
+							ss->pars = new Ground ( cd->preds.get( "POS-" + d->preds[i]->name ), index );							
+							a1->add( new Ground ( cd->preds.get( d->preds[i]->name ), index ) );
+							a1->add( new Not ( new Ground( cd->preds.get( "POS-" + d->preds[i]->name ), index ) ) );
 							ss->cond = a1;							
 							andFormula->add(ss);	
 														
 							ss = new When;							
-							ss->pars = new Ground( cd->preds.get( "NEG-" + d->preds[i]->name ), integerVec );
+							ss->pars = new Ground( cd->preds.get( "NEG-" + d->preds[i]->name ), index );
 							a1 = new And;
-							a1->add( new Not( new Ground( cd->preds.get( d->preds[i]->name ), integerVec ) ) );
-							a1->add( new Not( new Ground( cd->preds.get( "NEG-" + d->preds[i]->name ), integerVec ) ) );
+							a1->add( new Not( new Ground( cd->preds.get( d->preds[i]->name ), index ) ) );
+							a1->add( new Not( new Ground( cd->preds.get( "NEG-" + d->preds[i]->name ), index ) ) );
 							ss->cond = a1;
 							andFormula->add(ss);
 							f1->cond = andFormula;
@@ -882,10 +901,10 @@ int main( int argc, char *argv[] ) {
 							f1 = new Forall;
 							f1->params = predParams; 
 							ss = new When;							
-							ss->pars = new Ground( cd->preds.get( "NEG-" + d->preds[i]->name ), integerVec );
+							ss->pars = new Ground( cd->preds.get( "NEG-" + d->preds[i]->name ), index );
 							a1 = new And;
-							a1->add( new Not( new Ground( cd->preds.get( d->preds[i]->name ), integerVec ) ) );
-							a1->add( new Not( new Ground( cd->preds.get( "NEG-" + d->preds[i]->name ), integerVec ) ) );
+							a1->add( new Not( new Ground( cd->preds.get( d->preds[i]->name ), index ) ) );
+							a1->add( new Not( new Ground( cd->preds.get( "NEG-" + d->preds[i]->name ), index ) ) );
 							ss->cond = a1;
 							f1->cond = ss;
 							dynamic_cast< And * >( end->eff )->add( f1 );	
