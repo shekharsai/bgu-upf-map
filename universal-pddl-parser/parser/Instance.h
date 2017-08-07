@@ -83,8 +83,11 @@ public:
 	}
 	
 	void parseObjects( Filereader & f ) {
-		// Need to work on :private
+		// Need to work on :private			
 		TokenStruct< std::string > ts = f.parseTypedList( true, d.types );		
+		for ( unsigned i = 0; i < ts.size(); ++i ) 
+			std::cout << " ts " << ts[i] << "\n";		
+			
 		for ( unsigned i = 0; i < ts.size(); ++i ) {			
 			Type * type = d.getType( ts.types[i] );
 			std::pair< bool, unsigned > pair = type->parseObject( ts[i] );
@@ -99,7 +102,7 @@ public:
 				std::cout << " " << d.types[i]->objects[j];
 			std::cout << "\n";
 		}	
-		/*
+		/* not working
 		std::cout << "f.getChar() obj \t" << f.getChar() <<" yes\n";
 		for ( f.next(); f.getChar() != ')'; f.next() ) {
 			if ( f.getChar() == '(' ) {					

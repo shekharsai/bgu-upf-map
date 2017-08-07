@@ -13,6 +13,8 @@ NOTE - Some Important Issues.
 	   other agents in the eff or preconditions. Little more work is needed to resolve this limitation. 
 	5. TODO During translation an action cannot be public or private. So, remove IN-JOINT from the preconditions in the planner's code.
 	6. Simplification - the single agent action name will appear in the joint activity, it is part of, e.g., push and push-activity.
+	8. As there is some problem in the MA-Parser, during parsing a problem file, it always skips the first private object. So, always 
+	   have a dummy object in each problem file, like for an example, say, "dummy-pr - object"
 ***/
 
 /** To check for memory leaks:
@@ -975,7 +977,7 @@ int main( int argc, char *argv[] ) {
 		cins->addGoal( ins->goal[i]->name, d->objectList( ins->goal[i] ) );
 	cins->addGoal( "AFREE" );
 
-	// std::cerr << *cins;
+	std::cerr << *cins;
 
 	delete cins;
 	delete cd;
