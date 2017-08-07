@@ -13,8 +13,9 @@ NOTE - Some Important Issues.
 	   other agents in the eff or preconditions. Little more work is needed to resolve this limitation. 
 	5. TODO During translation an action cannot be public or private. So, remove IN-JOINT from the preconditions in the planner's code.
 	6. Simplification - the single agent action name will appear in the joint activity, it is part of, e.g., push and push-activity.
-	8. NOTE - as there is some problem in the MA-Parser, during parsing a problem file, it always skips the first private object. So, always 
+	7. NOTE - as there is some problem in the MA-Parser, during parsing a problem file, it always skips the first private object. So, always 
 	   have a dummy object in each problem file, like for an example, say, "dummy-pr - object"
+	8. It should capture POS- or NEG- for a predicate only if its param set is superset of node param set, aka, V1->params   
 *
 ***/
 
@@ -29,11 +30,9 @@ NOTE - Some Important Issues.
 using namespace parser::pddl;
 
 
-parser::multiagent::MultiagentDomain * d;
-Instance * ins;
-std::set< unsigned> prob;
-std::set< std::vector < unsigned > > probVector;
-std::map< std::string, std::set< std::vector < unsigned > > node_wise_probVector;
+parser::multiagent::MultiagentDomain * d; Instance * ins;
+std::set< unsigned> prob; std::set< std::vector < unsigned > > probVector;
+std::map< std::string, std::set< std::vector < unsigned >>> node_wise_probVector;
 typedef std::map< unsigned, std::vector< int > > VecMap;
 
 
@@ -198,7 +197,9 @@ bool deletes( const Ground * ground, const parser::multiagent::NetworkNode * n, 
 }
 
 // TODO returns true if (>=1) instances of "POS-" or "NEG-" or both get added, related to the constrained object
-bool addEff( Domain * cd, Action * a, Condition * c ) {
+bool addEff( Domain * cd, Action * a, Condition * c, std::string nodeName ) {		
+	probVector.clear();
+	probVector = node_wise_probVector[ nodeName ];
 	Not * n = dynamic_cast< Not * >( c );
 	Ground * g = dynamic_cast< Ground * >( c );
 	std::set< std::vector < unsigned > >::iterator it;
@@ -216,8 +217,23 @@ bool addEff( Domain * cd, Action * a, Condition * c ) {
 			cd->addEff( 0, a->name, "NEG-" + n->cond->name, n->cond->params );
 			return 1;
 		}
-	}
+	}	
 	
+	if ( n )
+		cd->addEff( 1, a->name, n->cond->name, n->cond->params );
+	else if ( g )
+		cd->addEff( 0, a->name, g->name, g->params );
+	else if ( c ) {
+		if ( !a->eff ) a->eff = new And;
+		And * aa = dynamic_cast< And * >( a->eff );
+		aa->add( c->copy( *cd ) );
+	}
+	return 0;	
+}
+
+bool addEff( Domain * cd, Action * a, Condition * c ) {
+	Not * n = dynamic_cast< Not * >( c );
+	Ground * g = dynamic_cast< Ground * >( c );		
 	if ( n )
 		cd->addEff( 1, a->name, n->cond->name, n->cond->params );
 	else if ( g )
@@ -294,9 +310,8 @@ int main( int argc, char *argv[] ) {
 	}
 	
 	// The below code snippet is for identifying problematic fluents (preconditions deleted), that halts parallel execution.  	
-	for( unsigned i = 0; i < d->nodes.size(); ++i ) {
+	for( unsigned i = 0; i < d->nodes.size(); ++i ) {		
 		for( unsigned j = 0; d->nodes[i]->upper > 1 && j < d->nodes[i]->templates.size(); ++j ) {
-			// In future impParams may contain multiple entries (TODO)
 			IntVec impParams;
 			impParams = d->nodes[i]->templates[j]->params; 			
 			
@@ -324,7 +339,9 @@ int main( int argc, char *argv[] ) {
 					probVector.insert( { (unsigned) d->preds.index( dels[k]->name ), choice } );
 				}
 			}
-		}		
+		}
+		node_wise_probVector[ (std::string) d->nodes[i]->name ] = probVector;
+		probVector.clear();		
 	}
 	
 	VecMap ccs;
@@ -347,20 +364,45 @@ int main( int argc, char *argv[] ) {
 	// Add constants
 	cd->createConstant( "ACOUNT-0", "AGENT-COUNT" );
 
-	// Add predicates (a huge set of bugs removed by shashank) 
+	// Add predicates -- a huge set of bugs has been removed, probably it might have some more.
 	for( unsigned i = 0; i < d->preds.size(); ++i ) {
-		cd->createPredicate( d->preds[i]->name, d->typeList( d->preds[i] ) );		
-		std::set< std::vector < unsigned > >::iterator it;
-		for( it = probVector.begin(); it != probVector.end(); ++it ) 
-		{ 
-			std::vector< unsigned > deleteChoices  = ( std::vector< unsigned > ) *it;
-			if( deleteChoices[0] == i && deleteChoices[1] == (unsigned) 1 ) {				
-				cd->createPredicate( "POS-" + d->preds[i]->name, d->typeList(d->preds[i]) );
-				cd->createPredicate( "NEG-" + d->preds[i]->name, d->typeList(d->preds[i]) );
-			}						
-			if( deleteChoices[0] == i && deleteChoices[1] == (unsigned) 2 ) {
-				cd->createPredicate( "NEG-" + d->preds[i]->name, d->typeList(d->preds[i]) );
+		TokenStruct< Lifted * > predcts;
+		cd->createPredicate( d->preds[i]->name, d->typeList( d->preds[i] ) ); // adds the real ones			
+		for( unsigned j = 0; j < d->nodes.size(); j++ ) {			
+			probVector = node_wise_probVector[ (std::string) d->nodes[j]->name ];			
+			std::set< std::vector < unsigned > >::iterator it;
+			for( it = probVector.begin(); it != probVector.end(); ++it ) 
+			{ 
+				std::vector< unsigned > deleteChoices  = ( std::vector< unsigned > ) *it;
+				bool exists;				
+				if( deleteChoices[0] == i && deleteChoices[1] == (unsigned) 1 ) {
+					exists = false;	
+					predcts = cd->listOfPredicates();
+					for (unsigned z = 0; z < predcts.size(); z++) 
+	 				if ( predcts[z]->name == "POS-" + d->preds[i]->name ) 
+	 					exists = true;
+	 				if (! exists)				
+						cd->createPredicate( "POS-" + d->preds[i]->name, d->typeList(d->preds[i]) );
+						
+					exists = false;	
+					predcts = cd->listOfPredicates();
+					for (unsigned z = 0; z < predcts.size(); z++) 
+	 				if ( predcts[z]->name == "NEG-" + d->preds[i]->name ) 
+	 					exists = true;
+	 				if (! exists)
+						cd->createPredicate( "NEG-" + d->preds[i]->name, d->typeList(d->preds[i]) );
+				}						
+				if( deleteChoices[0] == i && deleteChoices[1] == (unsigned) 2 ) {
+					exists = false;	
+					predcts = cd->listOfPredicates();
+					for (unsigned z = 0; z < predcts.size(); z++) 
+	 				if ( predcts[z]->name == "NEG-" + d->preds[i]->name ) 
+	 					exists = true;
+	 				if (! exists)
+						cd->createPredicate( "NEG-" + d->preds[i]->name, d->typeList(d->preds[i]) );
+				}
 			}
+			probVector.clear();
 		}
 	}		
 	
@@ -383,7 +425,7 @@ int main( int argc, char *argv[] ) {
 	cd->createPredicate( "AFREE" );
 	cd->createPredicate( "IN-JOINT" ); // in case if a joint activity can also participate
 	
-	// generate the updated actions
+	// generate all the updated actions
 	for( VecMap::iterator i = ccs.begin(); i != ccs.end(); ++i ) {
 		std::set< unsigned > visited;
 		for( unsigned j = 0; j < i->second.size(); ++j ) {			
@@ -409,7 +451,8 @@ int main( int argc, char *argv[] ) {
 				}
 				else cd->addPre( 0, name, "AFREE" );
 
-				if( j < 1 ) cd->addEff( 1, name, "AFREE" );
+				if( j < 1 ) 
+					cd->addEff( 1, name, "AFREE" );
 				cd->addEff( 0, name, "ACTIVE-" + d->nodes[x]->name, incvec( 0, size ) );
 				cd->addEff( 0, name, "COUNT-" + d->nodes[x]->name, IntVec( 1, -1 ) );
 				if( i->second.size() > 1 )
@@ -434,7 +477,8 @@ int main( int argc, char *argv[] ) {
 				}
 				else cd->addPre( 0, name, "AFREE" );
 
-				if( !j ) cd->addEff( 1, name, "AFREE" );
+				if( !j ) 
+					cd->addEff( 1, name, "AFREE" );
 				cd->addEff( 0, name, "ACTIVE-" + d->nodes[x]->name, incvec( 0, size ) );
 				cd->addEff( 0, name, "SKIPPED-" + d->nodes[x]->name );
 				cd->addEff( 0, name, "USED-" + d->nodes[x]->name );  
@@ -481,8 +525,8 @@ int main( int argc, char *argv[] ) {
 					
 					// copy old effects					
 					And * oldeff = dynamic_cast< And * >( d->actions[action]->eff );					
-					for( unsigned l = 0; oldeff && l < oldeff->conds.size(); ++l )
-						concurEffs |= addEff( cd, do_start_part, oldeff->conds[l] );
+					for( unsigned l = 0; oldeff && l < oldeff->conds.size(); ++l ) 
+						concurEffs |= addEff( cd, do_start_part, oldeff->conds[l], d->nodes[x]->name );					
 					if( !oldeff ) 
 						concurEffs |= addEff( cd, do_start_part, d->actions[action]->eff );
 					
@@ -561,7 +605,7 @@ int main( int argc, char *argv[] ) {
 						// copy old effects					
 						oldeff = dynamic_cast< And * >( d->actions[action]->eff );					
 						for ( unsigned l = 0; oldeff && l < oldeff->conds.size(); ++l )
-							concurEffs |= addEff( cd, doSecondPart, oldeff->conds[l] );
+							concurEffs |= addEff( cd, doSecondPart, oldeff->conds[l], d->nodes[x]->name );
 						if ( !oldeff ) 
 							concurEffs |= addEff( cd, doSecondPart, d->actions[action]->eff );
 					
@@ -612,7 +656,7 @@ int main( int argc, char *argv[] ) {
 					// copy old effects					
 					oldeff = dynamic_cast< And * >( d->actions[action]->eff );					
 					for ( unsigned l = 0; oldeff && l < oldeff->conds.size(); ++l )
-						concurEffs |= addEff( cd, doSecondPart, oldeff->conds[l] );
+						concurEffs |= addEff( cd, doSecondPart, oldeff->conds[l], d->nodes[x]->name );
 					if ( !oldeff ) 
 						concurEffs |= addEff( cd, doSecondPart, d->actions[action]->eff );
 					
@@ -673,9 +717,10 @@ int main( int argc, char *argv[] ) {
 
 					// copy old effects
 					And * oldeff = dynamic_cast< And * >( d->actions[action]->eff );
-					for ( unsigned l = 0; oldeff && l < oldeff->conds.size(); ++l )
-						concurEffs |= addEff( cd, doit, oldeff->conds[l] );
-					if ( !oldeff ) concurEffs |= addEff( cd, doit, d->actions[action]->eff );
+					for ( unsigned l = 0; oldeff && l < oldeff->conds.size(); ++l ) 
+						concurEffs |= addEff( cd, doit, oldeff->conds[l], d->nodes[x]->name );					
+					if ( !oldeff ) 
+						concurEffs |= addEff( cd, doit, d->actions[action]->eff );
 
 					// add new parameters
 					if ( i->second.size() > 1 || d->nodes[x]->upper > 1 )
@@ -792,7 +837,7 @@ int main( int argc, char *argv[] ) {
 				}
 			}
 		
-			// lot of changes are added from the upf version for this END- version
+			// A lot of changes have been added from the latest upf version; for this END- version
 			if ( i->second.size() > 1 || d->nodes[x]->upper > 1 ) {
 				std::string name = "END-" + d->nodes[x]->name;
 				unsigned size = d->nodes[x]->params.size();
@@ -809,8 +854,7 @@ int main( int argc, char *argv[] ) {
 				cd->addEff( 1, name, "COUNT-" + d->nodes[x]->name, incvec( size, size + 1 ) );
 				if ( i->second.size() > 1 ) 
 					cd->addEff( 0, name, "DONE-" + d->nodes[x]->name );				
-				else 
-				{					
+				else {					
 					cd->addEff( 0, name, "AFREE" );
 					cd->addEff( 1, name, "ACTIVE-" + d->nodes[x]->name, incvec( 0, size ) );
 					
@@ -827,11 +871,10 @@ int main( int argc, char *argv[] ) {
 					f->cond = new Not( new Ground( cd->preds.get( "TAKEN" ), incvec( size + 1, size + 2 ) ) );
 					dynamic_cast< And * >( end->eff )->add( f );
 					
-					/** addition of quantifiers ***/					
-					std::cout << " probVector " << probVector <<"\n";
+					/** addition of quantifiers ***/
+					probVector = node_wise_probVector[ (std::string) d->nodes[x]->name ];					
 					std::set< std::vector < unsigned > >::iterator it;
-					for( it = probVector.begin(); it != probVector.end(); ++it ) 
-					{ 
+					for( it = probVector.begin(); it != probVector.end(); ++it ) { 
 						std::vector< unsigned > deleteChoices  = ( std::vector< unsigned > ) *it;				
 						unsigned i = (unsigned) deleteChoices[0];
 						unsigned choice = (unsigned) deleteChoices[1];
@@ -848,11 +891,10 @@ int main( int argc, char *argv[] ) {
 
 						IntVec predParams;
 						IntVec predParams1;
-						for( int &d1 : cd->convertTypes(vec) ) {
-							predParams.push_back(d1);
-							predParams1.push_back(d1);
-						}
-						IntVec nodeParams = d->nodes[x]->params; // expected nodeParams <= predParams
+						for( int &d1 : cd->convertTypes(vec) ) 
+							predParams.push_back(d1);							
+						
+						IntVec nodeParams = d->nodes[x]->params; // expected nodeParams <= predParams						
 						for( unsigned d1 = 0; d1 < nodeParams.size(); d1++ )
 							for( unsigned d2 = 0; d2 < predParams.size(); d2++ )
 								if( nodeParams[d1] == predParams[d2] ) {
@@ -862,26 +904,24 @@ int main( int argc, char *argv[] ) {
 						
 						IntVec index;
 						unsigned f1Size = predParams.size();
-						for( int p = 0; p < (int)(size + f1Size); p++ ) 
-							index.push_back( -1 );						
-						
+						for( int p = 0; p < (int)(size + f1Size); p++ ) {
+							index.push_back( -1 );
+							if( p <= (int) size )		
+								predParams1.push_back( 0 );
+						}
+
 						int ind = nodeParams.size();
 						for( unsigned d1 = 0; d1 < cd->convertTypes(vec).size(); d1++ ) {
 							int index1 = -1;
 							for( unsigned d2 = 0; d2 < nodeParams.size(); d2++ )
-								if( predParams1.size() > d1 && ( nodeParams[d2] == predParams1[d1] ) ) {
-									index1 = d2; predParams1.erase( predParams1.begin() + d1 ); break;									
-								} 
+								if( (predParams1[d2] == 0) && (nodeParams[d2] == cd->convertTypes(vec)[d1]) ) {
+									index1 = d2; nodeParams[d2] = 1; break;									
+								}
 							if( index1 != -1 )
 								index[d1] = index1;
 							else 
 								index[d1] = ++ind;								
 						}
-																			
-						IntVec integerVec;																		
-						for( int p = 0; p < (int)(size + f1Size + 1); p++ ) 
-							if( p!= (int) size )
-								integerVec.push_back(p);							 
 						
 						if ( choice == 1 ) {	
 							f1->params = predParams;		
@@ -916,6 +956,7 @@ int main( int argc, char *argv[] ) {
 						predParams.clear();
 						predParams1.clear();												
 					}
+					probVector.clear();
 				}
 			}
 
@@ -940,8 +981,7 @@ int main( int argc, char *argv[] ) {
 				dynamic_cast< And * >( finish->eff )->add( f );
 			}
 		}
-	}
-			
+	}			
 	std::cout << *cd;
 
 	// generate single-agent instance file
