@@ -9,23 +9,22 @@
 	(has-boat ?b - boat ?x - location ?y - location)
 	(has-bridge ?b - bridge ?x - location ?y - location)
 	(:private
-		;(tired-agent-pr ?agent - agent )
+		(tired-agent-pr ?agent - agent )
 	)
 )
 
-(:action cross 
+(:action move 
 	:agent ?a - agent
-	:parameters (?b - bridge ?x - location ?y - location) 
+	:parameters (?d - door ?x - location ?y - location)
 	:precondition (and
 					(at ?a ?x)
-					(has-bridge ?b ?x ?y) 
-			)
+					(not (blocked ?x ?y))
+					(has-door ?d ?x ?y) 
+				  )
 	:effect	(and 
 					(at ?a ?y)
 					(not (at ?a ?x))
-					(not (has-bridge ?b ?x ?y))
-					(not (has-bridge ?b ?y ?x))
-			 )
+				 )
 )
 
 (:action clean-build-activity 
@@ -68,20 +67,34 @@
 	:effect	(and 
 					(at ?a ?y)
 					(not (at ?a ?x))
-					;(not (has-bridge ?b ?x ?y))
-					(has-bridge ?b ?y ?x)
+					(not (has-bridge ?b ?x ?y))
+					;(has-bridge ?b ?y ?x)
 			 )
 )
 
+(:action pushswitch
+	:agent ?a - agent
+	:parameters (?s - switch ?x - location ?y - location ?z - location)
+	:precondition (and
+					(at ?a ?x)
+					(has-switch ?s ?x ?y ?z)
+			 	  )
+	:effect	(and
+				(not (blocked ?y ?z))
+				(not (blocked ?z ?y))
+	)
+)
+
+(:concurrency-constraint v1
+	:parameters (?d - door)
+	:bounds (1 3)
+	:actions ( (move 1) )
+)
 
 (:concurrency-constraint v3
-	:parameters (?b - bridge ?l - location )
-	:bounds (1 3)
-	:actions ( 
-				(build 1 2) 
-				(clean 1 2) 
-				(clean-build-activity  3 2) 
-			 )
+	:parameters (?b - bridge)
+	:bounds (1 5)
+	:actions ( (clean 1) )
 )
 
 )

@@ -13,8 +13,9 @@ NOTE - Some Important Issues.
 	   other agents in the eff or preconditions. Little more work is needed to resolve this limitation. 
 	5. TODO During translation an action cannot be public or private. So, remove IN-JOINT from the preconditions in the planner's code.
 	6. Simplification - the single agent action name will appear in the joint activity, it is part of, e.g., push and push-activity.
-	8. As there is some problem in the MA-Parser, during parsing a problem file, it always skips the first private object. So, always 
+	8. NOTE - as there is some problem in the MA-Parser, during parsing a problem file, it always skips the first private object. So, always 
 	   have a dummy object in each problem file, like for an example, say, "dummy-pr - object"
+*
 ***/
 
 /** To check for memory leaks:
@@ -32,6 +33,7 @@ parser::multiagent::MultiagentDomain * d;
 Instance * ins;
 std::set< unsigned> prob;
 std::set< std::vector < unsigned > > probVector;
+std::map< std::string, std::set< std::vector < unsigned > > node_wise_probVector;
 typedef std::map< unsigned, std::vector< int > > VecMap;
 
 
@@ -826,6 +828,7 @@ int main( int argc, char *argv[] ) {
 					dynamic_cast< And * >( end->eff )->add( f );
 					
 					/** addition of quantifiers ***/					
+					std::cout << " probVector " << probVector <<"\n";
 					std::set< std::vector < unsigned > >::iterator it;
 					for( it = probVector.begin(); it != probVector.end(); ++it ) 
 					{ 
@@ -909,7 +912,9 @@ int main( int argc, char *argv[] ) {
 							ss->cond = a1;
 							f1->cond = ss;
 							dynamic_cast< And * >( end->eff )->add( f1 );	
-						}						
+						}
+						predParams.clear();
+						predParams1.clear();												
 					}
 				}
 			}
