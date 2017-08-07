@@ -39,10 +39,7 @@
 	  			(connected ?from-location ?to-location)
 	  		)
 	  	:effect 
-	  		(and
-	  			(agent-at-loc ?agent ?from-location)
-	  			(not (box-at-loc ?box ?from-location))
-	  		)
+	  		(and)
 	  )
 	  
 	  (:action push-activity-box
@@ -71,6 +68,12 @@
     :parameters (?box - box) 
     :bounds (1 inf) 
     :actions ( (push-box 1) (push-activity-box 2) ) 
+)
+
+(:concurrency-constraint v1
+    :parameters (?l - location) 
+    :bounds (1 inf) 
+    :actions ( (move 1) ) 
 )
 
 )

@@ -8,7 +8,7 @@ void Lifted::PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< st
 	if (name.find("-PR") == std::string::npos)
 		s << "( " << name;
 	else 
-		s << "( " << name.substr( 0, name.size() - 3 ); // for removing -PR
+		s << "( " << name.substr( 0, name.size()); // for removing -PR
 	for ( unsigned i = 0; i < params.size(); ++i ) {
 		if ( ts.size() ) s << ts[i];
 		else s << " ?" << d.types[params[i]]->getName() << i;

@@ -29,7 +29,6 @@ NOTE - Some Important Issues.
 
 using namespace parser::pddl;
 
-
 parser::multiagent::MultiagentDomain * d; Instance * ins;
 std::set< unsigned> prob; std::set< std::vector < unsigned > > probVector;
 std::map< std::string, std::set< std::vector < unsigned >>> node_wise_probVector;
@@ -134,8 +133,8 @@ bool isActionAComponentOfJA( Action * jointActivity,  Action * possibleComp ) {
 	return decision; 
 }
 
-// just handles |< push, 2-push (JA) >| or |< push, clean, <push-clean (JA) >>|
-// action-component-name should always appear in JA, along with its whole paramList() 
+// Just handles |< push, 2-push (JA) >| or |< push, clean, <push-clean (JA) >>|
+// Action-component-name should always appear in JA, along with its whole paramList() 
 std::map< std::string, std::vector< std::string > > findComponentsOfJointActivities( const parser::multiagent::NetworkNode * n ) {
 	std::map < std::string, std::vector < std::string > > listOfJointActivityComponents;
 	for( unsigned i = 0; i < n->templates.size(); ++i ) {
@@ -143,7 +142,7 @@ std::map< std::string, std::vector< std::string > > findComponentsOfJointActivit
 		Action * jointActivity = d->actions[ d->actions.index( n->templates[i]->name ) ];		
 		if( ( jointActivity->name ).find( "ACTIVITY" ) != std::string::npos ) {
 			for ( unsigned j = 0; j < n->templates.size(); ++j ) 
-				if ( i != j ) {
+				if ( i != j ) {					
 					Action * possibleComp = d->actions[ d->actions.index( n->templates[j]->name ) ];					
 					bool decision = isActionAComponentOfJA( jointActivity, possibleComp );	
 					if (decision) {

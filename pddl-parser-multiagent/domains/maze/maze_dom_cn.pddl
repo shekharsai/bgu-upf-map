@@ -38,7 +38,7 @@
 	:effect	(and 
 					(at ?a ?y)
 					(not (at ?a ?x))
-					(has-bridge ?b ?x ?y)
+					;(has-bridge ?b ?x ?y)
 					(not (has-bridge ?b ?y ?x))
 			 )
 )
@@ -57,7 +57,7 @@
 					;(has-bridge ?b ?x ?y)
 					(not (toota ?b))
 					(not (has-bridge ?b ?y ?x))
-					(has-bridge ?b ?y ?x)
+					;(has-bridge ?b ?y ?x)
 					(toota ?b)
 			 )
 )
@@ -92,17 +92,17 @@
 	)
 )
 
-;(:concurrency-constraint v1
-;	:parameters (?d - door)
-;	:bounds (1 3)
-;	:actions ( (move 1) )
-;)
+(:concurrency-constraint v1
+	:parameters (?d - door)
+	:bounds (1 3)
+	:actions ( (move 1) )
+)
 
 (:concurrency-constraint v3
 	:parameters (?l - location ?b - bridge)
 	:bounds (3 5)
 	:actions ( 
-				(clean 1 3) 
+				;(clean 1 3) 
 				(build 2 1)	
 				(clean-build-activity 2 3)
 			 )

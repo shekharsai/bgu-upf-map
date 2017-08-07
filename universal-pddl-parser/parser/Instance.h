@@ -274,7 +274,7 @@ public:
 						if ( d.types[i]->objects[j].find("-PR") != std::string::npos) {						
 							if ( ++count == 1 )
 								stream << "\t\t";
-							stream << d.types[i]->objects[j].substr( 0, d.types[i]->objects[j].size() - 3 ) << " ";
+							stream << d.types[i]->objects[j].substr( 0, d.types[i]->objects[j].size() ) << " ";
 							ifPrivate = true;
 						}
 					}

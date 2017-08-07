@@ -6,11 +6,11 @@
 	loc4x2 loc3x2 - location
 	b3 - bridge				
 	
-	;(:private			
-	;	always-dummy-pr - object 
-	;	ss1-pr - agent - agent
-	;		driver7-pr - location	
-	;)
+	(:private			
+		always-dummy-pr - object 
+		ss1-pr - agent - agent
+			driver7-pr - location	
+	)
 )
 (:init
 	(at a1 loc4x2)
