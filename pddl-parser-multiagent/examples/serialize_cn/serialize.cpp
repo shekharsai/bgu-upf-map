@@ -9,11 +9,10 @@ NOTE - Some Important Issues.
 		(a) A joint activity, e.g., (a1, a2, a3, ..., ak, objs)
 		(b) Irrespective of any type Truck or Plane use AGENT as it has string comparisons using this word, specially for a JA.
 	3. The name of an activity should have "ACTIVITY" string in it. Also, you need to specify more than one agent.  
-	4. Currently, it handles constraints over only one object, e.g., a boat, a bridge etc. Easy to extend though. 
-	Also, it splits blindly, which means, to have correct splits of a Joint activity, make sure that there is no predicates specifying 
-	other agents in the eff or preconditions. Little more work is needed to resolve this limitation. 
-	5. TODO During translation an action cannot be public or private. So, remove IN-JOINT from the preconditions in the Shlomi's code.
-	6. Simplification - the single agent action name will appear in the joint activity, it is part of. E.g. push, and push-activity.
+	4. It splits blindly, which means, to have correct splits of a Joint activity, make sure that there is no predicates specifying 
+	   other agents in the eff or preconditions. Little more work is needed to resolve this limitation. 
+	5. TODO During translation an action cannot be public or private. So, remove IN-JOINT from the preconditions in the planner's code.
+	6. Simplification - the single agent action name will appear in the joint activity, it is part of, e.g., push and push-activity.
 ***/
 
 /** To check for memory leaks:
