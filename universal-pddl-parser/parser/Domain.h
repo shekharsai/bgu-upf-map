@@ -507,7 +507,8 @@ public:
 	//! Prints a PDDL representation of the object to the given stream.
 	friend std::ostream& operator<<(std::ostream &os, const Domain& o) { return o.print(os); }
 	virtual std::ostream& print(std::ostream& os) const {
-		os << ";; " << name << " domain\n";
+		os << ";;\n";
+		os << ";;\t" << name << " DOMAIN \n";
 		os << ";;\n";
 		os << "( DEFINE ( DOMAIN " << name << " )\n";
 		print_requirements(os);

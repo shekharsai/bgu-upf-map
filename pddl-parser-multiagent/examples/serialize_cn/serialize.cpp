@@ -16,6 +16,9 @@ NOTE - Some Important Issues.
 	7. NOTE - as there is some problem in the MA-Parser, during parsing a problem file, it always skips the first private object. So, always 
 	   have a dummy object in each problem file, like for an example, say, "dummy-pr - object"
 	8. It should capture POS- or NEG- for a predicate only if its param set is superset of node param set, aka, V1->params   
+	9. Since, the number of agents is not known beforehand, 'inf' does not work, so, one needs to give appropriate number in the node bounds.
+   10. Don't have a check on a node having inappropriate bounds, and it has a joint-activity in its action list  
+   11. How are we suppose to add 'neg-p_a' in the initial state.
 *
 ***/
 
@@ -33,7 +36,6 @@ parser::multiagent::MultiagentDomain * d; Instance * ins;
 std::set< unsigned> prob; std::set< std::vector < unsigned > > probVector;
 std::map< std::string, std::set< std::vector < unsigned >>> node_wise_probVector;
 typedef std::map< unsigned, std::vector< int > > VecMap;
-
 
 bool doTheyTargetTheSameObjectSubset( IntVec network, IntVec legal, IntVec legalActionParams, IntVec illegal, IntVec illegalActionParams ) {
 	bool decision = false;
@@ -262,6 +264,30 @@ bool canAddNewCondition( Domain * cd, std::string actaualAction, std::string con
 	return decision;
 }
 
+bool canAddNewEffect( Domain * cd, std::string actaualAction, std::string cond ) {
+	bool decision = true;
+	for( unsigned i7 = 0; i7 < cd->actions.size(); i7++) 
+		if( actaualAction == cd->actions[i7]->name ) 
+		{			
+			std::vector< Ground * > posEffectSet = cd->actions[i7]->addEffects();
+			for( unsigned int i8 = 0; i8 < posEffectSet.size(); i8++ ) {
+				std::stringstream buffer;
+				buffer << posEffectSet[i8] << std::endl;
+				if( ( buffer.str() ).find(cond) != std::string::npos )
+					decision = false;
+			}
+			std::vector< Ground * > negEffectSet = cd->actions[i7]->deleteEffects();
+			for( unsigned int i8 = 0; i8 < negEffectSet.size(); i8++ ) {
+				std::stringstream buffer;
+				buffer << negEffectSet[i8] << std::endl;
+				if( ( buffer.str() ).find(cond) != std::string::npos )
+					decision = false;
+			}
+		}
+	return decision;
+}
+
+
 bool subsetVector( IntVec parent, IntVec child ) {
 	unsigned counter = 0;
 	IntVec pr, ch;
@@ -300,7 +326,7 @@ int main( int argc, char *argv[] ) {
 		pairOfProbActions.push_back( pair );	
 	}
 		
-	// Currently contains a maximum 2 SA actions, e.g., push:push and clean:push.
+	// Currently contains a maximum 2 single agent actions, e.g., push:push and clean:push.
 	std::vector< std::map< std::string, std::map< std::string, std::vector< std::string >>> > listOfJointActivityComponents;
 	for( unsigned i = 0; i < d->nodes.size(); ++i ) {
 	 	std::map< std::string, std::map < std::string, std::vector < std::string >>> pair;	
@@ -485,9 +511,11 @@ int main( int argc, char *argv[] ) {
 			
 			// the actual action list starts from here
 			bool concurEffs = 0;
-			for( unsigned k = 0; k < d->nodes[x]->templates.size(); ++k ) {			
+			for( unsigned k = 0; k < d->nodes[x]->templates.size(); ++k ) 
+			{			
 				int action = d->actions.index( d->nodes[x]->templates[k]->name );
-				std::string name = d->actions[action]->name;				
+				std::string name = d->actions[action]->name;	
+							
 				// TODO Code below is for splitting a joint activity
 				if( name.find("ACTIVITY") != std::string::npos ) {										
 					// creating the first part of the Joint Activity									
@@ -577,10 +605,26 @@ int main( int argc, char *argv[] ) {
 						std::string s2 = convert.str();
 						s2.erase(0, s2.find_first_not_of(" \n\r\t"));
 						s2.erase(s2.find_last_not_of(" \n\r\t")+1);
-						bool decision = canAddNewCondition( cd, start_JA, "NEXT-" + name + "-" + s2 );
+						bool decision = canAddNewEffect( cd, start_JA, "NEXT-" + name + "-" + s2 );
 						for ( unsigned s = 0; s < d->nodes[x]->templates.size(); s++) 
 			 				if ( d->nodes[x]->templates[s]->name == name && decision ) 
-								cd->addEff( 0, start_JA, "NEXT-"+ name + "-" + s2, d->nodes[x]->templates[s]->params );								
+								cd->addEff( 0, start_JA, "NEXT-"+ name + "-" + s2, d->nodes[x]->templates[s]->params );
+						
+						// will add NEG-Action 		
+						bool exists = false;
+						predcts = cd->listOfPredicates();
+			 			for (unsigned z = 0; z < predcts.size(); z++) 
+			 				if ( predcts[z]->name == "P-" + d->actions[action]->name ) 
+			 					exists = true;						 			
+			 			
+			 			if (! exists) 
+			 				cd->createPredicate( "P-" + d->actions[action]->name, d->typeList( d->nodes[x] ) );
+			 			
+			 			decision = canAddNewEffect( cd, start_JA, "P-" + d->actions[action]->name );
+			 			for ( unsigned s = 0; s < d->nodes[x]->templates.size(); s++) {
+			 				if ( decision && d->nodes[x]->templates[s]->name == d->actions[action]->name )
+								cd->addEff( 0, start_JA, "P-" + d->actions[action]->name, d->nodes[x]->templates[s]->params );
+						}														
 					}	
 					
 					// TODO ( not done ) the intermediate split action, in case when #agents > 2.
@@ -689,7 +733,7 @@ int main( int argc, char *argv[] ) {
 						std::string s2 = convert.str();
 						s2.erase(0, s2.find_first_not_of(" \n\r\t"));
 						s2.erase(s2.find_last_not_of(" \n\r\t")+1);
-						bool decision = canAddNewCondition( cd, start_JA, "NEXT-" + name + "-" + s2 );
+						bool decision = canAddNewEffect( cd, start_JA, "NEXT-" + name + "-" + s2 );
 						for ( unsigned s = 0; s < d->nodes[x]->templates.size(); s++) 
 			 				if ( d->nodes[x]->templates[s]->name == name && decision ) 
 								cd->addEff( 1, end_JA, "NEXT-"+ name + "-" + s2, d->nodes[x]->templates[s]->params );
@@ -699,7 +743,8 @@ int main( int argc, char *argv[] ) {
 						cd->addEff( 0, end_JA, "COUNT-" + d->nodes[x]->name, incvec( size + 1, size + 2 ) );
 					}
 				} 
-				/*** when the action is single agent action errespective of it being a component of a JA. ***/			
+				/*
+				 ** When the action is single agent action errespective of it being a component of a JA. ** */			
 				else { 
 					name = "DO-" + d->actions[action]->name;
 					unsigned size = d->actions[action]->params.size();
@@ -707,7 +752,7 @@ int main( int argc, char *argv[] ) {
 					
 					// copy old preconditions
 					And * oldpre = dynamic_cast< And * >( d->actions[action]->pre );
-					if ( oldpre ) doit->pre = new And( oldpre, *cd );
+					if( oldpre ) doit->pre = new And( oldpre, *cd );
 					else {
 						And * a = new And;
 						a->add( d->actions[action]->pre->copy( *cd ) );
@@ -716,18 +761,18 @@ int main( int argc, char *argv[] ) {
 
 					// copy old effects
 					And * oldeff = dynamic_cast< And * >( d->actions[action]->eff );
-					for ( unsigned l = 0; oldeff && l < oldeff->conds.size(); ++l ) 
+					for( unsigned l = 0; oldeff && l < oldeff->conds.size(); ++l ) 
 						concurEffs |= addEff( cd, doit, oldeff->conds[l], d->nodes[x]->name );					
-					if ( !oldeff ) 
+					if( !oldeff ) 
 						concurEffs |= addEff( cd, doit, d->actions[action]->eff );
 
 					// add new parameters
-					if ( i->second.size() > 1 || d->nodes[x]->upper > 1 )
+					if( i->second.size() > 1 || d->nodes[x]->upper > 1 )
 						cd->addParams( name, StringVec( 2, "AGENT-COUNT" ) );
 
 					// add new preconditions
 					TokenStruct< Lifted * > predcts = cd->listOfPredicates();
-					if ( i->second.size() > 1 || d->nodes[x]->upper > 1 ) {
+					if( i->second.size() > 1 || d->nodes[x]->upper > 1 ) {
 						cd->addPre( 1, name, "IN-JOINT" ); 
 						cd->addPre( 0, name, "ACTIVE-" + d->nodes[x]->name, d->nodes[x]->templates[k]->params );
 						cd->addPre( 1, name, "TAKEN", IntVec( 1, 0 ) );
@@ -735,7 +780,7 @@ int main( int argc, char *argv[] ) {
 						cd->addPre( 0, name, "CONSEC", incvec( size, size + 2 ) );
 
 						// extra preconditions to avoid conflicting effects among the actions
-						for (unsigned t = 0; t < pairOfProbActions.size(); t++) {
+						for( unsigned t = 0; t < pairOfProbActions.size(); t++ ) {
 							std::map < std::string, std::vector < std::string > > mappedProbActions;
 							mappedProbActions = pairOfProbActions[t][d->nodes[x]->name];
 						 	std::vector< std::string > listAction = mappedProbActions[ (std::string) d->actions[action]->name ];
@@ -772,8 +817,12 @@ int main( int argc, char *argv[] ) {
 									}
 							}	
 							for( const auto& key : arrKeys ) {
-								std::vector< std::string > listAction = mappedCompActions[ key ];	
+								std::vector< std::string > listAction = mappedCompActions[ key ];
+								std::cout << " Action = " << listAction[0] << "\n";
+								std::cout << " d->actions[action]->name " << d->actions[action]->name << "\n";	
+								std::cout << " d->nodes[x]->templates[s]->name " << d->nodes[x]->templates << "\n";
 								if( listAction.size() == 1 ) {
+									std::cout << " Action 1 = " << listAction[0] << "\n";
 									bool exists = false;
 					 				predcts = cd->listOfPredicates();					 				
 						 			for( unsigned z = 0; z < predcts.size(); z++ ) {
@@ -784,31 +833,33 @@ int main( int argc, char *argv[] ) {
 						 			if( !exists ) {
 						 				cd->createPredicate( "P-" + listAction[0], d->typeList( d->nodes[x] ) );
 						 			}
-						 			bool decision = canAddNewCondition( cd, name, "P-" + listAction[0] );
+						 			
+						 			// The name is only to avoid same action name in a JA. For example: Activity-A1-A2
+						 			bool decision = canAddNewCondition( cd, name, "P-" + listAction[0] );						 			
 						 			for( unsigned s = 0; s < d->nodes[x]->templates.size(); s++ ) {
 				 						if( d->nodes[x]->templates[s]->name == d->actions[action]->name && decision )
 						 					cd->addPre( 1, name, "P-" + listAction[0], d->nodes[x]->templates[s]->params);
-						 			}
-						 		} else {	
-						 				for( unsigned h = 0; h < listAction.size(); h++ ) {							 				
-							 				bool exists = false;
-							 				bool sameActions = ( listAction[h] == d->actions[action]->name );	
-							 				predcts = cd->listOfPredicates();						 				
-									 		for( unsigned z = 0; z < predcts.size(); z++ ) {									 			
-									 			if( (predcts[z]->name == "P-" + listAction[h]) ) {									 				
-									 				exists = true;						 		
-									 			}	
-									 		}
-								 			if( !exists && !sameActions ) {
-								 				cd->createPredicate( "P-" + listAction[h], d->typeList( d->nodes[x] ) );								 			 	
-								 			}
-								 			bool decision = canAddNewCondition( cd, name, "P-" + listAction[h] );
-								 			if( !sameActions )
-									 			for( unsigned s = 0; s < d->nodes[x]->templates.size(); s++ ) 
-							 						if( d->nodes[x]->templates[s]->name == d->actions[action]->name && decision )
-									 					cd->addPre( 1, name, "P-" + listAction[h], d->nodes[x]->templates[s]->params);
+						 			}						 			
+						 		} 
+						 		else 	
+						 			for( unsigned h = 0; h < listAction.size(); h++ ) {							 				
+						 				bool exists = false;
+						 				bool sameActions = ( listAction[h] == d->actions[action]->name );	
+						 				predcts = cd->listOfPredicates();						 				
+								 		for( unsigned z = 0; z < predcts.size(); z++ ) {									 			
+								 			if( (predcts[z]->name == "P-" + listAction[h]) ) {									 				
+								 				exists = true;						 		
+								 			}	
+								 		}
+							 			if( !exists && !sameActions ) {
+							 				cd->createPredicate( "P-" + listAction[h], d->typeList( d->nodes[x] ) );								 			 	
 							 			}
-							 		}							 		
+							 			bool decision = canAddNewCondition( cd, name, "P-" + listAction[h] );
+							 			if( !sameActions )
+								 			for( unsigned s = 0; s < d->nodes[x]->templates.size(); s++ ) 
+						 						if( d->nodes[x]->templates[s]->name == d->actions[action]->name && decision )
+								 					cd->addPre( 1, name, "P-" + listAction[h], d->nodes[x]->templates[s]->params);
+						 			}						 									 		
 							}
 						} 
 					}					
@@ -828,8 +879,9 @@ int main( int argc, char *argv[] ) {
 			 			if (! exists) 
 			 				cd->createPredicate( "P-" + d->actions[action]->name, d->typeList( d->nodes[x] ) );
 			 			
+			 			bool decision = canAddNewEffect( cd, name, "P-" + d->actions[action]->name );
 			 			for ( unsigned s = 0; s < d->nodes[x]->templates.size(); s++) {
-			 				if ( d->nodes[x]->templates[s]->name == d->actions[action]->name )
+			 				if ( decision && d->nodes[x]->templates[s]->name == d->actions[action]->name )
 								cd->addEff( 0, name, "P-" + d->actions[action]->name, d->nodes[x]->templates[s]->params );
 						}
 					}
@@ -851,8 +903,9 @@ int main( int argc, char *argv[] ) {
 				
 				// all effects including the new ones needed for aaai
 				cd->addEff( 1, name, "COUNT-" + d->nodes[x]->name, incvec( size, size + 1 ) );
-				if ( i->second.size() > 1 ) 
+				if ( i->second.size() > 1 ) {
 					cd->addEff( 0, name, "DONE-" + d->nodes[x]->name );				
+				}
 				else {					
 					cd->addEff( 0, name, "AFREE" );
 					cd->addEff( 1, name, "ACTIVE-" + d->nodes[x]->name, incvec( 0, size ) );
@@ -861,8 +914,8 @@ int main( int argc, char *argv[] ) {
 					for( unsigned d1 = 0; d1 < d->nodes[x]->templates.size(); d1++) {
 						int action = d->actions.index( d->nodes[x]->templates[d1]->name );
 						std::string actionName = d->actions[action]->name;
-						if( actionName.find( "ACTIVITY" ) == std::string::npos )
-							cd->addEff( 1, name, "P-" + actionName, incvec( 0, size ) );
+						// if( actionName.find( "ACTIVITY" ) == std::string::npos ) : changed later
+						cd->addEff( 1, name, "P-" + actionName, incvec( 0, size ) );
 					}
 					
 					Forall * f = new Forall;					
@@ -984,7 +1037,13 @@ int main( int argc, char *argv[] ) {
 	std::cout << *cd;
 
 	// generate single-agent instance file
-	unsigned nagents = d->types.get( "AGENT" )->noObjects();
+	unsigned nagents = 0;
+	for( unsigned i = 0; i < d->nodes.size(); ++i ) {
+		VecMap::iterator j = ccs.find( d->mf[i] );
+		if( j->second.size() > 1 || d->nodes[i]->upper > 1 ) 
+			if( (d->nodes[i]->upper > nagents) && (d->nodes[i]->upper != 1000000) )
+				nagents = d->nodes[i]->upper;		
+	}	
 
 	Instance * cins = new Instance( *cd );
 	cins->name = ins->name;
@@ -1001,26 +1060,33 @@ int main( int argc, char *argv[] ) {
 	// create initial state
 	for ( unsigned i = 0; i < ins->init.size(); ++i )
 		if ( d->preds.index( ins->init[i]->name ) >= 0 )
-			cins->addInit( ins->init[i]->name, d->objectList( ins->init[i] ) );
+			cins->addInit( ins->init[i]->name, d->objectList( ins->init[i] ) );			
 	cins->addInit( "AFREE" );
+		
 	for ( unsigned i = 1; i <= nagents; ++i ) {
 		StringVec pars( 1, counts[i - 1] );
 		pars.push_back( counts[i] );
 		cins->addInit( "CONSEC", pars );
 	}
+
 	for ( unsigned i = 0; i < d->nodes.size(); ++i ) {
 		VecMap::iterator j = ccs.find( d->mf[i] );
-		if ( j->second.size() > 1 || d->nodes[i]->upper > 1 ) {
+		if ( j->second.size() > 1 || d->nodes[i]->upper > 1 ) {	
 			for ( unsigned j = d->nodes[i]->lower; j <= d->nodes[i]->upper && j <= nagents; ++j )
 				cins->addInit( "SAT-" + d->nodes[i]->name, StringVec( 1, counts[j] ) );
 		}
 	}
-
+	
+	// add all NEG-actionName facts in the initial state
+	
+	
+	 
 	// create goal state
 	for ( unsigned i = 0; i < ins->goal.size(); ++i )
 		cins->addGoal( ins->goal[i]->name, d->objectList( ins->goal[i] ) );
 	cins->addGoal( "AFREE" );
-
+	
+	// print it via standard error output '2>'
 	std::cerr << *cins;
 
 	delete cins;
