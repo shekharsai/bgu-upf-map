@@ -818,11 +818,7 @@ int main( int argc, char *argv[] ) {
 							}	
 							for( const auto& key : arrKeys ) {
 								std::vector< std::string > listAction = mappedCompActions[ key ];
-								std::cout << " Action = " << listAction[0] << "\n";
-								std::cout << " d->actions[action]->name " << d->actions[action]->name << "\n";	
-								std::cout << " d->nodes[x]->templates[s]->name " << d->nodes[x]->templates << "\n";
 								if( listAction.size() == 1 ) {
-									std::cout << " Action 1 = " << listAction[0] << "\n";
 									bool exists = false;
 					 				predcts = cd->listOfPredicates();					 				
 						 			for( unsigned z = 0; z < predcts.size(); z++ ) {
@@ -923,90 +919,106 @@ int main( int argc, char *argv[] ) {
 					f->cond = new Not( new Ground( cd->preds.get( "TAKEN" ), incvec( size + 1, size + 2 ) ) );
 					dynamic_cast< And * >( end->eff )->add( f );
 					
-					/** addition of quantifiers ***/
-					probVector = node_wise_probVector[ (std::string) d->nodes[x]->name ];					
-					std::set< std::vector < unsigned > >::iterator it;
+					/** addition of quantifiers ***/	
+					probVector = node_wise_probVector[ (std::string) d->nodes[x]->name ];										
+					std::set< std::vector < unsigned >>::iterator it;
+					std::vector< std::vector< unsigned >> choicesToAdd;
+					std::vector< unsigned > choicesToAdd_flag;
 					for( it = probVector.begin(); it != probVector.end(); ++it ) { 
 						std::vector< unsigned > deleteChoices  = ( std::vector< unsigned > ) *it;				
-						unsigned i = (unsigned) deleteChoices[0];
-						unsigned choice = (unsigned) deleteChoices[1];
-						
+						choicesToAdd.push_back( deleteChoices );
+						choicesToAdd_flag.push_back( 0 );
+					}
+					
+					// the generation method of choicesToAdd_copy might have some error.
+					std::vector< std::vector< unsigned >> choicesToAdd_copy;					
+					for( unsigned indx = 0; indx < choicesToAdd.size(); indx++ ) {
+						if( choicesToAdd_flag[ indx ] == 1 )
+							continue;
+						std::vector< unsigned > choicesA = choicesToAdd[ indx ];
+						unsigned realIndex = indx;
+						unsigned ch1 = choicesA[ 0 ]; unsigned ch2 = choicesA[ 1 ];
+						choicesToAdd_flag[ indx ] = 1;
+						for( unsigned indy = indx + 1; indy < choicesToAdd.size(); indy++ ) {
+							std::vector< unsigned > choicesB = choicesToAdd[ indy ];
+							unsigned ch3 = choicesB[ 0 ]; unsigned ch4 = choicesB[ 1 ];	
+							if( ch1 == ch3 && choicesToAdd_flag[ indy ] != 1 ) {
+								choicesToAdd_flag[ indy ] = 1;
+								if( ch2 >= ch4 ) 
+									realIndex = indy;
+							}
+						}
+						choicesToAdd_copy.push_back( choicesToAdd[ realIndex ] );						
+					}
+									
+					// this loop brings all the POS- and NEG- predicates in the effects 
+					for( unsigned dx = 0; dx < choicesToAdd_copy.size(); dx++ ) {
+						unsigned i = (unsigned) choicesToAdd_copy[ dx ][ 0 ];
+						unsigned choice = (unsigned) choicesToAdd_copy[ dx ][ 1 ];
+												
 						Forall * f1 = new Forall;
 						And * andFormula = new And;							
-						When * ss = new When;
-						And * a1 = new And; StringVec vec;						
-						for( int p = 0; p < (int) d->typeList( d->preds[i] ).size(); p++ ) 
-							for( int q = 0; q < (int) d->typeList( d->nodes[x] ).size(); q++ ) 
-								if( ! ( d->typeList( d->preds[i] )[p] == d->typeList( d->nodes[x] )[q] ) ) 
-									vec.push_back( d->typeList( d->preds[i] )[p] );							
+						When * ss = new When; And * a1 = new And; 
+					
+						IntVec nodeParam = cd->convertTypes( d->typeList( d->nodes[x] ) ); 						
+						IntVec predParam = cd->convertTypes( d->typeList( d->preds[i] ) ); 
+						IntVec predParam_flag;
+						for( unsigned d1 = 0; d1 < predParam.size(); d1++ )
+							predParam_flag.push_back( -1 );
 						
-
-						IntVec predParams;
-						IntVec predParams1;
-						for( int &d1 : cd->convertTypes(vec) ) 
-							predParams.push_back(d1);							
-						
-						IntVec nodeParams = d->nodes[x]->params; // expected nodeParams <= predParams						
-						for( unsigned d1 = 0; d1 < nodeParams.size(); d1++ )
-							for( unsigned d2 = 0; d2 < predParams.size(); d2++ )
-								if( nodeParams[d1] == predParams[d2] ) {
-									predParams.erase( predParams.begin() + d2 );
+						for( unsigned d1 = 0; d1 < nodeParam.size(); d1++ ) 
+							for( unsigned d2 = 0; d2 < predParam.size(); d2++ ) 
+								if( predParam_flag[ d2 ] != -1 ) break;
+								else if( nodeParam[ d1 ] == predParam[ d2 ] ) {
+									predParam_flag[ d2 ] = 0;
+									predParam[ d2 ] = d1;
 									break;
-								}			
-						
-						IntVec index;
-						unsigned f1Size = predParams.size();
-						for( int p = 0; p < (int)(size + f1Size); p++ ) {
-							index.push_back( -1 );
-							if( p <= (int) size )		
-								predParams1.push_back( 0 );
-						}
-
-						int ind = nodeParams.size();
-						for( unsigned d1 = 0; d1 < cd->convertTypes(vec).size(); d1++ ) {
-							int index1 = -1;
-							for( unsigned d2 = 0; d2 < nodeParams.size(); d2++ )
-								if( (predParams1[d2] == 0) && (nodeParams[d2] == cd->convertTypes(vec)[d1]) ) {
-									index1 = d2; nodeParams[d2] = 1; break;									
-								}
-							if( index1 != -1 )
-								index[d1] = index1;
+								}										
+							
+						unsigned indxI = nodeParam.size()+1;
+						IntVec predParams, forAllParams;
+						for( unsigned d2 = 0; d2 < predParam.size(); d2++ ) 							  
+							if( predParam_flag[ d2 ] == -1 ) {
+								forAllParams.push_back( predParam[ d2 ] );
+								predParams.push_back( indxI++ );								
+							}
 							else 
-								index[d1] = ++ind;								
-						}
+								predParams.push_back( predParam[ d2 ] );
 						
+						IntVec index = {};	
 						if ( choice == 1 ) {	
-							f1->params = predParams;		
-							ss->pars = new Ground ( cd->preds.get( "POS-" + d->preds[i]->name ), index );							
-							a1->add( new Ground ( cd->preds.get( d->preds[i]->name ), index ) );
-							a1->add( new Not ( new Ground( cd->preds.get( "POS-" + d->preds[i]->name ), index ) ) );
+							f1->params = forAllParams;		
+							ss->pars = new Ground ( cd->preds.get( "POS-" + d->preds[i]->name ), predParams );							
+							a1->add( new Ground ( cd->preds.get( d->preds[i]->name ), predParams ) );
+							a1->add( new Not ( new Ground( cd->preds.get( "POS-" + d->preds[i]->name ), predParams ) ) );
 							ss->cond = a1;							
 							andFormula->add(ss);	
 														
 							ss = new When;							
-							ss->pars = new Ground( cd->preds.get( "NEG-" + d->preds[i]->name ), index );
+							ss->pars = new Ground( cd->preds.get( "NEG-" + d->preds[i]->name ), predParams );
 							a1 = new And;
-							a1->add( new Not( new Ground( cd->preds.get( d->preds[i]->name ), index ) ) );
-							a1->add( new Not( new Ground( cd->preds.get( "NEG-" + d->preds[i]->name ), index ) ) );
+							a1->add( new Not( new Ground( cd->preds.get( d->preds[i]->name ), predParams ) ) );
+							a1->add( new Not( new Ground( cd->preds.get( "NEG-" + d->preds[i]->name ), predParams ) ) );
 							ss->cond = a1;
 							andFormula->add(ss);
 							f1->cond = andFormula;
 							dynamic_cast< And * >( end->eff )->add( f1 );													
 						}
-						else if ( choice == 2 ) {		
+						else if ( choice == 2 ) {	
+							std::cout << " index " << index <<"\n";	
 							f1 = new Forall;
-							f1->params = predParams; 
+							f1->params = forAllParams; 
 							ss = new When;							
-							ss->pars = new Ground( cd->preds.get( "NEG-" + d->preds[i]->name ), index );
+							ss->pars = new Ground( cd->preds.get( "NEG-" + d->preds[i]->name ), predParams );
 							a1 = new And;
-							a1->add( new Not( new Ground( cd->preds.get( d->preds[i]->name ), index ) ) );
-							a1->add( new Not( new Ground( cd->preds.get( "NEG-" + d->preds[i]->name ), index ) ) );
+							a1->add( new Not( new Ground( cd->preds.get( d->preds[i]->name ), predParams ) ) );
+							a1->add( new Not( new Ground( cd->preds.get( "NEG-" + d->preds[i]->name ), predParams ) ) );
 							ss->cond = a1;
 							f1->cond = ss;
 							dynamic_cast< And * >( end->eff )->add( f1 );	
 						}
 						predParams.clear();
-						predParams1.clear();												
+						forAllParams.clear();
 					}
 					probVector.clear();
 				}

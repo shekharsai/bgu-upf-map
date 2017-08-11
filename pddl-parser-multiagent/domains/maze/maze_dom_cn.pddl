@@ -10,7 +10,7 @@
 	(has-bridge ?b - bridge ?x - location ?y - location)
 	(broken ?b - bridge)
 	(:private
-		(tired-agent-pr ?agent - agent )
+		(tired-agent ?agent - agent )
 	)
 )
 
@@ -57,7 +57,7 @@
 					;(has-bridge ?b ?x ?y)
 					(not (broken ?b))
 					(not (has-bridge ?b ?y ?x))
-					;(has-bridge ?b ?y ?x)
+					(has-bridge ?b ?y ?x)
 					(broken ?b)
 			 )
 )
@@ -73,7 +73,7 @@
 	:effect	(and 
 					(at ?a ?y)
 					(not (at ?a ?x))
-					;(not (has-bridge ?b ?x ?y))
+					(not (has-bridge ?b ?x ?y))
 					(has-bridge ?b ?y ?x)
 					;(broken ?b)
 			 )
@@ -99,12 +99,12 @@
 ;)
 
 (:concurrency-constraint v3
-	:parameters (?l - location ?b - bridge)
-	:bounds (3 5)
+	:parameters (?b - bridge)
+	:bounds (2 3)
 	:actions ( 
-				(clean 1 3) 
-				;(build 2 1)	
-				(ja-activity-clean-build 2 3)
+				(clean 3) 
+				(build 1)	
+				(ja-activity-clean-build 3)
 			 )
 )
 
