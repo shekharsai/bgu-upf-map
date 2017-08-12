@@ -100,7 +100,7 @@
 
 (:concurrency-constraint v3
 	:parameters (?b - bridge)
-	:bounds (2 3)
+	:bounds (4 8)
 	:actions ( 
 				(clean 3) 
 				(build 1)	

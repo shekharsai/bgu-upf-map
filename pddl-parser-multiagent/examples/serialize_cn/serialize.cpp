@@ -12,13 +12,12 @@ NOTE - Some Important Issues.
 	4. It splits blindly, which means, to have correct splits of a Joint activity, make sure that there is no predicates specifying 
 	   other agents in the eff or preconditions. Little more work is needed to resolve this limitation. 
 	5. TODO During translation an action cannot be public or private. So, remove IN-JOINT from the preconditions in the planner's code.
-	6. Simplification - the single agent action name will appear in the joint activity, it is part of, e.g., push and push-activity.
+	6. Simplification - the single agent action name will appear in the joint activity, it is part of, e.g., push-box and activity-push-box.
 	7. NOTE - as there is some problem in the MA-Parser, during parsing a problem file, it always skips the first private object. So, always 
 	   have a dummy object in each problem file, like for an example, say, "dummy-pr - object"
 	8. It should capture POS- or NEG- for a predicate only if its param set is superset of node param set, aka, V1->params   
 	9. Since, the number of agents is not known beforehand, 'inf' does not work, so, one needs to give appropriate number in the node bounds.
-   10. Don't have a check on a node having inappropriate bounds, and it has a joint-activity in its action list  
-   11. How are we suppose to add 'neg-p_a' in the initial state.
+   10. Don't have a check on a node having inappropriate bounds, and it has a joint-activity in its action list.  
 *
 ***/
 
@@ -335,7 +334,10 @@ int main( int argc, char *argv[] ) {
 	}
 	
 	// The below code snippet is for identifying problematic fluents (preconditions deleted), that halts parallel execution.  	
-	for( unsigned i = 0; i < d->nodes.size(); ++i ) {		
+	for( unsigned i = 0; i < d->nodes.size(); ++i ) {	
+		// interaction is captured through only set of objects.
+		if( (d->nodes[ i ]->params).size() == 0	)
+			continue;
 		for( unsigned j = 0; d->nodes[i]->upper > 1 && j < d->nodes[i]->templates.size(); ++j ) {
 			IntVec impParams;
 			impParams = d->nodes[i]->templates[j]->params; 			
@@ -345,8 +347,7 @@ int main( int argc, char *argv[] ) {
 			GroundVec added = a->addEffects();	
 			unsigned choice = 1;			
 			for( unsigned k = 0; k < dels.size(); ++k ) {	
-				bool choiceA = subsetVector( dels[k]->params, impParams );
-						// std::find( dels[k]->params.begin(), dels[k]->params.end(), impParams[0] ) != dels[k]->params.end();
+				bool choiceA = subsetVector( dels[k]->params, impParams );						
 				bool choiceB = deletes( dels[k], d->nodes[i], impParams );
 				bool choiceC = false;
 								
@@ -733,7 +734,7 @@ int main( int argc, char *argv[] ) {
 						std::string s2 = convert.str();
 						s2.erase(0, s2.find_first_not_of(" \n\r\t"));
 						s2.erase(s2.find_last_not_of(" \n\r\t")+1);
-						bool decision = canAddNewEffect( cd, start_JA, "NEXT-" + name + "-" + s2 );
+						bool decision = canAddNewEffect( cd, end_JA, "NEXT-" + name + "-" + s2 );
 						for ( unsigned s = 0; s < d->nodes[x]->templates.size(); s++) 
 			 				if ( d->nodes[x]->templates[s]->name == name && decision ) 
 								cd->addEff( 1, end_JA, "NEXT-"+ name + "-" + s2, d->nodes[x]->templates[s]->params );
@@ -1088,11 +1089,7 @@ int main( int argc, char *argv[] ) {
 				cins->addInit( "SAT-" + d->nodes[i]->name, StringVec( 1, counts[j] ) );
 		}
 	}
-	
-	// add all NEG-actionName facts in the initial state
-	
-	
-	 
+ 
 	// create goal state
 	for ( unsigned i = 0; i < ins->goal.size(); ++i )
 		cins->addGoal( ins->goal[i]->name, d->objectList( ins->goal[i] ) );

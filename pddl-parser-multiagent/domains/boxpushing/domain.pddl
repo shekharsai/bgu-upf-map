@@ -42,23 +42,23 @@
 	  		(and)
 	  )
 	  
-	  (:action push-activity-box
+	  (:action activity-push-box
 		:agent ?agent0 - agent 
 	  	:parameters (?agent1 - agent ?box - box ?from-location - location ?to-location - location)
 	  	:precondition 
 	  		(and 	  			
 	  			(agent-at-loc ?agent0 ?from-location)
-	  			(agent-at-loc ?agent1 ?from-location)
+	  			;(agent-at-loc ?agent1 ?from-location)
 	  			(box-at-loc ?box ?from-location)
 	  			(connected ?from-location ?to-location)
 	  		)
 	  	:effect 
 	  		(and	  			
 	  			(agent-at-loc ?agent0 ?to-location)
-	  			(agent-at-loc ?agent1 ?to-location)
-	  			(box-at-loc ?box ?from-location)
-	  			(not (agent-at-loc ?agent0 ?to-location))
-	  			(not (agent-at-loc ?agent1 ?to-location))
+	  			;(agent-at-loc ?agent1 ?to-location)
+	  			(box-at-loc ?box ?to-location)
+	  			(not (agent-at-loc ?agent0 ?from-location))
+	  			;(not (agent-at-loc ?agent1 ?from-location))
 	  			(not (box-at-loc ?box ?from-location))
 	  		)
 	  )
@@ -66,14 +66,14 @@
 
 (:concurrency-constraint v2
     :parameters (?box - box) 
-    :bounds (1 inf) 
-    :actions ( (push-box 1) (push-activity-box 2) ) 
+    :bounds (2 4) 
+    :actions ( (push-box 1) (activity-push-box 2) ) 
 )
 
 (:concurrency-constraint v1
-    :parameters (?l - location) 
-    :bounds (1 inf) 
-    :actions ( (move 1) ) 
+    :parameters (?from-location - location ?to-location - location) 
+    :bounds (1 2) 
+    :actions ( ( move-agent 1 2 ) ) 
 )
 
 )
