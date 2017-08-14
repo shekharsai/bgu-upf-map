@@ -1,0 +1,41 @@
+Actual search time: 0.552966s [t=0.596697s]
+do-move a4 d15 loc4x1 loc4x2 (1)
+do-move a4 d16 loc4x2 loc4x3 (1)
+do-move a4 d14 loc4x3 loc3x3 (1)
+do-move a4 d11 loc3x3 loc3x2 (1)
+do-move a3 d7 loc3x1 loc2x1 (1)
+do-pushswitch a3 s1 loc2x1 loc1x2 loc1x3 (1)
+do-move a3 d6 loc2x1 loc2x2 (1)
+do-pushswitch a3 s2 loc2x2 loc1x3 loc1x4 (1)
+do-move a1 d5 loc1x4 loc1x3 (1)
+do-move a1 d3 loc1x3 loc1x2 (1)
+do-move a1 d4 loc1x2 loc2x2 (1)
+start-v2 bt3 loc2x2 (1)
+do-activity-row-1 a3 bt3 loc2x2 loc3x2 acount-0 acount-1 (1)
+do-activity-row-2 a1 bt3 loc2x2 loc3x2 acount-1 acount-2 (1)
+end-v2 bt3 loc2x2 acount-2 (1)
+do-move a3 d11 loc3x2 loc3x3 (1)
+do-move a3 d13 loc3x3 loc3x4 (1)
+do-move a5 d13 loc3x4 loc3x3 (1)
+do-move a5 d11 loc3x3 loc3x2 (1)
+start-v2 bt3 loc3x2 (1)
+do-activity-row-1 a1 bt3 loc3x2 loc2x2 acount-0 acount-1 (1)
+do-activity-row-2 a5 bt3 loc3x2 loc2x2 acount-1 acount-2 (1)
+end-v2 bt3 loc3x2 acount-2 (1)
+do-move a5 d4 loc2x2 loc1x2 (1)
+do-move a5 d3 loc1x2 loc1x3 (1)
+do-move a5 d5 loc1x3 loc1x4 (1)
+Plan length: 26 step(s).
+Plan cost: 26
+Expanded 4773 state(s).
+Reopened 0 state(s).
+Evaluated 10066 state(s).
+Evaluations: 10066
+Generated 207088 state(s).
+Dead ends: 5292 state(s).
+Number of registered states: 10066
+Search time: 0.552994s
+Total time: 0.596701s
+Solution found.
+Peak memory: 7188 KB
+

@@ -286,6 +286,14 @@ bool canAddNewEffect( Domain * cd, std::string actaualAction, std::string cond )
 	return decision;
 }
 
+// need to be done properly, right now hard coded
+// does not consider a proposition, if an agent is involved in it. 
+bool agentInvolved( IntVec params, IntVec actionParams ) {
+	for( unsigned i = 0; i < params.size(); i++ )
+		if( params[ i ] == 0 ) // '0' is by default an agent as of now, so, NP!
+			return true;
+	return false;
+}
 
 bool subsetVector( IntVec parent, IntVec child ) {
 	unsigned counter = 0;
@@ -333,20 +341,24 @@ int main( int argc, char *argv[] ) {
 		listOfJointActivityComponents.push_back( pair );	
 	}
 	
-	// The below code snippet is for identifying problematic fluents (preconditions deleted), that halts parallel execution.  	
+	// The below code snippet is for identifying problematic fluents (preconditions get deleted), that halts parallel execution.  	
 	for( unsigned i = 0; i < d->nodes.size(); ++i ) {	
-		// interaction is captured through only set of objects.
-		if( (d->nodes[ i ]->params).size() == 0	)
+		// interaction is captured only through set of objects.
+		if( ( d->nodes[ i ]->params ).size() == 0	)
 			continue;
 		for( unsigned j = 0; d->nodes[i]->upper > 1 && j < d->nodes[i]->templates.size(); ++j ) {
 			IntVec impParams;
 			impParams = d->nodes[i]->templates[j]->params; 			
 			
 			Action * a = d->actions[ d->actions.index( d->nodes[i]->templates[j]->name ) ];
-			GroundVec dels = a->deleteEffects();	
+			GroundVec dels = a->deleteEffects(); 
 			GroundVec added = a->addEffects();	
 			unsigned choice = 1;			
-			for( unsigned k = 0; k < dels.size(); ++k ) {	
+			for( unsigned k = 0; k < dels.size(); ++k ) {								
+				// a non-sense but necessary check :D	
+				bool superChoice = agentInvolved( dels[k]->params, a->params );
+				if( superChoice )
+					continue;
 				bool choiceA = subsetVector( dels[k]->params, impParams );						
 				bool choiceB = deletes( dels[k], d->nodes[i], impParams );
 				bool choiceC = false;
@@ -960,7 +972,6 @@ int main( int argc, char *argv[] ) {
 						Forall * f1 = new Forall;
 						And * andFormula = new And;							
 						When * ss = new When; And * a1 = new And; 
-					
 						IntVec nodeParam = cd->convertTypes( d->typeList( d->nodes[x] ) ); 						
 						IntVec predParam = cd->convertTypes( d->typeList( d->preds[i] ) ); 
 						IntVec predParam_flag;
@@ -1006,7 +1017,6 @@ int main( int argc, char *argv[] ) {
 							dynamic_cast< And * >( end->eff )->add( f1 );													
 						}
 						else if ( choice == 2 ) {	
-							std::cout << " index " << index <<"\n";	
 							f1 = new Forall;
 							f1->params = forAllParams; 
 							ss = new When;							
