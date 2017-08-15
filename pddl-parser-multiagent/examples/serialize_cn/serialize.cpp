@@ -157,14 +157,43 @@ std::map< std::string, std::vector< std::string > > findComponentsOfJointActivit
 }
 
 // Currently, only the deleted effects are being checked against the preconditions
+bool deletes( const Ground * ground, const parser::multiagent::NetworkNode * n, IntVec impParams) {
+	for( unsigned i = 0; i < n->templates.size(); ++i ) {
+		std::vector< int > list = n->templates[i]->params;			
+		Action * a = d->actions[ d->actions.index( n->templates[i]->name )];		
+		CondVec pres = a->precons();				
+		for( unsigned j = 0; j < pres.size(); ++j ) 
+		{	
+			Not * n = dynamic_cast< Not * >( pres[j] );
+			if( n ) continue;	
+			Ground * g = dynamic_cast< Ground * >( pres[j] );												
+			int counter = 0;
+			if( g && g->name == ground->name ) {
+				bool decision = false;
+				for( unsigned h = 0; h < g->params.size(); h++ ) {
+					for( unsigned f = 0; f < list.size(); f++ )											
+						if( list[ f ] == g->params[ h ] && g->params.size() <= list.size() ) 
+					 		decision = true;				
+					if( decision )
+						counter++;					
+				}
+				if( counter == (int) g->params.size() )		
+					return true;
+			}
+		}		
+	}
+	return false;
+}
+
+// Currently, only the deleted effects are being checked against the preconditions
 // not elegantly done, just for the sake of the aaai deadline!
-bool deletes( const Ground * ground, const parser::multiagent::NetworkNode * n, IntVec impParams ) {
+bool deletes_old( const Ground * ground, const parser::multiagent::NetworkNode * n, IntVec impParams ) {
 	IntVec networkParams = n->params;
 	for( unsigned i = 0; i < n->templates.size(); ++i ) {			
 		Action * a = d->actions[ d->actions.index( n->templates[i]->name )];		
 		IntVec currActParams = a->params;
 		CondVec pres = a->precons();				
-		for( unsigned j = 0; j < pres.size(); ++j ) {
+		for( unsigned j = 0; j < pres.size(); ++j ) {		
 			Ground * g = dynamic_cast< Ground * >( pres[j] );			
 			int counter = 0;						
 			if( g && g->name == ground->name ) {
@@ -288,30 +317,31 @@ bool canAddNewEffect( Domain * cd, std::string actaualAction, std::string cond )
 
 // need to be done properly, right now hard coded
 // does not consider a proposition, if an agent is involved in it. 
-bool agentInvolved( IntVec params, IntVec actionParams ) {
-	for( unsigned i = 0; i < params.size(); i++ )
-		if( params[ i ] == 0 ) // '0' is by default an agent as of now, so, NP!
+bool agentInvolved( StringVec paramList, IntVec params ) {
+	for( unsigned j = 0; j < params.size(); j++ )
+		if( paramList[ params[ j ] ] == "AGENT" && params[j]!=1 ) 
 			return true;
 	return false;
 }
 
+// captures only cases when node[i]->params is subset of del[j]->params or vice versa.
 bool subsetVector( IntVec parent, IntVec child ) {
-	unsigned counter = 0;
+	unsigned counter;
 	IntVec pr, ch;
+	counter = 0; pr.clear(); ch.clear();
 	for( int &i: parent )
 		pr.push_back(i);
 	for( int &i: child )
 		ch.push_back(i);
-			
-	for( unsigned i = 0; i < ch.size(); i++ ) {
-		for( unsigned j = 0; j < pr.size(); j++ )
-			if( ch[i] == pr[j] ) {
+	for( unsigned i = 0; i < pr.size(); i++ ) {
+		for( unsigned j = 0; j < ch.size(); j++ )
+			if( pr[i] == ch[j] ) {
 				counter++; 
-				pr.erase( pr.begin() + j ); 
+				ch.erase( ch.begin() + j ); 
 				break;
 			}
-	}
-	if( counter == child.size() )
+	}	
+	if( counter == parent.size() )
 		return true;	
 	return false;			
 }
@@ -353,13 +383,14 @@ int main( int argc, char *argv[] ) {
 			Action * a = d->actions[ d->actions.index( d->nodes[i]->templates[j]->name ) ];
 			GroundVec dels = a->deleteEffects(); 
 			GroundVec added = a->addEffects();	
+						
 			unsigned choice = 1;			
 			for( unsigned k = 0; k < dels.size(); ++k ) {								
-				// a non-sense but necessary check :D	
-				bool superChoice = agentInvolved( dels[k]->params, a->params );
+				// a non-sense but necessary check :D					
+				bool superChoice = agentInvolved( d->typeList( a ), dels[k]->params );
 				if( superChoice )
 					continue;
-				bool choiceA = subsetVector( dels[k]->params, impParams );						
+				bool choiceA = subsetVector( dels[k]->params, impParams );					
 				bool choiceB = deletes( dels[k], d->nodes[i], impParams );
 				bool choiceC = false;
 								
@@ -417,8 +448,8 @@ int main( int argc, char *argv[] ) {
 					exists = false;	
 					predcts = cd->listOfPredicates();
 					for (unsigned z = 0; z < predcts.size(); z++) 
-	 				if ( predcts[z]->name == "POS-" + d->preds[i]->name ) 
-	 					exists = true;
+	 					if ( predcts[z]->name == "POS-" + d->preds[i]->name ) 
+	 						exists = true;
 	 				if (! exists)				
 						cd->createPredicate( "POS-" + d->preds[i]->name, d->typeList(d->preds[i]) );
 						
@@ -974,20 +1005,51 @@ int main( int argc, char *argv[] ) {
 						When * ss = new When; And * a1 = new And; 
 						IntVec nodeParam = cd->convertTypes( d->typeList( d->nodes[x] ) ); 						
 						IntVec predParam = cd->convertTypes( d->typeList( d->preds[i] ) ); 
+						std::cout << " nodeParam " << nodeParam << " \n";
+						std::cout << " predParam " << predParam  << " \n";
+						
+						std::cout << " d->typeList( d->nodes[x] " << d->typeList( d->nodes[x] ) << " \n";
+						std::cout << " d->typeList( d->preds[i] ) " << d->typeList( d->preds[i] )  << " \n";
+						
 						IntVec predParam_flag;
 						for( unsigned d1 = 0; d1 < predParam.size(); d1++ )
 							predParam_flag.push_back( -1 );
 						
-						for( unsigned d1 = 0; d1 < nodeParam.size(); d1++ ) 
-							for( unsigned d2 = 0; d2 < predParam.size(); d2++ ) 
-								if( predParam_flag[ d2 ] != -1 ) break;
-								else if( nodeParam[ d1 ] == predParam[ d2 ] ) {
+						std::cout << " predParam_flag " << predParam_flag << " \n";
+						unsigned indxI = nodeParam.size() + 1;
+						for( unsigned d2 = 0; d2 < predParam.size(); d2++ ) {
+							int counter = 0;
+							for( unsigned d1 = 0; d1 < nodeParam.size(); d1++ ) {
+								if( nodeParam[ d1 ] == predParam[ d2 ] )
+								 	counter++;
+							}
+							int indxi = 0;								 	
+							for( unsigned d1 = 0; d1 < nodeParam.size() && counter >= 2; d1++ ) { 
+								std::cout << " innn " << predParam[ d2 ] << "	" <<   	nodeParam <<"\n";
+								if( nodeParam[ d1 ] == predParam[ d2 ] ) {
+									nodeParam.erase( nodeParam.begin() + d1 );									
+									std::cout << " i n " << predParam[ d2 ] << "	" <<   	nodeParam <<"\n";
+								}
+							}
+							
+						}
+						
+						std::cout << " nodeParam 1 " << nodeParam << " \n";
+						
+						for( unsigned d2 = 0; d2 < predParam.size(); d2++ ) {
+							if( predParam_flag[ d2 ] != -1 ) 
+								continue;													
+							for( unsigned d1 = 0; d1 < nodeParam.size(); d1++ ) {		
+								if( nodeParam[ d1 ] == predParam[ d2 ] ) {
 									predParam_flag[ d2 ] = 0;
 									predParam[ d2 ] = d1;
 									break;
-								}										
+								}
+							}
+						}										
+						std::cout << " after predParam_flag " << predParam_flag << " \n";
 							
-						unsigned indxI = nodeParam.size()+1;
+						
 						IntVec predParams, forAllParams;
 						for( unsigned d2 = 0; d2 < predParam.size(); d2++ ) 							  
 							if( predParam_flag[ d2 ] == -1 ) {
@@ -997,6 +1059,7 @@ int main( int argc, char *argv[] ) {
 							else 
 								predParams.push_back( predParam[ d2 ] );
 						
+						std::cout << " forAllParams " << forAllParams << "\n";
 						IntVec index = {};	
 						if ( choice == 1 ) {	
 							f1->params = forAllParams;		
@@ -1016,7 +1079,7 @@ int main( int argc, char *argv[] ) {
 							f1->cond = andFormula;
 							dynamic_cast< And * >( end->eff )->add( f1 );													
 						}
-						else if ( choice == 2 ) {	
+						else if ( choice == 2 ) {
 							f1 = new Forall;
 							f1->params = forAllParams; 
 							ss = new When;							
