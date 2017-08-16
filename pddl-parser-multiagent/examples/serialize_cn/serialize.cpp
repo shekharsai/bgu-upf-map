@@ -1005,50 +1005,34 @@ int main( int argc, char *argv[] ) {
 						When * ss = new When; And * a1 = new And; 
 						IntVec nodeParam = cd->convertTypes( d->typeList( d->nodes[x] ) ); 						
 						IntVec predParam = cd->convertTypes( d->typeList( d->preds[i] ) ); 
-						std::cout << " nodeParam " << nodeParam << " \n";
-						std::cout << " predParam " << predParam  << " \n";
-						
-						std::cout << " d->typeList( d->nodes[x] " << d->typeList( d->nodes[x] ) << " \n";
-						std::cout << " d->typeList( d->preds[i] ) " << d->typeList( d->preds[i] )  << " \n";
-						
 						IntVec predParam_flag;
 						for( unsigned d1 = 0; d1 < predParam.size(); d1++ )
 							predParam_flag.push_back( -1 );
 						
-						std::cout << " predParam_flag " << predParam_flag << " \n";
 						unsigned indxI = nodeParam.size() + 1;
 						for( unsigned d2 = 0; d2 < predParam.size(); d2++ ) {
 							int counter = 0;
-							for( unsigned d1 = 0; d1 < nodeParam.size(); d1++ ) {
+							for( unsigned d1 = 0; d1 < nodeParam.size(); d1++ ) 
 								if( nodeParam[ d1 ] == predParam[ d2 ] )
 								 	counter++;
-							}
-							int indxi = 0;								 	
-							for( unsigned d1 = 0; d1 < nodeParam.size() && counter >= 2; d1++ ) { 
-								std::cout << " innn " << predParam[ d2 ] << "	" <<   	nodeParam <<"\n";
+								 								
+							for( unsigned d1 = 0; d1 < nodeParam.size() && counter >= 2; d1++ )  
 								if( nodeParam[ d1 ] == predParam[ d2 ] ) {
-									nodeParam.erase( nodeParam.begin() + d1 );									
-									std::cout << " i n " << predParam[ d2 ] << "	" <<   	nodeParam <<"\n";
+									nodeParam.erase( nodeParam.begin() + d1 );
+									d1--;									
 								}
-							}
-							
 						}
-						
-						std::cout << " nodeParam 1 " << nodeParam << " \n";
 						
 						for( unsigned d2 = 0; d2 < predParam.size(); d2++ ) {
 							if( predParam_flag[ d2 ] != -1 ) 
 								continue;													
-							for( unsigned d1 = 0; d1 < nodeParam.size(); d1++ ) {		
+							for( unsigned d1 = 0; d1 < nodeParam.size(); d1++ )		
 								if( nodeParam[ d1 ] == predParam[ d2 ] ) {
 									predParam_flag[ d2 ] = 0;
 									predParam[ d2 ] = d1;
 									break;
 								}
-							}
 						}										
-						std::cout << " after predParam_flag " << predParam_flag << " \n";
-							
 						
 						IntVec predParams, forAllParams;
 						for( unsigned d2 = 0; d2 < predParam.size(); d2++ ) 							  
@@ -1059,7 +1043,6 @@ int main( int argc, char *argv[] ) {
 							else 
 								predParams.push_back( predParam[ d2 ] );
 						
-						std::cout << " forAllParams " << forAllParams << "\n";
 						IntVec index = {};	
 						if ( choice == 1 ) {	
 							f1->params = forAllParams;		
