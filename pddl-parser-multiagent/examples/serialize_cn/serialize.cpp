@@ -28,8 +28,10 @@ NOTE - Some Important Issues.
 #include <parser/Instance.h>
 #include <multiagent/MultiagentDomain.h>
 #include <vector>
+#include <time.h>
 
 using namespace parser::pddl;
+using namespace std;
 
 parser::multiagent::MultiagentDomain * d; Instance * ins;
 std::set< unsigned> prob; std::set< std::vector < unsigned > > probVector;
@@ -346,7 +348,7 @@ bool subsetVector( IntVec parent, IntVec child ) {
 	return false;			
 }
 
-int main( int argc, char *argv[] ) {
+int main( int argc, char *argv[] ) {    
 	if ( argc < 3 ) {
 		std::cout << "Usage: ./transform <domain.pddl> <task.pddl>\n";
 		exit( 1 );
@@ -355,6 +357,10 @@ int main( int argc, char *argv[] ) {
 	d = new parser::multiagent::MultiagentDomain( argv[1] );
 	ins = new Instance( *d, argv[2] );
 	
+	// start time
+	clock_t t1, t2;
+    t1 = clock();
+    
 	// Actions with conflicting effects, e.g., <stack, [unstack,pickup]>
 	std::vector< std::map< std::string, std::map< std::string, std::vector< std::string >>> > pairOfProbActions;
 	for( unsigned i = 0; i < d->nodes.size(); ++i ) {
@@ -1043,7 +1049,6 @@ int main( int argc, char *argv[] ) {
 							else 
 								predParams.push_back( predParam[ d2 ] );
 						
-						IntVec index = {};	
 						if ( choice == 1 ) {	
 							f1->params = forAllParams;		
 							ss->pars = new Ground ( cd->preds.get( "POS-" + d->preds[i]->name ), predParams );							
@@ -1153,9 +1158,15 @@ int main( int argc, char *argv[] ) {
 	
 	// print it via standard error output '2>'
 	std::cerr << *cins;
-
+	
+	// end time
+	t2 = clock();
+	
+	float diff ((float)t2-(float)t1);
+    std::cout<< "Total compilation time = " << diff/CLOCKS_PER_SEC << std::endl;
+    
 	delete cins;
 	delete cd;
 	delete ins;
-	delete d;
+	delete d;    
 }

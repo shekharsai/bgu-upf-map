@@ -1,2 +1,7 @@
 To run Fast Downward:
+
 /home/shashank/Documents/Copy-IITM/Research-Edited/Fast-Downward/fast-downward.py /home/shashank/Dropbox/dom.pddl /home/shashank/Dropbox/ins.pddl --heuristic h="ff()" --search "lazy_greedy(h, preferred=h)" 
+
+
+FD command with different limits
+./fast-downward.py  --search-time-limit 10m --search-memory-limit 2G benchmarks/gripper/prob01.pddl --heuristic 'hff=ff()' --search 'ehc(h=hff)'
