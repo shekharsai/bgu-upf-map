@@ -42,8 +42,8 @@ Relevant for the ICAPS paper.
 	8. It should capture POS- or NEG- for a predicate only if its param set is superset of node 
 	param set, e.g., V1->params   
 	
-	9. Since, the number of agents is not known beforehand, hence, unlike CJR, 'inf' does not work. 
-	We need to give appropriate number in the node bounds.
+	9. Since, the number of agents is not known beforehand, so, unlike CJR, 'inf' does not work. 
+	We need to give an appropriate number in the node for upper bounds.
    	
    	10. Don't have a check on a node having inappropriate bounds, and it has a collaborative action 
    	in its action list. 
@@ -87,6 +87,8 @@ std::map< std::string, std::vector<std::string> > actionPairWithDiffEffOnObjSet(
 // This function is added for our jair version, it was not part of our icaps work. 
 // Note: this does not check for an agent performing sa-push is tired etc. 
 // Here, we are interested in different effects on shared object, e.g., pushed(B) or not-pushed(B). 
+// Partially done, since we added a stronger interpretation (journal), this check is not mandatory 
+// for a domain description. Follow up the potential weaknesses mentioned in the ICAPS paper.   
 bool isTheDomainDescriptionAmbiguous( parser::multiagent::MultiagentDomain *d ) {
 	for( unsigned i=0; i<d->nodes.size(); i++) {
 		std::cout << d->nodes[i] << std::endl;
@@ -94,13 +96,14 @@ bool isTheDomainDescriptionAmbiguous( parser::multiagent::MultiagentDomain *d ) 
 			std::cout << d->nodes[i]->templates[j]->params << std::endl;
 		}
 	}
-		
+	// Add code snippet to make sure (2push,push) and (push,2push) are not possible as per a given 
+	// domain, and in case if it is possible, notify the modeler to resolve it.	
 	// For each node V1,...,Vk, the algorithm is run 
 	for( unsigned i = 0; i < d->nodes.size(); ++i ) {
 		std::map< std::string, std::vector <std::string> > pairs;	
 		pairs = actionPairWithDiffEffOnObjSet( d->nodes[i], *d );	
 	}
-	
+		
 	return true;
 }
 
