@@ -3,14 +3,15 @@
 * email: shekhar@cs.bgu.ac.il 
 */
 
-/** 
-*
+/*
+*************************************************************************************************** 
 Before you dive into this code, you should keep the following steps in mind.	
 Note that our code is restricted to very specific cases as per our ICAPS paper, so it does not 
 handle all the scenarios, however, it is very easy to make changes in the code according to any 
 specific requirements.  	
 
 Relevant for the ICAPS paper. 
+
 	1. The name of each predicate must be different, why?
 		(a) POS- NEG- have been added using only predicate names.
 			
@@ -47,21 +48,24 @@ Relevant for the ICAPS paper.
    	10. Don't have a check on a node having inappropriate bounds, and it has a collaborative action 
    	in its action list. 
    	
-The changes below is part of our AIJ article
+Note that, in the description, our paper considers all actions as grounded actions, so that the 
+explainations become easy. The code is based on non-grounded operators. 
+   	
+The changes below are part of our submitted journal article.
    	
    	12. We have changed the interpretation now. Now, we have a stronger notion to define a 
-   	well-formed multi-action instead of well-defined that has some drawbacks as mentioned in the 
-   	ICAPS paper.  
+   	well-formed multi-action instead of well-defined that has some potential weakness as pointed 
+   	out in our ICAPS paper.  
    	
    	13. However, the current interpretation does not affect our doimains' compilation.  
-*
-**/
 
-/** 
+****************************************************************************************************
 *	To check for memory leaks: 
-* 	valgrind --leak-check=yes examples/serialize ../multiagent/../tablemover/tablemover.pddl 
-*		../multiagent/../tablemover/table1_1.pddl 
-**/
+* 		valgrind --leak-check=yes examples/serialize 
+*				../multiagent/../tablemover/tablemover.pddl 
+*						../multiagent/../tablemover/table1_1.pddl 
+****************************************************************************************************
+*/
 
 #include <parser/Instance.h>
 #include <multiagent/MultiagentDomain.h>
