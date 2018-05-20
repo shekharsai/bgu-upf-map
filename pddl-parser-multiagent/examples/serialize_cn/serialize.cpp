@@ -1,29 +1,67 @@
 /**
-***
-***************** @author - Shashank Shekhar 
-***************** Email - shashankshekhar2010@gmail.com 
-NOTE - Some Important Issues. 
-	1. Have all predicates with different names. Why?
-		(a) As POS- NEG- specifically been put using only predicate names.
-	2. Have all the agents together in the activity parameter list.
-		(a) A joint activity, e.g., (a1, a2, a3, ..., ak, objs)
-		(b) Irrespective of any type Truck or Plane use AGENT as it has string comparisons using this word, specially for a JA.
-	3. The name of an activity should have "ACTIVITY" string in it. Also, you need to specify more than one agent.  
-	4. It splits blindly, which means, to have correct splits of a Joint activity, make sure that there is no predicates specifying 
-	   other agents in the eff or preconditions. Little more work is needed to resolve this limitation. 
-	5. TODO During translation an action cannot be public or private. So, remove IN-JOINT from the preconditions in the planner's code.
-	6. Simplification - the single agent action name will appear in the joint activity, it is part of, e.g., push-box and activity-push-box.
-	7. NOTE - as there is some problem in the MA-Parser, during parsing a problem file, it always skips the first private object. So, always 
-	   have a dummy object in each problem file, like for an example, say, "dummy-pr - object"
-	8. It should capture POS- or NEG- for a predicate only if its param set is superset of node param set, aka, V1->params   
-	9. Since, the number of agents is not known beforehand, 'inf' does not work, so, one needs to give appropriate number in the node bounds.
-   10. Don't have a check on a node having inappropriate bounds, and it has a joint-activity in its action list.  
-*
-***/
+* @author: Shashank Shekhar, BGU Israel. 
+* email: shekhar@cs.bgu.ac.il 
+*/
 
-/** To check for memory leaks:
-* valgrind --leak-check=yes examples/serialize ../multiagent/codmap/domains/tablemover/tablemover.pddl ../multiagent/codmap/domains/tablemover/table1_1.pddl
-***/
+/** 
+*
+Before you dive into this code, you should keep the following steps in mind.	
+Note that our code is restricted to very specific cases as per our ICAPS paper, so it does not 
+handle all the scenarios, however, it is very easy to make changes in the code according to any 
+specific requirements.  	
+
+Relevant for the ICAPS paper. 
+	1. The name of each predicate must be different, why?
+		(a) POS- NEG- have been added using only predicate names.
+			
+	2. Keep all the agents together in the activity parameter list. Since it is an extension over 
+	CJR's formalism and syntax, the prime acting agent would never appear in the parameter list, 
+	see their action schema for more details on this. 
+		(a) For a collaborative action, the agent list will be (a1, a2, ..., ak, objs) -- k agents
+		(b) Irrespective of a object-type Truck or Plane use AGENT as the code has string 
+		comparisons, especially for a collaborative action.
+	
+	3. The name of a collaborative action should have "ACTIVITY" string in it. Also, you need to 
+	specify more than one agent. See our domains for example.  
+	
+	4. It splits blindly, which means, to have correct splits of a Joint activity, make sure that 
+	there are no predicates specifying other agents in the effect or precondition. A little more 
+	work is needed to resolve this limitation. 
+	
+	5. TODO during translation an action cannot be public or private. So, remove IN-JOINT from the 
+	preconditions in the planner's code -- whichever planner you are using.
+	
+	6. Simplification - the single-agent action name will appear in the name of a collaborative
+	action, for example, push-box and activity-push-box.
+	
+	7. As there is some problem in the MA-Parser (in upf-map, unresolved), during parsing a 
+	problem file, it always skips the first private object. Therefore, always have a dummy object 
+	in each problem file, for an example, "dummy-pr - object", we also use this.
+	
+	8. It should capture POS- or NEG- for a predicate only if its param set is superset of node 
+	param set, e.g., V1->params   
+	
+	9. Since, the number of agents is not known beforehand, hence, unlike CJR, 'inf' does not work. 
+	We need to give appropriate number in the node bounds.
+   	
+   	10. Don't have a check on a node having inappropriate bounds, and it has a collaborative action 
+   	in its action list. 
+   	
+The changes below is part of our AIJ article
+   	
+   	12. We have changed the interpretation now. Now, we have a stronger notion to define a 
+   	well-formed multi-action instead of well-defined that has some drawbacks as mentioned in the 
+   	ICAPS paper.  
+   	
+   	13. However, the current interpretation does not affect our doimains' compilation.  
+*
+**/
+
+/** 
+*	To check for memory leaks: 
+* 	valgrind --leak-check=yes examples/serialize ../multiagent/../tablemover/tablemover.pddl 
+*		../multiagent/../tablemover/table1_1.pddl 
+**/
 
 #include <parser/Instance.h>
 #include <multiagent/MultiagentDomain.h>
@@ -38,7 +76,36 @@ std::set< unsigned> prob; std::set< std::vector < unsigned > > probVector;
 std::map< std::string, std::set< std::vector < unsigned >>> node_wise_probVector;
 typedef std::map< unsigned, std::vector< int > > VecMap;
 
-bool doTheyTargetTheSameObjectSubset( IntVec network, IntVec legal, IntVec legalActionParams, IntVec illegal, IntVec illegalActionParams ) {
+std::map< std::string, std::vector<std::string> > actionPairWithDiffEffOnObjSet( 
+									const parser::multiagent::NetworkNode * n, const Domain & cd);
+	
+// This function is added for our jair version, it was not part of our icaps work. 
+// Note: this does not check for an agent performing sa-push is tired etc. 
+// Here, we are interested in different effects on shared object, e.g., pushed(B) or not-pushed(B). 
+bool isTheDomainDescriptionAmbiguous( parser::multiagent::MultiagentDomain *d ) {
+	for( unsigned i=0; i<d->nodes.size(); i++) {
+		std::cout << d->nodes[i] << std::endl;
+		for( unsigned j=0; j<d->nodes[i]->templates.size(); j++) {
+			std::cout << d->nodes[i]->templates[j]->params << std::endl;
+		}
+	}
+		
+	// For each node V1,...,Vk, the algorithm is run 
+	for( unsigned i = 0; i < d->nodes.size(); ++i ) {
+		std::map< std::string, std::vector <std::string> > pairs;	
+		pairs = actionPairWithDiffEffOnObjSet( d->nodes[i], *d );	
+	}
+	
+	return true;
+}
+
+bool doTheyTargetTheSameObjectSubset( 
+	IntVec network, 
+	IntVec legal, 
+	IntVec legalActionParams, 
+	IntVec illegal, 
+	IntVec illegalActionParams
+	) {
 	bool decision = false;
 	unsigned count = 0;
 	for( int &i : network ) {
@@ -47,72 +114,126 @@ bool doTheyTargetTheSameObjectSubset( IntVec network, IntVec legal, IntVec legal
 			if( i == legalActionParams[j] )
 				for( int &k : illegal )
 					if( i == illegalActionParams[k] ) {
-						count++; flag = true; break;
+						count++; 
+						flag = true;
+						break;
 					}
-			if( flag )
-				break;
+			if( flag )	break;
 		}
 	}
-	if( count == network.size() )
+	if( count == network.size() ) {
 		decision = true;
-	
+	}	
 	return decision;
 }
 
-// sets of conflicting actions in a network node.
-std::map< std::string, std::vector< std::string > > ambiguousActions( const parser::multiagent::NetworkNode * n, const Domain & cd ) {
-	std::map< std::string, std::vector < std::string > > listOfAmbiguousActions;
-	for( unsigned i = 0; i < n->templates.size(); ++i ) {
-		Action * legal_a = d->actions[ d->actions.index( n->templates[i]->name ) ];			
+// returns pair of actions (sa or collaborative) with different effects on a set of objects.
+// following the domain file, the below snippet checks for each concurrency-constraint node v1.
+// two actions with negative interactions, are different too, as of now. 
+// activity-drop-table contains 2 agents by default, otherwise parse the number of agents
+std::map< std::string, std::vector<std::string> > 
+	actionPairWithDiffEffOnObjSet( const parser::multiagent::NetworkNode * n, const Domain & cd ) {		
+	std::map< std::string, std::vector<std::string> > listOfAmbiguousActions;	
+	for( unsigned i = 0; i < n->templates.size(); ++i ) 
+	{
+		Action* legal_a = d->actions[ d->actions.index( n->templates[i]->name )];	
 		std::vector< std::string > ambActions;			
-		for( unsigned j = 0; j < n->templates.size(); j++ )	
-			if( i != j ) {
-				bool ambiguous1 = false; bool ambiguous2 = false;			
-				Action * probably_legal_a = d->actions[d->actions.index( n->templates[j]->name )];	
-				for ( unsigned k = 0; k < legal_a->addEffects().size(); ++k ) 			
-					for ( unsigned l = 0; l < probably_legal_a->deleteEffects().size(); ++l ) 
-					{
-						if ( ( (dynamic_cast< Ground * > (legal_a->addEffects()[k]))->name == 
-								(dynamic_cast< Ground * > (probably_legal_a->deleteEffects()[l]))->name ) ) { 
-							{
-								ambiguous1 = doTheyTargetTheSameObjectSubset( 
-														n->params,
-														legal_a->addEffects()[k]->params,
-														legal_a->params,
-														probably_legal_a->deleteEffects()[l]->params,
-														probably_legal_a->params 
-														);
-								if( ambiguous1 )
-									break;												
-							}
-						}
-					}
-				if ( !ambiguous1 ) {
-					for ( unsigned k = 0; k < legal_a->deleteEffects().size(); ++k ) 			
-						for ( unsigned l = 0; l < probably_legal_a->addEffects().size(); ++l ) 
-						{
-							if ( ( (dynamic_cast< Ground * > (legal_a->deleteEffects()[k]))->name == 
-									(dynamic_cast< Ground * > (probably_legal_a->addEffects()[l]))->name) ) { 
-								{	
-									ambiguous2 = doTheyTargetTheSameObjectSubset(															
-														n->params,
-														legal_a->deleteEffects()[k]->params,
-														legal_a->params,
-														probably_legal_a->addEffects()[l]->params,
-														probably_legal_a->params 
-														);
-									if( ambiguous2 )
-										break;												
-								}
-							}
+		for( unsigned j = 0; i != j && j < n->templates.size(); j++ ) {				
+			bool ambiguous1 = false, ambiguous2 = false;			
+			Action * probably_legal_a = d->actions[ d->actions.index( n->templates[j]->name )];				
+			for( unsigned k = 0; k < legal_a->addEffects().size(); ++k ) { 			
+				for( unsigned l = 0; l < probably_legal_a->deleteEffects().size(); ++l ) {
+					if( (dynamic_cast< Ground * > (legal_a->addEffects()[k]))->name == 
+						(dynamic_cast< Ground * > (probably_legal_a->deleteEffects()[l]))->name ) {
+							ambiguous1 = doTheyTargetTheSameObjectSubset( 
+													n->params,
+													legal_a->addEffects()[k]->params,
+													legal_a->params,
+													probably_legal_a->deleteEffects()[l]->params,
+													probably_legal_a->params );
+							if( ambiguous1 )
+								break;												
 						}
 				}
-				if ( ambiguous1 || ambiguous2 ) 
-					ambActions.push_back( (std::string) probably_legal_a->name );
-			}		
+			}
+			if( !ambiguous1 ) {
+				for( unsigned k = 0; k < legal_a->deleteEffects().size(); ++k ) { 			
+					for( unsigned l = 0; l < probably_legal_a->addEffects().size(); ++l ) {
+						if(((dynamic_cast<Ground *> (legal_a->deleteEffects()[k]))->name == 
+							(dynamic_cast<Ground *> (probably_legal_a->addEffects()[l]))->name)) 
+							{	
+								ambiguous2 = doTheyTargetTheSameObjectSubset(															
+													n->params,
+													legal_a->deleteEffects()[k]->params,
+													legal_a->params,
+													probably_legal_a->addEffects()[l]->params,
+													probably_legal_a->params );
+								if( ambiguous2 ) break;												
+							}
+					}
+				}
+			}
+			if ( ambiguous1 || ambiguous2 ) 
+				ambActions.push_back( (std::string) probably_legal_a->name );
+		}	
 		listOfAmbiguousActions[ (std::string) legal_a->name ] = ambActions;		
 	}
 	return listOfAmbiguousActions;
+}
+
+// returns set of conflicting actions in network nodes
+std::map< std::string, std::vector< std::string > > ambiguousActions( 
+	const parser::multiagent::NetworkNode * n, 
+	const Domain & cd 
+	) {
+		std::map< std::string, std::vector < std::string > > listOfAmbiguousActions;
+		for( unsigned i = 0; i < n->templates.size(); ++i ) {
+			Action * legal_a = d->actions[ d->actions.index( n->templates[i]->name ) ];			
+			std::vector< std::string > ambActions;			
+			for( unsigned j = 0; j < n->templates.size(); j++ )	
+				if( i != j ) {
+					bool ambiguous1 = false; 
+					bool ambiguous2 = false;			
+					Action * probably_legal_a = d->actions[ d->actions.index( n->templates[j]->name )];	
+					for( unsigned k = 0; k < legal_a->addEffects().size(); ++k ) 			
+						for( unsigned l = 0; l < probably_legal_a->deleteEffects().size(); ++l ) 
+						{
+							if((( dynamic_cast< Ground * > (legal_a->addEffects()[k]))->name == 
+									(dynamic_cast< Ground * > (probably_legal_a->deleteEffects()[l]))->name )) 
+								{
+									ambiguous1 = doTheyTargetTheSameObjectSubset( 
+															n->params,
+															legal_a->addEffects()[k]->params,
+															legal_a->params,
+															probably_legal_a->deleteEffects()[l]->params,
+															probably_legal_a->params );
+									if( ambiguous1 )
+										break;												
+								}
+						}
+					if( !ambiguous1 ) {
+						for( unsigned k = 0; k < legal_a->deleteEffects().size(); ++k ) 			
+							for( unsigned l = 0; l < probably_legal_a->addEffects().size(); ++l ) 
+							{
+								if(((dynamic_cast<Ground *> (legal_a->deleteEffects()[k]))->name == 
+									(dynamic_cast<Ground *> (probably_legal_a->addEffects()[l]))->name)) 
+									{	
+										ambiguous2 = doTheyTargetTheSameObjectSubset(															
+															n->params,
+															legal_a->deleteEffects()[k]->params,
+															legal_a->params,
+															probably_legal_a->addEffects()[l]->params,
+															probably_legal_a->params );
+										if( ambiguous2 ) break;												
+									}
+							}
+					}
+					if ( ambiguous1 || ambiguous2 ) 
+						ambActions.push_back( (std::string) probably_legal_a->name );
+				}		
+			listOfAmbiguousActions[ (std::string) legal_a->name ] = ambActions;		
+		}
+		return listOfAmbiguousActions;
 }
 
 // returns true is action possibleComp appears in the Joint Activity, jointActivity.
@@ -317,7 +438,7 @@ bool canAddNewEffect( Domain * cd, std::string actaualAction, std::string cond )
 	return decision;
 }
 
-// need to be done properly, right now hard coded
+// need to be done properly, as of now kind of hard coded
 // does not consider a proposition, if an agent is involved in it. 
 bool agentInvolved( StringVec paramList, IntVec params ) {
 	for( unsigned j = 0; j < params.size(); j++ )
@@ -348,11 +469,14 @@ bool subsetVector( IntVec parent, IntVec child ) {
 	return false;			
 }
 
-int main( int argc, char *argv[] ) {    
+int main( int argc, char *argv[] ) 
+{    
 	if ( argc < 3 ) {
 		std::cout << "Usage: ./transform <domain.pddl> <task.pddl>\n";
 		exit( 1 );
 	}
+	
+	std::cout<< "\n;;The compilation time is written in the end of the file! "<< std::endl;
 	
 	d = new parser::multiagent::MultiagentDomain( argv[1] );
 	ins = new Instance( *d, argv[2] );
@@ -377,9 +501,10 @@ int main( int argc, char *argv[] ) {
 		listOfJointActivityComponents.push_back( pair );	
 	}
 	
-	// The below code snippet is for identifying problematic fluents (preconditions get deleted), that halts parallel execution.  	
-	for( unsigned i = 0; i < d->nodes.size(); ++i ) {	
-		// interaction is captured only through set of objects.
+	// This loop is for identifying problematic fluents (preconditions that get deleted), that halts parallel execution.  	
+	for( unsigned i = 0; i < d->nodes.size(); ++i ) 
+	{	
+		// interaction is captured only through set of objects, following the CJR's specifications.
 		if( ( d->nodes[ i ]->params ).size() == 0	)
 			continue;
 		for( unsigned j = 0; d->nodes[i]->upper > 1 && j < d->nodes[i]->templates.size(); ++j ) {
@@ -423,6 +548,15 @@ int main( int argc, char *argv[] ) {
 	for( unsigned i = 0; i < d->mf.size(); ++i )
 		ccs[d->mf[i]].push_back( i );
 
+	if( isTheDomainDescriptionAmbiguous( d ) ) {
+		std::cout << "\n\nAmbiguous domain description!" << std::endl;
+		std::cout << "\nUser is advised to modify this domain." << std::endl;
+		std::cout << "\nTo resolve the ambiguities from the domain description:" << std::endl;
+		std::cout << "\t1. Define enough collaborative actions" << std::endl;
+		std::cout << "\t2. You can also restrict the multi-actions by changing the given bounds - (min-max)" << std::endl;
+		exit( 1 );
+	}
+	
 	// Create a classical domain
 	Domain * cd = new Domain;
 	cd->name = d->name;
@@ -439,7 +573,8 @@ int main( int argc, char *argv[] ) {
 	// Add constants
 	cd->createConstant( "ACOUNT-0", "AGENT-COUNT" );
 
-	// Add predicates -- a huge set of bugs has been removed, probably it might have some more.
+	// Add predicates -- a huge set of bugs has been removed from the upf code, probably there 
+	// might have some more.
 	for( unsigned i = 0; i < d->preds.size(); ++i ) {
 		TokenStruct< Lifted * > predcts;
 		cd->createPredicate( d->preds[i]->name, d->typeList( d->preds[i] ) ); // adds the real ones			
@@ -600,18 +735,18 @@ int main( int argc, char *argv[] ) {
 						do_start_part->pre = a;
 					}
 					
-					// copy old effects					
+					// copy the old effects					
 					And * oldeff = dynamic_cast< And * >( d->actions[action]->eff );					
 					for( unsigned l = 0; oldeff && l < oldeff->conds.size(); ++l ) 
 						concurEffs |= addEff( cd, do_start_part, oldeff->conds[l], d->nodes[x]->name );					
 					if( !oldeff ) 
 						concurEffs |= addEff( cd, do_start_part, d->actions[action]->eff );
 					
-					// add new parameters
+					// add the new parameters
 					if( i->second.size() > 1 || d->nodes[x]->upper > 1 )						
 						cd->addParams( start_JA, StringVec( 2, "AGENT-COUNT" ) );
 					
-					// add new preconditions
+					// add the new preconditions
 					TokenStruct< Lifted * > predcts;
 					if( i->second.size() > 1 || d->nodes[x]->upper > 1 ) {
 						cd->addPre( 1, start_JA, "IN-JOINT" );	
@@ -1163,7 +1298,7 @@ int main( int argc, char *argv[] ) {
 	t2 = clock();
 	
 	float diff ((float)t2-(float)t1);
-    std::cout<< "Total compilation time = " << diff/CLOCKS_PER_SEC << std::endl;
+    std::cout<< ";;Total compilation time = " << diff/CLOCKS_PER_SEC << std::endl;
     
 	delete cins;
 	delete cd;
