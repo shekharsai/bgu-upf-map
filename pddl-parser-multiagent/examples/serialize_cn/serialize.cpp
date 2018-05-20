@@ -49,7 +49,8 @@ Relevant for the ICAPS paper.
    	in its action list. 
    	
 Note that, in the description, our paper considers all actions as grounded actions, so that the 
-explainations become easy. The code is based on non-grounded operators. 
+explanations become easy. The code is based on non-grounded operators. However, relevant modifications 
+are easy to do in case one defines a collaborative action with many more SA elements in it. 
    	
 The changes below are part of our submitted journal article.
    	
@@ -57,7 +58,7 @@ The changes below are part of our submitted journal article.
    	well-formed multi-action instead of well-defined that has some potential weakness as pointed 
    	out in our ICAPS paper.  
    	
-   	13. However, the current interpretation does not affect our doimains' compilation.  
+   	13. However, the current interpretation does not affect our domains' compilation.  
 
 ****************************************************************************************************
 *	To check for memory leaks: 
