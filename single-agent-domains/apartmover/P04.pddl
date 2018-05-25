@@ -8,7 +8,7 @@
 	loc1 loc2 loc3 loc4 loc5 loc6 - location
 	table1 sofa1 bed1 table2 sofa2 bed2 table3 sofa3 bed3 - furniture
 	TV1 fridge1 AC1 TV2 fridge2 AC2 - electronics
-	tr1 tr2 tr3 - truck
+	tr1 tr2 tr3 - truck 
 	carton1 - carton
 	carton2 - carton		
 	carton3 - carton

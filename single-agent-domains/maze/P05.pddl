@@ -16,7 +16,7 @@
 	(has-boat bt1 loc1x2 loc1x1)
 	(has-door d1 loc1x1 loc2x1)
 	(has-door d1 loc2x1 loc1x1)
-	(blocked loc1x1 loc2x1)
+	(blocked loc1x1 loc2x1) 
 	(blocked loc2x1 loc1x1)
 	(has-switch s1 loc1x2 loc1x1 loc2x1)
 	(has-door d2 loc1x2 loc1x3)

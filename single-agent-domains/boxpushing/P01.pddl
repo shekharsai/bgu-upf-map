@@ -1,4 +1,4 @@
-;
+; 
 (define (problem push-box-1_1) (:domain boxpushing)
 ;
 (:objects	

@@ -62,7 +62,7 @@
 					(not (has-bridge ?b ?y ?x))
 			 )
 )
-(:action pushswitch
+(:action pushswitch 
 	:agent ?a - agent
 	:parameters (?s - switch ?x - location ?y - location ?z - location)
 	:precondition (and
@@ -81,7 +81,7 @@
 )
 (:concurrency-constraint v2
 	:parameters (?b - boat ?x - location)
-	:bounds (2 5)
+	:bounds (2 2)
 	:actions ( 
 				(row 1 2) 
 				(activity-joint-row 2 3) 

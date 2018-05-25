@@ -12,7 +12,7 @@
 (:init
 	(in a1 r1x1)
 	(in a2 r1x1)
-	(in a3 r1x1)
+	(in a3 r1x1) 
 	(inroom t1 r1x1)
 	(inroom t2 r2x1)
 	(available a1)

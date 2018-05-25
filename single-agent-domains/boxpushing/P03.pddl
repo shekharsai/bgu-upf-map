@@ -9,7 +9,7 @@
 ;
 (:init
 	(agent-at-loc a1 loc2)
-	(agent-at-loc a2 loc2)
+	(agent-at-loc a2 loc2) 
 	(agent-at-loc a3 loc2)
 	(agent-at-loc a4 loc2)
 	

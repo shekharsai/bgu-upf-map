@@ -13,7 +13,7 @@
 	carton2 - carton		
 	carton3 - carton
 )
-;
+; 
 (:init
 	(agent-at a1 loc1)
 	(agent-at a2 loc1)

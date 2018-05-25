@@ -11,7 +11,7 @@
 	(at a1 loc2x3)
 	(at a2 loc3x3)
 	(at a3 loc4x3)
-	(has-door d1 loc1x1 loc1x2)
+	(has-door d1 loc1x1 loc1x2) 
 	(has-door d1 loc1x2 loc1x1)
 	(blocked loc1x1 loc1x2)
 	(blocked loc1x2 loc1x1)

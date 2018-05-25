@@ -16,7 +16,7 @@
 	(in a4 r1x1)
 	(in a5 r1x1)
 	(inroom t1 r1x1)
-	(inroom t2 r2x1)
+	(inroom t2 r2x1) 
 	(inroom t3 r1x1)
 	(inroom t4 r1x1)	
 	(available a1)

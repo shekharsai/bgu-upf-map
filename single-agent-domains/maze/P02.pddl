@@ -11,7 +11,7 @@
 	(at a1 loc3x2)
 	(at a2 loc1x2)
 	(at a3 loc2x3)
-	(at a4 loc2x2)
+	(at a4 loc2x2) 
 	(has-boat bt1 loc1x1 loc1x2)
 	(has-boat bt1 loc1x2 loc1x1)
 	(has-door d1 loc1x1 loc2x1)

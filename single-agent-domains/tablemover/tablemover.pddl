@@ -153,7 +153,7 @@
 ;
 (:concurrency-constraint v2
 	:parameters (?t - table ?r1 - room ?r2 - room )
-	:bounds (1 4)
+	:bounds (1 2)
 	:actions ( (activity-move-table  2 3 4) (move-table 1 2 3) )
 )
 ;
@@ -166,7 +166,7 @@
 (:concurrency-constraint v4
 	:parameters (?t - table)
 	:bounds (1 2)
-	:actions ( (drop-table 1) (activity-drop-table 2) )
+	:actions ( (drop-table 1) (activity-drop-table 2) ) 
 )
 ;
 )
