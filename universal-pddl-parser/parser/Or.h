@@ -9,7 +9,9 @@ class Or : public Condition {
 
 public:
 	Condition *first, *second;
-
+	// added by shashank
+	CondVec conds;
+	
 	Or()
 		: first( 0 ), second( 0 ) {}
 
@@ -29,7 +31,12 @@ public:
 		if ( first ) first->print( s );
 		if ( second ) second->print( s );
 	}
-
+	
+	// added by shashank
+	void add( Condition * cond ) {
+		conds.push_back( cond );
+	}
+	
 	void PDDLPrint( std::ostream & s, unsigned indent, const TokenStruct< std::string > & ts, const Domain & d ) const override;
 
 	void parse( Filereader & f, TokenStruct< std::string > & ts, Domain & d );

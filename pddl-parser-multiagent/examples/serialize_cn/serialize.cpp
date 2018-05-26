@@ -58,6 +58,10 @@ The changes below are part of our submitted journal article.
    	out in our ICAPS paper.  
    	
    	13. However, the current interpretation does not affect our domains' compilation.  
+   	
+   	14. Note that, the code for point 2(d), you need to manually change AND to OR. For example, 
+   	(NOT (AND () () ()) ) to (OR (NOT ()) (NOT ()) ), the parser does not support it, so cannont 
+   	be automated, and did not dive into the parser's code.   
 
 ****************************************************************************************************
 *	To check for memory leaks: 
@@ -875,6 +879,7 @@ int main( int argc, char *argv[] ) {
 							}
 											
 							// create predicates if already not present, in the names of the components
+							std::vector<int> paramAppearInFor={};
 							for( std::map<std::string, int>::iterator it = countTotalOcc.begin();
 								it != countTotalOcc.end(); ++it) {
 								bool exists = false; predcts = cd->listOfPredicates();					 				
@@ -883,6 +888,11 @@ int main( int argc, char *argv[] ) {
 					 					exists = true;						 		
 					 				}	
 					 			}
+					 			for( int z1 = 0; z1 < it->second; z1++ ) {
+					 				std::vector<int> agentParam = cd->convertTypes(StringVec(1, "AGENT"));
+					 				paramAppearInFor.insert( paramAppearInFor.end(), 
+					 										agentParam.begin(), agentParam.end());
+				 				}
 					 			const StringVec & params = d->typeList( d->nodes[x] );
 				 				StringVec mainParamList; mainParamList.push_back("AGENT");
 				 				for ( unsigned ii = 0; ii < params.size(); ++ii) 
@@ -892,7 +902,29 @@ int main( int argc, char *argv[] ) {
 					 		}
 					 		
 					 		// add as preconditions (neg (AND (prop1) (prop2) )): step 2(d)
-					 		// TODO		
+							Forall *f = new Forall; 
+							f->params = paramAppearInFor; 
+							int incParamPos = 1;									
+							And * andFormula = new And;							
+							When * ss = new When; And * a1 = new And; 
+							for( std::map<std::string, int>::iterator it = countTotalOcc.begin();
+								it != countTotalOcc.end(); ++it) {
+								for( int z1 = 0; z1 < it->second; z1++ ) {
+									incParamPos += 1;
+									std::vector<int> paramsNew = 
+										incvec( size + incParamPos, size + incParamPos + 1 );
+									std::vector<int> paramsNode = d->nodes[x]->templates[k]->params;
+									paramsNew.insert( paramsNew.end(), (paramsNode).begin(), paramsNode.end());			
+									a1->add( new Not ( new Ground( cd->preds.get( "P-" + it->first ), paramsNew ) ) );
+									// f->cond = new Ground( cd->preds.get( "P-" + it->first ), paramsNew );								
+									// dynamic_cast< And* >( doit->pre )->add( f );	
+								}		 		
+							}
+							// ss->cond = a1;
+							// andFormula->add(a1); 
+							// Not * neg = new Not;
+							f->cond = a1;
+							dynamic_cast< And* >( do_start_part->pre )->add( f );	
 						}							
 					}
 					else 
@@ -977,7 +1009,8 @@ int main( int argc, char *argv[] ) {
 					
 					// TODO 
 					// Not covered yet is the intermediate split actions, in case when #agents > 2, since we don't formulate 
-					// such domains, jump to the line number 882
+					// such actions, jump to the line number 882
+					// the below snippet is easy to modify as per the required intermediate components
 					for ( unsigned agent = 2; agent < (unsigned) noOfAgents; agent++ ) {
 						std::stringstream convert;
 						convert << agent;
@@ -1180,14 +1213,20 @@ int main( int argc, char *argv[] ) {
 								}		
 														
 								// create predicates if already not present, in the names of the components
+								std::vector<int> paramAppearInFor={};
 								for( std::map<std::string, int>::iterator it = countTotalOcc.begin();
 									it != countTotalOcc.end(); ++it) {
 									bool exists = false; predcts = cd->listOfPredicates();					 				
-						 			for( unsigned z = 0; z < predcts.size(); z++ ) {
-						 				if( predcts[z]->name == "P-" + it->first ) {
-						 					exists = true;						 		
-						 				}	
-						 			}
+						 			for( unsigned z = 0; z < predcts.size(); z++ ) 
+						 			{
+						 				if( predcts[z]->name == "P-" + it->first ) 
+						 					exists = true;						 	
+						 			}		
+					 				for( int z1 = 0; z1 < it->second; z1++ ) {
+					 					std::vector<int> agentParam = cd->convertTypes(StringVec(1, "AGENT"));
+					 					paramAppearInFor.insert( paramAppearInFor.end(), 
+					 												agentParam.begin(), agentParam.end());
+				 					}						 			
 						 			const StringVec & params = d->typeList( d->nodes[x] );
 					 				StringVec mainParamList; mainParamList.push_back("AGENT");
 					 				for ( unsigned ii = 0; ii < params.size(); ++ii) 
@@ -1197,7 +1236,30 @@ int main( int argc, char *argv[] ) {
 						 		}
 						 		
 						 		// add as preconditions (neg (AND (prop1) (prop2) )): step 2(d)
-						 		// TODO					 		
+						 		// f->params = {1, 1}; //cd->convertTypes( StringVec( 1, "AGENT" ) );
+								Forall *f = new Forall; 
+								f->params = paramAppearInFor; int incParamPos = 1;	
+									
+								And * andFormula = new And;							
+								When * ss = new When; And * a1 = new And; 
+								for( std::map<std::string, int>::iterator it = countTotalOcc.begin();
+									it != countTotalOcc.end(); ++it) {
+									for( int z1 = 0; z1 < it->second; z1++ ) {
+										incParamPos += 1;
+										std::vector<int> paramsNew = 
+											incvec( size + incParamPos, size + incParamPos + 1 );
+										std::vector<int> paramsNode = d->nodes[x]->templates[k]->params;
+										paramsNew.insert( paramsNew.end(), (paramsNode).begin(), paramsNode.end());			
+										a1->add( new Not ( new Ground( cd->preds.get( "P-" + it->first ), paramsNew ) ) );
+										// f->cond = new Ground( cd->preds.get( "P-" + it->first ), paramsNew );								
+										// dynamic_cast< And* >( doit->pre )->add( f );	
+									}		 		
+								}
+								// ss->cond = a1;
+								// andFormula->add(a1); 
+								// Not * neg = new Not;
+								f->cond = a1;
+								dynamic_cast< And* >( doit->pre )->add( f );	
 							}
 						}
 						
@@ -1324,7 +1386,7 @@ int main( int argc, char *argv[] ) {
 					Forall * f = new Forall;		
 					// f->params = {1, 1};//cd->convertTypes( StringVec( 1, "AGENT" ) );
 					f->params = cd->convertTypes( StringVec( 1, "AGENT" ) );
-					f->cond = new Not( new Ground( cd->preds.get( "TAKEN" ), incvec( size + 1, size + 2 ) ) );
+					f->cond = new Not( new Ground( cd->preds.get( "TAKEN" ),  incvec(size+1, size+2)));
 					dynamic_cast< And* >( end->eff )->add( f );
 					
 					/** addition of quantifiers ***/	
