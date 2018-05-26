@@ -35,7 +35,7 @@
 				(not (at ?a ?x)) 
 			) 
 )
-(:action activity-joint-row 
+(:action activity-row-row 
 	:agent ?a0 - agent
 	:parameters (?a1 - agent ?b - boat ?x - loaction ?y - location)
 	:precondition (and
@@ -84,7 +84,7 @@
 	:bounds (2 2)
 	:actions ( 
 				(row 1 2) 
-				(activity-joint-row 2 3) 
+				(activity-row-row 2 3) 
 			)
 )
 (:concurrency-constraint v3

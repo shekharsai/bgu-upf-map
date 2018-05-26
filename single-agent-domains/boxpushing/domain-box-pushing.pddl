@@ -53,7 +53,7 @@
 	  		)
 	)
 	  
-	(:action activity-push-box
+	(:action activity-push-box-push-box
 		:agent ?agent0 - agent 
 	  	:parameters (?agent1 - agent ?box - box ?from-location - location ?to-location - location)
 	  	:precondition 
@@ -75,7 +75,7 @@
 (:concurrency-constraint v2
     :parameters (?box - box ?from-location - location ?to-location - location) 
     :bounds (2 2) 
-    :actions ( (push-box 1 2 3) (activity-push-box 2 3 4) ) 
+    :actions ( (push-box 1 2 3) (activity-push-box-push-box 2 3 4) ) 
 )
 
 (:concurrency-constraint v1

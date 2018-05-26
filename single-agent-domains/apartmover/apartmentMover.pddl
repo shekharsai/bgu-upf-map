@@ -70,7 +70,7 @@
 			)
 )
 ;
-(:action activity-load-furniture 
+(:action activity-load-furniture-load-furniture 
 	:agent ?a - agent
 	:parameters (?a1 - agent ?fur - furniture ?tr - truck ?loc - location)
 	:precondition (and
@@ -99,7 +99,7 @@
 			)
 )
 ;
-(:action activity-unload-furniture 
+(:action activity-unload-furniture-unload-furniture 
 	:agent ?a - agent
 	:parameters (?a1 - agent ?fur - furniture ?tr - truck ?loc1 - location)
 	:precondition (and
@@ -132,7 +132,7 @@
 			)
 )
 ;
-(:action activity-load-carton
+(:action activity-load-carton-load-carton
 	:agent ?a - agent 
 	:parameters (?a0 - agent ?cb - carton ?t - truck ?r1 - location)
 	:precondition (and
@@ -149,7 +149,7 @@
 				 )
 )
 ;
-(:action activity-unload-carton
+(:action activity-unload-carton-unload-carton
 	:agent ?a - agent 
 	:parameters (?a0 - agent ?cb - carton ?t - truck ?r1 - location)
 	:precondition (and
@@ -212,7 +212,7 @@
 	:parameters (?cb - carton ?l - location)
 	:bounds (2 2)
 	:actions( 
-				(activity-load-carton 2 4) 
+				(activity-load-carton-load-carton 2 4) 
 			)
 )
 ;
@@ -220,7 +220,7 @@
 	:parameters (?cb - carton ?t - truck)
 	:bounds (2 2)
 	:actions( 
-				(activity-unload-carton 2 3) 
+				(activity-unload-carton-unload-carton 2 3) 
 			) 
 )
 ;
@@ -235,7 +235,7 @@
 	:bounds (2 2)
 	:actions( 
 				(load-furniture  1 2 3) 
-				(activity-load-furniture 2 3 4) 
+				(activity-load-furniture-load-furniture 2 3 4) 
 			)
 )
 ;
@@ -244,7 +244,7 @@
 	:bounds (2 2)
 	:actions( 
 				(unload-furniture  1 2) 
-				(activity-unload-furniture 2 3) 
+				(activity-unload-furniture-unload-furniture 2 3) 
 			)
 )
 ;

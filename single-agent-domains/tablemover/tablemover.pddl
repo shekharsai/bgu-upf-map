@@ -62,7 +62,7 @@
 			)
 )
 ;
-(:action activity-move-table 
+(:action activity-move-table-move-table 
 	:agent ?a - agent
 	:parameters (?a1 - agent ?t - table ?r1 - room ?r2 - room)
 	:precondition (and
@@ -95,7 +95,7 @@
 				 )
 )
 ;
-(:action activity-lift-table
+(:action activity-lift-table-lift-table
 	:agent ?a - agent
 	:parameters (?a1 - agent ?t - table ?r1 - room)
 	:precondition (and
@@ -129,7 +129,7 @@
 				 )
 )
 ;
-(:action activity-drop-table
+(:action activity-drop-table-drop-table
 	:agent ?a - agent
 	:parameters (?a1 - agent ?t - table ?r1 - room)
 	:precondition (and
@@ -154,19 +154,19 @@
 (:concurrency-constraint v2
 	:parameters (?t - table ?r1 - room ?r2 - room )
 	:bounds (1 2)
-	:actions ( (activity-move-table  2 3 4) (move-table 1 2 3) )
+	:actions ( (activity-move-table-move-table  2 3 4) (move-table 1 2 3) )
 )
 ;
 (:concurrency-constraint v3
 	:parameters (?t - table ?r1 - room)
 	:bounds (1 2)
-	:actions ( (lift-table 1 2) (activity-lift-table 2 3) )
+	:actions ( (lift-table 1 2) (activity-lift-table-lift-table 2 3) )
 )
 ;
 (:concurrency-constraint v4
 	:parameters (?t - table)
 	:bounds (1 2)
-	:actions ( (drop-table 1) (activity-drop-table 2) ) 
+	:actions ( (drop-table 1) (activity-drop-table-drop-table 2) ) 
 )
 ;
 )

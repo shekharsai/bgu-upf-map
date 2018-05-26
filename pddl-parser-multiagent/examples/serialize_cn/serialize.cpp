@@ -135,6 +135,15 @@ bool doTheyTargetTheSameObjectSubset(
 	return decision;
 }
 
+// how many times a word has occured in a long string
+int key_search(const std::string& s, const std::string& key) {
+    int count = 0; size_t pos=0;
+    while ((pos = s.find(key, pos)) != std::string::npos) {
+        ++count; ++pos;
+    }
+    return count;
+}
+
 // Returns pair of actions (sa or collaborative) with different effects on a set of objects.
 // Following the domain file, the below snippet checks for each concurrency-constraint node v1.
 // Two actions with negative interactions, are different too, as of now. 
@@ -275,7 +284,8 @@ std::map< std::string, std::vector< std::string > > findComponentsOfJointActivit
 	for( unsigned i = 0; i < n->templates.size(); ++i ) {
 		std::vector< std::string > listOfComp;
 		Action * jointActivity = d->actions[ d->actions.index( n->templates[i]->name ) ];		
-		if( ( jointActivity->name ).find( "ACTIVITY" ) != std::string::npos ) {
+		if( ( jointActivity->name ).find( "ACTIVITY" ) != std::string::npos ) 
+		{
 			for ( unsigned j = 0; j < n->templates.size(); ++j ) 
 				if ( i != j ) {					
 					Action * possibleComp = d->actions[ d->actions.index( n->templates[j]->name ) ];					
@@ -716,7 +726,7 @@ int main( int argc, char *argv[] ) {
 					setOfSAActions.insert(d->nodes[x]->templates[k]->name);	 
 				setOfAllActions.insert(d->nodes[x]->templates[k]->name);	
 			}
-			
+						
 			// The actual list of the action starts from here
 			bool concurEffs = 0;			
 			for( unsigned k = 0; k < d->nodes[x]->templates.size(); ++k ) 
@@ -725,14 +735,11 @@ int main( int argc, char *argv[] ) {
 				std::string name = d->actions[action]->name;
 											
 				// TODO Code below is for splitting a joint activity
-				if( name.find("ACTIVITY") != std::string::npos ) 
-				{										
+				if( name.find("ACTIVITY") != std::string::npos ) {										
 					// creating the first part of the Joint Activity									
 					const std::string start_JA = "DO-"+ name + "-1";
 					StringVec ja_type_list = d->typeList( d->actions[action] );
-					int noOfAgents = 0;
-					
-					std::cout << d->actions[action] ;
+					int noOfAgents = 0;				
 					 
 					// updated parameter list : one of the ways to do it
 					for( unsigned p = 0; p < ja_type_list.size(); p++ )
@@ -814,10 +821,82 @@ int main( int argc, char *argv[] ) {
 			 					}
 			 				}	
 						 	break;
+						}
+						
+						// TODO
+						// Implements the step 2(d), for each Collab action: if it shares elements with
+						// other collab actions -- needed for a well-formed multi-action.
+						set< std::string >::iterator iter;
+						for( iter = setOfCollabActions.begin(); iter != setOfCollabActions.end(); ++iter ) {							
+							// e(this-collaborative-action) 
+							std::map< std::string, int > countTotalOccSuper; set< std::string >::iterator iterLoc;
+							for( iterLoc = setOfSAActions.begin(); iterLoc != setOfSAActions.end(); ++iterLoc ) {
+								int count = key_search( *iter, *iterLoc );
+								if( count >= 1 )	
+									countTotalOccSuper[*iterLoc] = count;	
+							}
+							
+							// e(current-collaborative-action) 
+							std::map< std::string, int > countTotalOccSub; set< std::string >::iterator iterLocCur;
+							for( iterLocCur = setOfSAActions.begin(); iterLocCur != setOfSAActions.end(); ++iterLocCur ) {
+								int count = key_search( name, *iterLocCur );
+								if( count >= 1 )	
+									countTotalOccSub[*iterLocCur] = count;	
+							}		
+							
+							// If they share some elements
+							bool ifTheyShareElements = false;
+							for( std::map<std::string, int>::iterator it = countTotalOccSuper.begin();
+								it != countTotalOccSuper.end(); ++it) {
+								for( std::map<std::string, int>::iterator it1 = countTotalOccSub.begin();
+									it1 != countTotalOccSub.end(); ++it1) {
+									if(it->first == it1->first)
+										ifTheyShareElements = true;
+								}
+							}
+							
+							// code for: if a_i belongs to e(a_c) \ e(a), add in the precondition
+							// might contain some bug
+							std::map< std::string, int > countTotalOcc;
+							if( ifTheyShareElements ) {														
+								std::map< std::string, int > countTotalOcc;
+								for( std::map<std::string, int>::iterator it = countTotalOcc.begin();
+									it != countTotalOcc.end(); ++it) 
+								{
+									int ifExtra = it->second;
+									for( std::map<std::string, int>::iterator it1 = countTotalOccSub.begin();
+										it1 != countTotalOccSub.end(); ++it1) {
+										if( it->first == it1->first )
+											ifExtra = it->second - it1->second;											
+									}
+									if( ifExtra >= 1 )
+										countTotalOcc[it->first] = ifExtra;  												
+								}
+							}
+											
+							// create predicates if already not present, in the names of the components
+							for( std::map<std::string, int>::iterator it = countTotalOcc.begin();
+								it != countTotalOcc.end(); ++it) {
+								bool exists = false; predcts = cd->listOfPredicates();					 				
+					 			for( unsigned z = 0; z < predcts.size(); z++ ) {
+					 				if( predcts[z]->name == "P-" + it->first ) {
+					 					exists = true;						 		
+					 				}	
+					 			}
+					 			const StringVec & params = d->typeList( d->nodes[x] );
+				 				StringVec mainParamList; mainParamList.push_back("AGENT");
+				 				for ( unsigned ii = 0; ii < params.size(); ++ii) 
+				 					mainParamList.push_back(params[ii]);
+					 			if( !exists ) 
+					 				cd->createPredicate( "P-" + it->first, mainParamList );						 			
+					 		}
+					 		
+					 		// add as preconditions (neg (AND (prop1) (prop2) )): step 2(d)
+					 		// TODO		
 						}							
 					}
 					else 
-						cd->addPre( 0, start_JA, "AFREE" );
+						cd->addPre( 0, start_JA, "AFREE" ); // part of CJR's extended work
 					
 					// add new effects
 					if( i->second.size() > 1 || d->nodes[x]->upper > 1 ) {								
@@ -1052,13 +1131,13 @@ int main( int argc, char *argv[] ) {
 						cd->addPre( 0, name, "CONSEC", incvec( size, size + 2 ) );
 
 						// extra preconditions to avoid conflicting effects between two actions
+						// captures the interfering actions 
 						for( unsigned t = 0; t < pairOfProbActions.size(); t++ ) {
 							std::map < std::string, std::vector < std::string > > mappedProbActions;
 							mappedProbActions = pairOfProbActions[t][d->nodes[x]->name];
 						 	std::vector< std::string > listAction = mappedProbActions[ (std::string) d->actions[action]->name ];
 						 	for (unsigned y = 0; y < listAction.size(); y++) {
-					 			bool exists = false;
-					 			predcts = cd->listOfPredicates();
+					 			bool exists = false; predcts = cd->listOfPredicates();
 					 			for (unsigned z = 0; z < predcts.size(); z++) {
 					 				if ( predcts[z]->name == "P-" + listAction[y] ) {
 					 					exists = true;						 		
@@ -1085,6 +1164,44 @@ int main( int argc, char *argv[] ) {
 					 		}
 						}			
 						
+						// TODO
+						// implements the step 2(d), for each single agent action part of a Collab Action.						
+						set< std::string >::iterator iter;
+						for( iter = setOfCollabActions.begin(); iter != setOfCollabActions.end(); ++iter ) {							
+							// if e(a) and e(current-collab-act) are not disjoint
+							if( key_search( *iter, d->actions[action]->name )) {
+								std::map< std::string, int > countTotalOcc; set< std::string >::iterator iterLoc;
+								for( iterLoc = setOfSAActions.begin(); iterLoc != setOfSAActions.end(); ++iterLoc ) {
+									int count = key_search( *iter, *iterLoc );
+									if( 1 == key_search( *iterLoc, d->actions[action]->name ))
+										count -= 1;
+									if( count >= 1 )	
+										countTotalOcc[*iterLoc] = count;	
+								}		
+														
+								// create predicates if already not present, in the names of the components
+								for( std::map<std::string, int>::iterator it = countTotalOcc.begin();
+									it != countTotalOcc.end(); ++it) {
+									bool exists = false; predcts = cd->listOfPredicates();					 				
+						 			for( unsigned z = 0; z < predcts.size(); z++ ) {
+						 				if( predcts[z]->name == "P-" + it->first ) {
+						 					exists = true;						 		
+						 				}	
+						 			}
+						 			const StringVec & params = d->typeList( d->nodes[x] );
+					 				StringVec mainParamList; mainParamList.push_back("AGENT");
+					 				for ( unsigned ii = 0; ii < params.size(); ++ii) 
+					 					mainParamList.push_back(params[ii]);
+						 			if( !exists ) 
+						 				cd->createPredicate( "P-" + it->first, mainParamList );						 			
+						 		}
+						 		
+						 		// add as preconditions (neg (AND (prop1) (prop2) )): step 2(d)
+						 		// TODO					 		
+							}
+						}
+						
+						/**
 						// extra preconditions to avoid two SA actions, if there is a JA available for them.
 						for (unsigned t = 0; t < listOfJointActivityComponents.size(); t++) {							
 							std::map < std::string, std::vector < std::string > > mappedCompActions;
@@ -1138,7 +1255,7 @@ int main( int argc, char *argv[] ) {
 								 					cd->addPre( 1, name, "P-" + listAction[h], d->nodes[x]->templates[s]->params);
 						 			}						 									 		
 							}
-						} 
+						} */
 					}					
 					else 
 						cd->addPre( 0, name, "AFREE" );					
@@ -1404,7 +1521,7 @@ int main( int argc, char *argv[] ) {
 	t2 = clock();
 		
 	float diff ((float)t2-(float)t1);
-    std::cout<< "\n;Total compilation time = " << diff/CLOCKS_PER_SEC << std::endl <<"\n";
+    std::cout<< "\n\n;Total compilation time = " << diff/CLOCKS_PER_SEC << std::endl <<"\n";
     
 	delete cins;
 	delete cd;
