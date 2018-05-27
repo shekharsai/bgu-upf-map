@@ -571,7 +571,7 @@ int main( int argc, char *argv[] ) {
 		ccs[d->mf[i]].push_back( i );
 
 	if( isTheDomainDescriptionAmbiguous( d ) ) {
-		// if we still use the notion of well-defined multi-actions
+		// if one still uses the notion of well-defined multi-actions
 		std::cout << "\n\nAmbiguous domain description!" << std::endl;
 		std::cout << "\nThe modeler is advised to modify this domain." << std::endl;
 		std::cout << "\nTo resolve the ambiguities from the domain description:" << std::endl;
@@ -738,9 +738,8 @@ int main( int argc, char *argv[] ) {
 				int action = d->actions.index( d->nodes[x]->templates[k]->name );
 				std::string name = d->actions[action]->name;
 											
-				// TODO Code below is for splitting a joint activity
-				if( name.find("ACTIVITY") != std::string::npos ) {										
-					// creating the first part of the Joint Activity									
+				// TODO code below is for splitting a joint activity
+				if( name.find("ACTIVITY") != std::string::npos ) {								
 					const std::string start_JA = "DO-"+ name + "-1";
 					StringVec ja_type_list = d->typeList( d->actions[action] );
 					int noOfAgents = 0;				
@@ -846,7 +845,7 @@ int main( int argc, char *argv[] ) {
 								int count = key_search( name, *iterLocCur );
 								if( count >= 1 )	
 									countTotalOccSub[*iterLocCur] = count;	
-							}		
+							}
 							
 							// If they share some elements
 							bool ifTheyShareElements = false;
@@ -860,71 +859,76 @@ int main( int argc, char *argv[] ) {
 							}
 							
 							// code for: if a_i belongs to e(a_c) \ e(a), add in the precondition
-							// might contain some bug
+							// might contain some bug							
 							std::map< std::string, int > countTotalOcc;
 							if( ifTheyShareElements ) {														
 								std::map< std::string, int > countTotalOcc;
-								for( std::map<std::string, int>::iterator it = countTotalOcc.begin();
-									it != countTotalOcc.end(); ++it) 
+								for( std::map<std::string, int>::iterator it = countTotalOccSuper.begin();
+									it != countTotalOccSuper.end(); ++it) 
 								{
 									int ifExtra = it->second;
 									for( std::map<std::string, int>::iterator it1 = countTotalOccSub.begin();
 										it1 != countTotalOccSub.end(); ++it1) {
-										if( it->first == it1->first )
-											ifExtra = it->second - it1->second;											
+										if( it->first == it1->first ) {
+											ifExtra = it->second - it1->second;
+											break;											
+										}	
 									}
-									if( ifExtra >= 1 )
+									if( ifExtra >= 1 ) {
 										countTotalOcc[it->first] = ifExtra;  												
+									}
+								}
+											
+								// create predicates if already not present, in the names of the components
+								std::vector<int> paramAppearInFor={};
+								for( std::map<std::string, int>::iterator it = countTotalOcc.begin();
+									it != countTotalOcc.end(); ++it) {
+									bool exists = false; predcts = cd->listOfPredicates();					 				
+						 			for( unsigned z = 0; z < predcts.size(); z++ ) {
+						 				if( predcts[z]->name == "P-" + it->first ) {
+						 					exists = true;						 		
+						 				}	
+						 			}
+						 			for( int z1 = 0; z1 < it->second; z1++ ) {
+						 				std::vector<int> agentParam = cd->convertTypes(StringVec(1, "AGENT"));
+						 				paramAppearInFor.insert( paramAppearInFor.end(), 
+						 										agentParam.begin(), agentParam.end());
+					 				}
+						 			const StringVec & params = d->typeList( d->nodes[x] );
+					 				StringVec mainParamList; mainParamList.push_back("AGENT");
+					 				for ( unsigned ii = 0; ii < params.size(); ++ii) 
+					 					mainParamList.push_back(params[ii]);
+						 			if( !exists ) 
+						 				cd->createPredicate( "P-" + it->first, mainParamList );						 			
+						 		}
+						 		
+						 		// add as preconditions (neg (AND (prop1) (prop2) )): step 2(d)
+						 		if( countTotalOcc.size() > 0 ) {
+									Forall *f = new Forall; 
+									f->params = paramAppearInFor; 
+									int incParamPos = 1;									
+									And * a1 = new And; 
+									for( std::map<std::string, int>::iterator it = countTotalOcc.begin();
+										it != countTotalOcc.end(); ++it) {
+										for( int z1 = 0; z1 < it->second; z1++ ) {
+											incParamPos += 1;
+											std::vector<int> paramsNew = 
+												incvec( size + incParamPos, size + incParamPos + 1 );
+											std::vector<int> paramsNode = d->nodes[x]->templates[k]->params;
+											paramsNew.insert( paramsNew.end(), (paramsNode).begin(), paramsNode.end());			
+											a1->add( new Not ( new Ground( cd->preds.get( "P-" + it->first ), paramsNew ) ) );
+											// f->cond = new Ground( cd->preds.get( "P-" + it->first ), paramsNew );								
+											// dynamic_cast< And* >( doit->pre )->add( f );	
+										}		 		
+									}
+									// ss->cond = a1;
+									// andFormula->add(a1); 
+									// someone can try to add exactly like the expression we have in our journal paper
+									// Not * neg = new Not;
+									f->cond = a1;
+									dynamic_cast< And* >( do_start_part->pre )->add( f );	
 								}
 							}
-											
-							// create predicates if already not present, in the names of the components
-							std::vector<int> paramAppearInFor={};
-							for( std::map<std::string, int>::iterator it = countTotalOcc.begin();
-								it != countTotalOcc.end(); ++it) {
-								bool exists = false; predcts = cd->listOfPredicates();					 				
-					 			for( unsigned z = 0; z < predcts.size(); z++ ) {
-					 				if( predcts[z]->name == "P-" + it->first ) {
-					 					exists = true;						 		
-					 				}	
-					 			}
-					 			for( int z1 = 0; z1 < it->second; z1++ ) {
-					 				std::vector<int> agentParam = cd->convertTypes(StringVec(1, "AGENT"));
-					 				paramAppearInFor.insert( paramAppearInFor.end(), 
-					 										agentParam.begin(), agentParam.end());
-				 				}
-					 			const StringVec & params = d->typeList( d->nodes[x] );
-				 				StringVec mainParamList; mainParamList.push_back("AGENT");
-				 				for ( unsigned ii = 0; ii < params.size(); ++ii) 
-				 					mainParamList.push_back(params[ii]);
-					 			if( !exists ) 
-					 				cd->createPredicate( "P-" + it->first, mainParamList );						 			
-					 		}
-					 		
-					 		// add as preconditions (neg (AND (prop1) (prop2) )): step 2(d)
-							Forall *f = new Forall; 
-							f->params = paramAppearInFor; 
-							int incParamPos = 1;									
-							And * andFormula = new And;							
-							When * ss = new When; And * a1 = new And; 
-							for( std::map<std::string, int>::iterator it = countTotalOcc.begin();
-								it != countTotalOcc.end(); ++it) {
-								for( int z1 = 0; z1 < it->second; z1++ ) {
-									incParamPos += 1;
-									std::vector<int> paramsNew = 
-										incvec( size + incParamPos, size + incParamPos + 1 );
-									std::vector<int> paramsNode = d->nodes[x]->templates[k]->params;
-									paramsNew.insert( paramsNew.end(), (paramsNode).begin(), paramsNode.end());			
-									a1->add( new Not ( new Ground( cd->preds.get( "P-" + it->first ), paramsNew ) ) );
-									// f->cond = new Ground( cd->preds.get( "P-" + it->first ), paramsNew );								
-									// dynamic_cast< And* >( doit->pre )->add( f );	
-								}		 		
-							}
-							// ss->cond = a1;
-							// andFormula->add(a1); 
-							// Not * neg = new Not;
-							f->cond = a1;
-							dynamic_cast< And* >( do_start_part->pre )->add( f );	
 						}							
 					}
 					else 
@@ -1236,30 +1240,29 @@ int main( int argc, char *argv[] ) {
 						 		}
 						 		
 						 		// add as preconditions (neg (AND (prop1) (prop2) )): step 2(d)
-						 		// f->params = {1, 1}; //cd->convertTypes( StringVec( 1, "AGENT" ) );
-								Forall *f = new Forall; 
-								f->params = paramAppearInFor; int incParamPos = 1;	
-									
-								And * andFormula = new And;							
-								When * ss = new When; And * a1 = new And; 
-								for( std::map<std::string, int>::iterator it = countTotalOcc.begin();
-									it != countTotalOcc.end(); ++it) {
-									for( int z1 = 0; z1 < it->second; z1++ ) {
-										incParamPos += 1;
-										std::vector<int> paramsNew = 
-											incvec( size + incParamPos, size + incParamPos + 1 );
-										std::vector<int> paramsNode = d->nodes[x]->templates[k]->params;
-										paramsNew.insert( paramsNew.end(), (paramsNode).begin(), paramsNode.end());			
-										a1->add( new Not ( new Ground( cd->preds.get( "P-" + it->first ), paramsNew ) ) );
-										// f->cond = new Ground( cd->preds.get( "P-" + it->first ), paramsNew );								
-										// dynamic_cast< And* >( doit->pre )->add( f );	
-									}		 		
+						 		if( countTotalOcc.size() > 0 ) {
+									Forall *f = new Forall; 
+									f->params = paramAppearInFor; int incParamPos = 1;										
+									And * a1 = new And; 
+									for( std::map<std::string, int>::iterator it = countTotalOcc.begin();
+										it != countTotalOcc.end(); ++it) {
+										for( int z1 = 0; z1 < it->second; z1++ ) {
+											incParamPos += 1;
+											std::vector<int> paramsNew = 
+												incvec( size + incParamPos, size + incParamPos + 1 );
+											std::vector<int> paramsNode = d->nodes[x]->templates[k]->params;
+											paramsNew.insert( paramsNew.end(), (paramsNode).begin(), paramsNode.end());			
+											a1->add( new Not ( new Ground( cd->preds.get( "P-" + it->first ), paramsNew ) ) );
+											// f->cond = new Ground( cd->preds.get( "P-" + it->first ), paramsNew );								
+											// dynamic_cast< And* >( doit->pre )->add( f );	
+										}		 		
+									}								
+									// ss->cond = a1;
+									// andFormula->add(a1); 
+									// Not * neg = new Not;
+									f->cond = a1;
+									dynamic_cast< And* >( doit->pre )->add( f );	
 								}
-								// ss->cond = a1;
-								// andFormula->add(a1); 
-								// Not * neg = new Not;
-								f->cond = a1;
-								dynamic_cast< And* >( doit->pre )->add( f );	
 							}
 						}
 						
@@ -1528,6 +1531,7 @@ int main( int argc, char *argv[] ) {
 			}
 		}
 	}			
+	
 	std::cout << *cd;
 
 	// generate single-agent instance file
@@ -1576,7 +1580,7 @@ int main( int argc, char *argv[] ) {
 		cins->addGoal( ins->goal[i]->name, d->objectList( ins->goal[i] ) );
 	cins->addGoal( "AFREE" );
 	
-	// print it via standard error output '2>'
+	// print it via standard error output '2>' 
 	// std::cerr << *cins;
 	
 	// end time
