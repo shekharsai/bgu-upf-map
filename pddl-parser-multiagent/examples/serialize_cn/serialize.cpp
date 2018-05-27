@@ -1265,62 +1265,6 @@ int main( int argc, char *argv[] ) {
 								}
 							}
 						}
-						
-						/**
-						// extra preconditions to avoid two SA actions, if there is a JA available for them.
-						for (unsigned t = 0; t < listOfJointActivityComponents.size(); t++) {							
-							std::map < std::string, std::vector < std::string > > mappedCompActions;
-							mappedCompActions = listOfJointActivityComponents[t][d->nodes[x]->name];
-							std::vector< std::string > arrKeys;
-							for( const auto& element : mappedCompActions ) {
-								for( const auto& value : element.second )	
-							   		if( value == d->actions[action]->name ) {
-										arrKeys.push_back(element.first); 					
-										break;
-									}
-							}	
-							for( const auto& key : arrKeys ) {
-								std::vector< std::string > listAction = mappedCompActions[ key ];
-								if( listAction.size() == 1 ) {
-									bool exists = false;
-					 				predcts = cd->listOfPredicates();					 				
-						 			for( unsigned z = 0; z < predcts.size(); z++ ) {
-						 				if( predcts[z]->name == "P-" + listAction[0] ) {
-						 					exists = true;						 		
-						 				}	
-						 			}
-						 			if( !exists ) {
-						 				cd->createPredicate( "P-" + listAction[0], d->typeList( d->nodes[x] ) );
-						 			}
-						 			
-						 			// The name is only to avoid same action name in a JA. For example: Activity-A1-A2
-						 			bool decision = canAddNewCondition( cd, name, "P-" + listAction[0] );						 			
-						 			for( unsigned s = 0; s < d->nodes[x]->templates.size(); s++ ) {
-				 						if( d->nodes[x]->templates[s]->name == d->actions[action]->name && decision )
-						 					cd->addPre( 1, name, "P-" + listAction[0], d->nodes[x]->templates[s]->params);
-						 			}						 			
-						 		} 
-						 		else 	
-						 			for( unsigned h = 0; h < listAction.size(); h++ ) {							 				
-						 				bool exists = false;
-						 				bool sameActions = ( listAction[h] == d->actions[action]->name );	
-						 				predcts = cd->listOfPredicates();						 				
-								 		for( unsigned z = 0; z < predcts.size(); z++ ) {									 			
-								 			if( (predcts[z]->name == "P-" + listAction[h]) ) {									 				
-								 				exists = true;						 		
-								 			}	
-								 		}
-							 			if( !exists && !sameActions ) {
-							 				cd->createPredicate( "P-" + listAction[h], d->typeList( d->nodes[x] ) );								 			 	
-							 			}
-							 			bool decision = canAddNewCondition( cd, name, "P-" + listAction[h] );
-							 			if( !sameActions )
-								 			for( unsigned s = 0; s < d->nodes[x]->templates.size(); s++ ) 
-						 						if( d->nodes[x]->templates[s]->name == d->actions[action]->name && decision )
-								 					cd->addPre( 1, name, "P-" + listAction[h], d->nodes[x]->templates[s]->params);
-						 			}						 									 		
-							}
-						} */
 					}					
 					else 
 						cd->addPre( 0, name, "AFREE" );					
@@ -1580,8 +1524,7 @@ int main( int argc, char *argv[] ) {
 		cins->addGoal( ins->goal[i]->name, d->objectList( ins->goal[i] ) );
 	cins->addGoal( "AFREE" );
 	
-	// print it via standard error output '2>' 
-	// std::cerr << *cins;
+	std::cerr << *cins;
 	
 	// end time
 	t2 = clock();
