@@ -11,7 +11,7 @@
 	(at a1 loc1x2)
 	(at a2 loc1x2)
 	(at a3 loc1x2)
-	(at a4 loc4x1)
+	(at a4 loc4x1) 
 	(at a5 loc2x4)
 	(has-boat bt1 loc1x1 loc1x2)
 	(has-boat bt1 loc1x2 loc1x1)

@@ -4,7 +4,7 @@
 (:objects	
 	a1 a2 a3 a4 a5 - agent
 	box1 box2 box3 box4 box5 box01 box02 box03 box04 box05 box11 box12 - box
-	loc1 loc2 loc3 loc4 loc5 loc01 loc02 loc03 loc04 loc05 - location
+	loc1 loc2 loc3 loc4 loc5 loc01 loc02 loc03 loc04 loc05 - location 
 )
 ;
 (:init

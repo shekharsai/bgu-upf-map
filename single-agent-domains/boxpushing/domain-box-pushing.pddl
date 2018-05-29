@@ -1,4 +1,13 @@
-;;
+;
+;NOTE - in each collaborative action, we consider the symmetric effects for all the agents that 
+;appear as parameters, we do not mention the symmetric effects for all the agents in the action 
+;schema, as similar effects can be considered for other agents.
+;This reduces the effort required in the splitting phase. 
+;However, if the case is otherwise, our code can be modified easily to support a collaborative 
+;action with full action description. 
+;These specifications are suitable for privacy preserving planning, where agents get only 
+;partial view of a public action.  
+;
 ;; 			Box-Pushing domain
 ;;
 (define (domain boxpushing)
@@ -38,7 +47,7 @@
 	  	:parameters (?box - box ?from-location - location ?to-location - location)
 	  	:precondition 
 	  		(and 	  			
-	  			(agent-at-loc ?agent ?from-location)
+	  			(agent-at-loc ?agent ?from-location) 
 	  			(box-at-loc ?box ?from-location)
 	  			(connected ?from-location ?to-location)
 	  			(not (tired ?agent))

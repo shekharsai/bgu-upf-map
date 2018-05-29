@@ -5,7 +5,7 @@
 	a1 a2 a3 - agent
 	box1 box2 - box
 	loc1 loc2 loc3 - location
-)
+) 
 ;
 (:init
 	(agent-at-loc a1 loc2)

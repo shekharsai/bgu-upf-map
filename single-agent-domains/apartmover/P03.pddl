@@ -10,7 +10,7 @@
 	TV1 fridge1 AC1 TV2 fridge2 AC2 TV3 fridge3 AC3 - electronics
 	tr1 tr2 - truck
 	carton1 - carton
-	carton2 - carton		 
+	carton2 - carton		  
 	carton3 - carton
 )
 ;

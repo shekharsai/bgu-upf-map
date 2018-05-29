@@ -1,4 +1,13 @@
 ;
+;NOTE - in each collaborative action, we consider the symmetric effects for all the agents that 
+;appear as parameters, we do not mention the symmetric effects for all the agents in the action 
+;schema, as similar effects can be considered for other agents.
+;This reduces the effort required in the splitting phase. 
+;However, if the case is otherwise, our code can be modified easily to support a collaborative 
+;action with full action description.   
+;These specifications are suitable for privacy preserving planning, where agents get only 
+;partial view of a public action.
+;
 ;;	Apartmentmover domain
 ;
 (define (domain apartmentmovers)
@@ -132,6 +141,21 @@
 			)
 )
 ;
+(:action load-carton
+	:agent ?a - agent 
+	:parameters ( ?cb - carton ?t - truck ?r1 - location)
+	:precondition (and
+					(carton-at ?cb ?r1)
+					(packed ?cb) 
+					(agent-at ?a ?r1)
+					(truck-at ?t ?r1)
+					(not (tired ?a))							
+				  )
+	:effect	(and
+					(tired ?a)
+				 )
+)
+;
 (:action activity-load-carton-load-carton
 	:agent ?a - agent 
 	:parameters (?a0 - agent ?cb - carton ?t - truck ?r1 - location)
@@ -145,6 +169,20 @@
 	:effect	(and
 					(loaded-carton ?cb ?t)
 					(not (carton-at ?cb ?r1))
+					(tired ?a)
+				 )
+)
+;
+(:action unload-carton
+	:agent ?a - agent 
+	:parameters (?cb - carton ?t - truck ?r1 - location)
+	:precondition (and
+					(loaded-carton ?cb ?t)
+					(truck-at ?t ?r1)
+					(agent-at ?a ?r1)
+					(not (tired ?a))							
+				  )
+	:effect	(and
 					(tired ?a)
 				 )
 )
@@ -212,6 +250,7 @@
 	:parameters (?cb - carton ?l - location)
 	:bounds (2 2)
 	:actions( 
+				(load-carton 1 3)
 				(activity-load-carton-load-carton 2 4) 
 			)
 )
@@ -220,13 +259,14 @@
 	:parameters (?cb - carton ?t - truck)
 	:bounds (2 2)
 	:actions( 
+				(unload-carton 1 2)
 				(activity-unload-carton-unload-carton 2 3) 
 			) 
 )
 ;
 (:concurrency-constraint v4
 	:parameters (?t - truck ?l1 - location ?l2 - location)
-	:bounds (2 2)
+	:bounds (1 2)
 	:actions ( (drive-truck 1 2 3) )
 )
 ;

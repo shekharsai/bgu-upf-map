@@ -5,7 +5,7 @@
 	d1 d2 d3 d4 d5 d6 d7 d8 d9 d10 d11 d12 d13 d14 - door
 	b1 b2 b3 b4 b5 b6 - bridge
 	bt1 bt2 bt3 bt4 - boat
-	s1 s2 s3 s4 - switch
+	s1 s2 s3 s4 - switch 
 )
 (:init
 	(at a1 loc3x4)

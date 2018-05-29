@@ -5,7 +5,7 @@
 ;
 (:objects
 	a1 a2 a3 - agent
-	r1x1 r1x2 r2x1 r2x2 - room
+	r1x1 r1x2 r2x1 r2x2 - room 
 	t1 t2 - table
 )
 ;

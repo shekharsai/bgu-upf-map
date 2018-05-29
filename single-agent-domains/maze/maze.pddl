@@ -1,3 +1,13 @@
+;
+;NOTE - in each collaborative action, we consider the symmetric effects for all the agents that 
+;appear as parameters, we do not mention the symmetric effects for all the agents in the action 
+;schema, as similar effects can be considered for other agents.
+;This reduces the effort required in the splitting phase. 
+;However, if the case is otherwise, our code can be modified easily to support a collaborative 
+;action with full action description.   
+;These specifications are suitable for privacy preserving planning, where agents get only 
+;partial view of a public action.
+;
 (define (domain maze)
 (:requirements :typing :concurrency-network :multi-agent)
 (:types agent location door bridge boat switch)
@@ -31,8 +41,7 @@
 				(has-boat ?b ?x ?y)
 			 )
 	:effect	(and
-				(at ?a ?y)
-				(not (at ?a ?x)) 
+				;no effect
 			) 
 )
 (:action activity-row-row 
@@ -53,7 +62,7 @@
 	:parameters (?b - bridge ?x - location ?y - location) 
 	:precondition (and
 					(at ?a ?x)
-					(has-bridge ?b ?x ?y) 
+					(has-bridge ?b ?x ?y)  
 			)
 	:effect	(and 
 					(at ?a ?y)

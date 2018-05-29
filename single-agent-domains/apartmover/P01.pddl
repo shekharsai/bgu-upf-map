@@ -8,7 +8,7 @@
 	loc1 loc2 - location
 	table sofa bed - furniture
 	TV fridge AC - electronics
-	tr1 tr2 - truck 
+	tr1 tr2 - truck  
 	carton1 - carton	
 )
 ;

@@ -11,7 +11,7 @@
 	tr1 tr2 tr3 - truck 
 	carton1 - carton
 	carton2 - carton		
-	carton3 - carton
+	carton3 - carton 
 )
 ;
 (:init

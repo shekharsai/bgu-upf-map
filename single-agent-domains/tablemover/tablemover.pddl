@@ -1,4 +1,13 @@
 ;
+;NOTE - in each collaborative action, we consider the symmetric effects for all the agents that 
+;appear as parameters, we do not mention the symmetric effects for all the agents in the action 
+;schema, as similar effects can be considered for other agents.
+;This reduces the effort required in the splitting phase. 
+;However, if the case is otherwise, our code can be modified easily to support a collaborative 
+;action with full action description.   
+;These specifications are suitable, and helpful, for privacy preserving planning, where agents 
+;get only a partial view of a public action schema.
+;
 ;;	TableMover Domain
 ;
 (define (domain tablemover)

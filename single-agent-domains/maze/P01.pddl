@@ -8,7 +8,7 @@
 	s1 s2 s3 s4 s5 s6 - switch
 )
 (:init
-	(at a1 loc2x3)
+	(at a1 loc2x3) 
 	(at a2 loc3x3)
 	(at a3 loc4x3)
 	(has-door d1 loc1x1 loc1x2) 
