@@ -20,6 +20,10 @@ Relevant for the ICAPS paper.
 		(a) For a collaborative action, the agent list will be (a1, a2, ..., ak, objs) -- k agents
 		(b) Irrespective of a object-type Truck or Plane use AGENT as the code has string 
 		comparisons, especially for a collaborative action.
+		(c) Since all the actions' parameters are purposely being kept symmetric, normal string 
+		comparisons w.r.t. the collaborative-action's name and its components' names would do. In 
+		other case we need to go over all the parameters of component actions too, to find out 
+		whether a SA action is a component of a collaborative action.
 	
 	3. The name of a collaborative action should have "ACTIVITY" string in it. Also, you need to 
 	specify more than one agent. See our domains for example.  
