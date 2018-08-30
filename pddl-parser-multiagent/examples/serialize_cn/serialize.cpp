@@ -1,4 +1,26 @@
 /**
+BUG BUG BUG
+
+NOTE: There is a bug in the code found by Daniel from UPF, hope I will fix it soon.
+
+CHANGES REQUIRED:
+
+In the END- action of every multi-action, the compilation does "not" add agent parameter explicitly.
+Right now it produces, ( NOT ( P-PUSH-BOX ?BOX0 ?LOCATION1 ?LOCATION2 ) ) corresponding to each action
+performed.
+Manually change it to 
+( FORALL
+	( ?AGENT6 - AGENT )
+			( AND
+			( NOT ( P-PUSH-BOX ?AGENT6 ?BOX0 ?LOCATION1 ?LOCATION2 ) ) ) )   
+			
+This is "true" for  all propositions available in the effect of END- action.
+**/
+
+
+
+
+/**
 * @author: Shashank Shekhar, BGU Israel. 
 * email: shekhar@cs.bgu.ac.il 
 **
