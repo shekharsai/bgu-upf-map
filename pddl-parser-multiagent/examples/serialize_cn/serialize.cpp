@@ -1,6 +1,6 @@
 /**
 *
-NOTE: There is a bug in the code found by Daniel from UPF.
+NOTE: There is a bug in the code found by Daniel from UPF, thanks!.
 
 CHANGES REQUIRED!!
 
@@ -20,11 +20,11 @@ Manually change it to
 This is "true" for  all propositions available in the effect of END- action.
 
 The results presented in the paper is based on a more optimized code. Like as per the domain 
-definition and the limits on the set of objects, one does't need to have ?agent parameters explicitly.  
+definition and the limits on the set of objects, one doesn't need to have ?agent parameters explicitly.
 This updated code includes ?agent just to imitate the paper text, I will fix it soon, once I get time. 
-It may be posssible that there are some more discripency, for now that should be dealt manually if 
-someone is trying to compare with our work. Our text is self explainatory. 
-Sorry for the inconvenience!
+It may be possible that there are some more discrepancy, for now that should be dealt manually if
+someone is trying to compare with our work. Our text is self explanatory. 
+Sorry for the inconvenience to you!
 *
 **/
  
