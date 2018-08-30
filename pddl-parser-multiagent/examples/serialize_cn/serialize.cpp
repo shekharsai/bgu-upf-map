@@ -1,25 +1,33 @@
 /**
-BUG BUG BUG
+*
+NOTE: There is a bug in the code found by Daniel from UPF.
 
-NOTE: There is a bug in the code found by Daniel from UPF, hope I will fix it soon.
-
-CHANGES REQUIRED:
+CHANGES REQUIRED!!
 
 In the END- action of every multi-action, the compilation does "not" add agent parameter explicitly.
-Right now it produces, ( NOT ( P-PUSH-BOX ?BOX0 ?LOCATION1 ?LOCATION2 ) ) corresponding to each action
-performed.
+Right now it produces, 
+	( NOT ( P-PUSH-BOX ?BOX0 ?LOCATION1 ?LOCATION2 ) ) 
+corresponding to each action performed. Step 2(b) and 2(c) in the paper.
+
 Manually change it to 
+
 ( FORALL
 	( ?AGENT6 - AGENT )
-			( AND
-			( NOT ( P-PUSH-BOX ?AGENT6 ?BOX0 ?LOCATION1 ?LOCATION2 ) ) ) )   
+		( AND
+		( NOT ( P-PUSH-BOX ?AGENT6 ?BOX0 ?LOCATION1 ?LOCATION2 ) ) ) )   
 			
+
 This is "true" for  all propositions available in the effect of END- action.
+
+The results presented in the paper is based on a more optimized code. Like as per the domain 
+definition and the limits on the set of objects, one does't need to have ?agent parameters explicitly.  
+This updated code includes ?agent just to imitate the paper text, I will fix it soon, once I get time. 
+It may be posssible that there are some more discripency, for now that should be dealt manually if 
+someone is trying to compare with our work. Our text is self explainatory. 
+Sorry for the inconvenience!
+*
 **/
-
-
-
-
+ 
 /**
 * @author: Shashank Shekhar, BGU Israel. 
 * email: shekhar@cs.bgu.ac.il 
@@ -29,7 +37,7 @@ This is "true" for  all propositions available in the effect of END- action.
 Before you dive into the code, you should keep the following steps in mind.	
 Note that our code is restricted to very specific cases as per our ICAPS paper, so it does not 
 handle all the scenarios, however, it is very easy to make changes in the code according to any 
-specific requirements.  	
+specific requirements. 
 
 Relevant for the ICAPS paper. 
 
