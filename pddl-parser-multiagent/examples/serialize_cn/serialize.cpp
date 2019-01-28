@@ -1,12 +1,8 @@
-/*
-* Bug in the END- action effect is resolved. Thanks to Daniel from UPF!
-*/
 
 /**
 * @author: Shashank Shekhar, BGU Israel. 
 * email: shekhar@cs.bgu.ac.il 
 **
-
 *************************************************************************************************** 
 Before you dive into the code, you should keep the following steps in mind.	
 Note that our code is restricted to very specific cases as per our ICAPS paper, so it does not 
@@ -73,7 +69,7 @@ The changes below are part of our submitted journal article.
 
 ****************************************************************************************************
 *	To check for memory leaks: 
-* 		valgrind --leak-check=yes examples/serialize 
+* 		valgrind --leak-check=yes examples/serialize
 *				../multiagent/../tablemover/tablemover.pddl 
 *						../multiagent/../tablemover/table1_1.pddl 
 ****************************************************************************************************
@@ -95,20 +91,22 @@ typedef std::map< unsigned, std::vector< int > > VecMap;
 std::map< std::string, std::vector<std::string> > actionPairWithDiffEffOnObjSet( 
 									const parser::multiagent::NetworkNode * n, const Domain & cd);
 	
-// This function is added for the journal version, it was not part of the icaps work. 
+// This function is added for the journal version, it is not part of the icaps work. 
 // Note: this does not check for an agent performing sa-push is tired etc. 
 // Here, we are interested in different effects on shared object, e.g., pushed(B) or not-pushed(B). 
-// Partially done!! Since we added a stronger interpretation (journal), this check is not mandatory. 
-// for a domain description. Follow up the potential weaknesses mentioned in the ICAPS paper.   
+// Partially done!! Since we added a stronger interpretation (aij journal), this check is not mandatory. 
+// for a domain description. Follow up for the potential weaknesses mentioned in the ICAPS paper.   
 bool isTheDomainDescriptionAmbiguous( parser::multiagent::MultiagentDomain *d ) {
+	
 	return false;
+	
 	for( unsigned i=0; i<d->nodes.size(); i++) {
 		std::cout << d->nodes[i] << std::endl;
 		for( unsigned j=0; j<d->nodes[i]->templates.size(); j++) {
 			std::cout << d->nodes[i]->templates[j]->params << std::endl;
 		}
 	}
-	// Add code snippet to make sure (2push,push) and (push,2push) are not possible as per a given 
+	// Add code snippet to make sure (2push,push) and (push,2push) are not possible as per the given 
 	// domain, and in case if it is possible, notify the modeler to resolve it.	
 	// For each node V1,...,Vk, the algorithm is run 
 	for( unsigned i = 0; i < d->nodes.size(); ++i ) {
@@ -210,19 +208,18 @@ std::map< std::string, std::vector<std::string> >
 	return listOfAmbiguousActions;
 }
 
-// Returns set of conflicting actions in network nodes
-// Again, conflicting actions here,means, if they have something different to say about the 
-// propositions dealing with common objects set (keeping privacy in mind). 
-std::map< std::string, std::vector< std::string > > ambiguousActions( 
-	const parser::multiagent::NetworkNode * n, 
-	const Domain & cd 
-	) {
+// Returns set of conflicting actions in network nodes.
+// Again, conflicting actions here, means, if they have something different to say about the 
+// propositions dealing with common objects set (keeping agent privacy in mind). 
+std::map< std::string, std::vector< std::string > > ambiguousActions( const parser::multiagent::NetworkNode * n, const Domain & cd ) 
+{
 		std::map< std::string, std::vector < std::string > > listOfAmbiguousActions;
 		for( unsigned i = 0; i < n->templates.size(); ++i ) {
 			Action * legal_a = d->actions[ d->actions.index( n->templates[i]->name ) ];			
 			std::vector< std::string > ambActions;			
 			for( unsigned j = 0; j < n->templates.size(); j++ )	
-				if( i != j ) {
+				if( i != j ) 
+				{
 					bool ambiguous1 = false; 
 					bool ambiguous2 = false;			
 					Action * probably_legal_a = d->actions[ d->actions.index( n->templates[j]->name )];	
@@ -428,7 +425,6 @@ bool addEff( Domain * cd, Action * a, Condition * c ) {
 		And * aa = dynamic_cast< And * >( a->eff );
 		aa->add( c->copy( *cd ) );
 	}
-
 	return 0;
 }
 
@@ -471,8 +467,8 @@ bool canAddNewEffect( Domain * cd, std::string actaualAction, std::string cond )
 	return decision;
 }
 
-// need to be done properly, as of now kind of hard coded
-// does not consider a proposition, if an agent is involved in it. 
+// Need to be done properly, as of now kind of hard coded
+// Does not consider a proposition, if an agent is involved in it. 
 bool agentInvolved( StringVec paramList, IntVec params ) {
 	for( unsigned j = 0; j < params.size(); j++ )
 		if( paramList[ params[ j ] ] == "AGENT" && params[j]!=1 ) 
@@ -480,7 +476,7 @@ bool agentInvolved( StringVec paramList, IntVec params ) {
 	return false;
 }
 
-// captures only cases when node[i]->params is subset of del[j]->params or vice versa.
+// Captures only cases when node[i]->params is subset of del[j]->params or vice versa.
 bool subsetVector( IntVec parent, IntVec child ) {
 	unsigned counter;
 	IntVec pr, ch;
@@ -502,8 +498,11 @@ bool subsetVector( IntVec parent, IntVec child ) {
 	return false;			
 }
 
-int main( int argc, char *argv[] ) {    
-
+int main( int argc, char *argv[] ) 
+{
+	// t1 : current time
+	clock_t t1, t2; t1 = clock();
+	
 	if ( argc < 3 ) {
 		std::cout << "Usage: ./transform <domain.pddl> <task.pddl>\n";
 		exit( 1 );
@@ -511,27 +510,24 @@ int main( int argc, char *argv[] ) {
 	
 	d = new parser::multiagent::MultiagentDomain( argv[1] );
 	ins = new Instance( *d, argv[2] );	
-
-	// For measuring the compilation time 
-	clock_t t1, t2; t1 = clock();
-    
+		    
 	// Actions with conflicting effects, e.g., <stack, [unstack,pickup]>
 	std::vector< std::map< std::string, std::map< std::string, std::vector< std::string >>> > pairOfProbActions;
 	for( unsigned i = 0; i < d->nodes.size(); ++i ) {
 	 	std::map< std::string, std::map < std::string, std::vector < std::string >>> pair;	
-		pair[d->nodes[i]->name] = ambiguousActions( d->nodes[i], *d);	
+		pair[d->nodes[i]->name] = ambiguousActions( d->nodes[i], *d );	
 		pairOfProbActions.push_back( pair );	
 	}
 		
-	// Currently contains (or can hadle) a maximum 2 single agent actions, e.g., push:push and clean:push.
+	// Currently contains (or can hadle) a maximum 2 single-agent actions, e.g., (push:push) and (clean:push) etc.
 	std::vector< std::map< std::string, std::map< std::string, std::vector< std::string >>> > listOfJointActivityComponents;
 	for( unsigned i = 0; i < d->nodes.size(); ++i ) {
 	 	std::map< std::string, std::map < std::string, std::vector < std::string >>> pair;	
 		pair[ d->nodes[i]->name ] = findComponentsOfJointActivities( d->nodes[i] );	
 		listOfJointActivityComponents.push_back( pair );	
-	}
+	} 
 	
-	// This loop is for identifying problematic fluents (preconditions that get deleted), that halts concurrent execution.  	
+	// This loop is for identifying problematic fluents (preconditions that get deleted), which halts concurrent execution.  	
 	for( unsigned i = 0; i < d->nodes.size(); ++i ) 
 	{	
 		// Interactions are captured only through set of objects, following the CJR's specifications.
@@ -547,7 +543,7 @@ int main( int argc, char *argv[] ) {
 						
 			unsigned choice = 1;			
 			for( unsigned k = 0; k < dels.size(); ++k ) {								
-				// a non-sense but necessary check :D					
+				// A necessary check (not elegant!)					
 				bool superChoice = agentInvolved( d->typeList( a ), dels[k]->params );
 				if( superChoice )
 					continue;
@@ -556,9 +552,15 @@ int main( int argc, char *argv[] ) {
 				bool choiceC = false;
 								
 				if( choiceB )
+				{
 					for( unsigned t = 0; t < added.size(); t++ )
+					{
 						if( added[t]->name == dels[k]->name )
+						{
 							choiceC = true; // flase - if only !P, and does not get added P.
+						}
+					}
+				}
 				
 				if( choiceA && choiceB && choiceC ) { 	
 					choice = 1;	
@@ -576,10 +578,12 @@ int main( int argc, char *argv[] ) {
 	
 	VecMap ccs;
 	for( unsigned i = 0; i < d->mf.size(); ++i )
+	{
 		ccs[d->mf[i]].push_back( i );
+	}
 
-	if( isTheDomainDescriptionAmbiguous( d ) ) {
-		// if one still uses the notion of well-defined multi-actions
+	// If someone uses the notion of well-defined multi-actions
+	if( isTheDomainDescriptionAmbiguous( d ) ) {		
 		std::cout << "\n\nAmbiguous domain description!" << std::endl;
 		std::cout << "\nThe modeler is advised to modify this domain." << std::endl;
 		std::cout << "\nTo resolve the ambiguities from the domain description:" << std::endl;
@@ -666,10 +670,10 @@ int main( int argc, char *argv[] ) {
 	
 	cd->createPredicate( "AFREE" );
 	
-	// in case if a joint activity can also participate
+	// In case if a joint activity can also participate
 	cd->createPredicate( "IN-JOINT" ); 
 	
-	// generate all the updated actions
+	// Generate all the updated actions
 	for( VecMap::iterator i = ccs.begin(); i != ccs.end(); ++i ) {
 		std::set< unsigned > visited;
 		for( unsigned j = 0; j < i->second.size(); ++j ) {			
@@ -681,27 +685,35 @@ int main( int argc, char *argv[] ) {
 				unsigned size = d->nodes[x]->params.size();
 				cd->createAction( name, d->typeList( d->nodes[x] ) );
 
-				if( j > 0 ) {
+				if( j > 0 ) 
+				{
 					for ( unsigned k = 0; k < d->edges.size(); ++k )
+					{
 						if ( d->edges[k].second == x ) {
 							std::set< unsigned >::iterator it = visited.find( d->edges[k].first );
 							if ( it != visited.end() )
 								cd->addPre( 0, name, "DONE-" + d->nodes[d->edges[k].first]->name );
 						}
-					cd->addOrPre( name, "DONE-" + d->nodes[i->second[j - 1]]->name, "SKIPPED-" + 
-																d->nodes[i->second[j - 1]]->name );
+					}	
+					cd->addOrPre( name, "DONE-" + d->nodes[i->second[j - 1]]->name, "SKIPPED-" + d->nodes[i->second[j - 1]]->name );
 					cd->addPre( 0, name, "ACTIVE-" + d->nodes[i->second[j - 1]]->name, incvec( 0, size ) );
 					cd->addPre( 1, name, "USED-" + d->nodes[x]->name );
 					
 				}
-				else cd->addPre( 0, name, "AFREE" );
-
+				else
+				{ 
+					cd->addPre( 0, name, "AFREE" );
+				}
 				if( j < 1 ) 
+				{
 					cd->addEff( 1, name, "AFREE" );
+				}
 				cd->addEff( 0, name, "ACTIVE-" + d->nodes[x]->name, incvec( 0, size ) );
 				cd->addEff( 0, name, "COUNT-" + d->nodes[x]->name, IntVec( 1, -1 ) );
 				if( i->second.size() > 1 )
+				{
 					cd->addEff( 0, name, "USED-" + d->nodes[x]->name );
+				}
 			}
 
 			if( i->second.size() > 1 ) {
@@ -1558,7 +1570,8 @@ int main( int argc, char *argv[] ) {
 				}
 			}
 
-			if ( i->second.size() > 1 && j + 1 == i->second.size() ) {
+			if ( i->second.size() > 1 && j + 1 == i->second.size() ) 
+			{
 				std::string name = "FINISH-" + d->nodes[x]->name;
 				unsigned size = d->nodes[x]->params.size();
 				Action * finish = cd->createAction( name, d->typeList( d->nodes[x] ) );
@@ -1567,7 +1580,8 @@ int main( int argc, char *argv[] ) {
 				cd->addPre( 0, name, "ACTIVE-" + d->nodes[x]->name, incvec( 0, size ) );
 
 				// cd->addEff( 0, name, "ATEMP" );
-				for( unsigned k = 0; k < i->second.size(); ++k ) {
+				for( unsigned k = 0; k < i->second.size(); ++k ) 
+				{
 					cd->addEff( 1, name, "DONE-" + d->nodes[i->second[k]]->name );
 					cd->addEff( 1, name, "SKIPPED-" + d->nodes[i->second[k]]->name );
 					cd->addEff( 1, name, "USED-" + d->nodes[i->second[k]]->name );
@@ -1635,7 +1649,7 @@ int main( int argc, char *argv[] ) {
 	t2 = clock();
 		
 	float diff ((float)t2-(float)t1);
-    std::cout<< "\n\n;Total compilation time = " << diff/CLOCKS_PER_SEC << std::endl <<"\n";
+    std::cout<< "\n;Domain compilation time is: " << diff/CLOCKS_PER_SEC << std::endl <<"\n";
     
 	delete cins;
 	delete cd;
