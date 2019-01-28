@@ -434,9 +434,7 @@ bool subsetVector( IntVec parent, IntVec child ) {
 
 int main( int argc, char *argv[] ) 
 {
-	// t1: the current time
-	clock_t t1, t2; t1 = clock();
-	
+	clock_t t1, t2; t1 = clock();	
 	if ( argc < 3 ) 
 	{
 		std::cout << "Usage: ./transform <domain.pddl> <task.pddl>\n";
@@ -450,7 +448,8 @@ int main( int argc, char *argv[] )
 	Domain * ma2sa = new Domain;	
 	ma2sa->name = d->name;
 	ma2sa->condeffects = d->condeffects; 
-	ma2sa->cons = d->typed = true;
+	ma2sa->cons = false;
+	d->typed = true;
 	ma2sa->typed = true;
 	ma2sa->factored = d->factored;
 	ma2sa->unfactored = d->unfactored;
@@ -497,15 +496,25 @@ int main( int argc, char *argv[] )
 		}
 		
 		ma2sa->addPre( 1, d->actions[i]->name, "NEG-IN-JOINT" );
-		
-		bool concurEffs = 0;						
+										
 		And * oldeff = dynamic_cast< And * >( d->actions[i]->eff );			
 		for( unsigned l = 0; oldeff && l < oldeff->conds.size(); ++l )
-		{ 
-			concurEffs |= addEff( ma2sa, act, oldeff->conds[l] );		
-			ma2sa->addEff( 0, act, "NEG-", oldeff->conds[l] );			
-		}
-		
+		{
+			// bool concurEffs = 0; 
+			// The regular effects
+			// concurEffs |= addEff( ma2sa, act, oldeff->conds[l] );		
+			Condition *c = oldeff->conds[l];
+			Not * n = dynamic_cast <Not*> ( c );
+			Ground * g = dynamic_cast <Ground*> ( c );
+			if( n )
+			{
+				ma2sa->addEff( 0, act->name, "NEG-" + n->cond->name, n->cond->params );
+			}
+			if( g )
+			{
+				ma2sa->addEff( 0, act->name, "POS-" + g->name, g->params );
+			}
+		}		
 		
 		for( unsigned k = 0; k < d->typeList( d->actions[i] ).size(); k++ )
 		{
@@ -517,6 +526,35 @@ int main( int argc, char *argv[] )
 		
 		unsigned size = d->actions[i]->params.size();		
 		ma2sa->addEff( 0, d->actions[i]->name, "P-" + d->actions[i]->name, incvec(0, size) );
+		
+		/** Start: if push appears in 2push then 2push will have an effect p-push  **/
+		for( unsigned j = 0; j < d->actions.size() && j != i; j++ ) 
+		{
+			if( (d->actions[i]->name).find(d->actions[j]->name) != string::npos )
+			{				
+				for( unsigned k = 0; k < d->actions[i]->params.size(); k++ )
+				{
+					std::vector<int> params;
+					if( d->actions[i]->params[k] == 1 )
+					{
+						for( unsigned p = 0; p < d->actions[i]->params.size(); p++)
+						{
+							if( d->actions[i]->params[p] == 1 && p != k )
+							{
+								continue;
+							}
+							else
+							{	
+								params.push_back( p ); 
+							}
+						}
+						ma2sa->addEff( 0, d->actions[i]->name, "P-" + d->actions[j]->name, params );		
+					}
+				}				
+			}
+		}
+		/** End: if push appears in 2push then 2push will have an effect p-push  **/
+		
 	}
 	
 	// Create the end action
