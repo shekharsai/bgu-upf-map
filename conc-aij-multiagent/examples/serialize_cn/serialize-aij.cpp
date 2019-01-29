@@ -469,7 +469,7 @@ int main( int argc, char *argv[] )
 	ma2sa->createPredicate( "TAKEN", StringVec( 1, "AGENT" ) );
 	ma2sa->createPredicate( "NEG-IN-JOINT" );
 	
-	// Start: create the start action
+	/** Start: create the start action **/
 	Action start = ma2sa->createAction( "MULTI-START" );
 	ma2sa->addPre( 0, "MULTI-START", "NEG-IN-JOINT");
 	ma2sa->addEff( 1, "MULTI-START", "NEG-IN-JOINT");
@@ -500,7 +500,6 @@ int main( int argc, char *argv[] )
 		And * oldeff = dynamic_cast< And * >( d->actions[i]->eff );			
 		for( unsigned l = 0; oldeff && l < oldeff->conds.size(); ++l )
 		{
-			// bool concurEffs = 0; 
 			// concurEffs |= addEff( ma2sa, act, oldeff->conds[l] );		
 			Condition *c = oldeff->conds[l];
 			Not * n = dynamic_cast <Not*> ( c );
@@ -560,21 +559,17 @@ int main( int argc, char *argv[] )
 	ma2sa->addPre( 1, "MULTI-END", "NEG-IN-JOINT");
 	ma2sa->addEff( 0, "MULTI-END", "NEG-IN-JOINT");
 	
-	// Forall actions, p-action proposition in act-multi-end
+	/** Forall actions, p-action proposition in act-multi-end **/
 	for( unsigned i = 0; i < d->actions.size(); ++i ) 
 	{
 		Forall *f = new Forall;		
-		// IntVec predParam = d->convertTypes( d->typeList( d->actions[i] ) ); 
-		// std::cout << " d->actions[i] " << d->typeList( d->actions[i] ) <<std::endl;
-		// std::cout << "param: " << StringVec( 1, "AGENT" ) << std::endl;
-		// f->params = predParam; //d->actions[i]->params;
 		f->params = ma2sa->convertTypes( d->typeList(d->actions[i]) );		
 		f->cond = new Not( new Ground( ma2sa->preds.get( "P-" + d->actions[i]->name ),  
 																incvec(0, f->params.size() ) ) );
 		dynamic_cast< And* >(end->eff)->add(f); 		
 	}
 	
-	// Forall predicate, p-predicate proposition in act-multi-end
+	/** Forall predicate, p-predicate proposition in act-multi-end **/
 	for( unsigned i = 0; i < d->preds.size(); ++i ) 
 	{   
 		Forall *f = new Forall; When *condition = new When;
@@ -600,20 +595,21 @@ int main( int argc, char *argv[] )
 		dynamic_cast< And* >(end->eff)->add(f); 
 	}
 	
-	// Forall agents, not taken proposition in act-multi-end
+	/** Forall agents, not taken proposition in act-multi-end **/
 	Forall * f = new Forall;		
 	f->params = ma2sa->convertTypes( StringVec( 1, "AGENT" ) );
 	f->cond = new Not( new Ground( ma2sa->preds.get( "TAKEN" ), {0}));
 	dynamic_cast< And* >( end->eff )->add( f );
 	/** End: create the end action **/
 	
-	// Writing in the domain file
+	/** Writing in the domain file, jump directly to problem file after next line **/
 	std::cout << *ma2sa;
 	
-
-/*** The below code snippet is useless as per AIJ conventions (kept because it was part of ICAPS work) **/	
-/********************************************************************************************************/    
+	
+	/*** The below code snippet is never used as per AIJ conventions (kept because it was part of ICAPS work) **/	
+	/********************************************************************************************************/    
 	/** Actions with conflicting effects, e.g., <stack, [unstack,pickup]> **/
+	
 	std::vector< std::map< std::string, std::map< std::string, std::vector< std::string >>> > pairOfProbActions;
 	for( unsigned i = 0; i < d->nodes.size(); ++i ) {
 	 	std::map< std::string, std::map < std::string, std::vector < std::string >>> pair;	
@@ -1699,11 +1695,10 @@ int main( int argc, char *argv[] )
 	}
 	
 	//std::cout << *cd;
-	
-/** The above code is useless as per AIJ conventions (kept because it was part of ICAPS work) **/	    
-/** Nothing from the above is executable as our domain definition is not based on CJR's definition anymore. **/
+	/** The above code is useless as per AIJ conventions (kept because it was part of ICAPS work) **/	    
+	/** Nothing from the above is executable as our domain definition is not based on CJR's definition anymore. **/
 
-/****
+	/****
 	// generate single-agent instance file
 	unsigned nagents = 0;
 	for( unsigned i = 0; i < d->nodes.size(); ++i ) {
@@ -1712,7 +1707,7 @@ int main( int argc, char *argv[] )
 			if( (d->nodes[i]->upper > nagents) && (d->nodes[i]->upper != 1000000) )
 				nagents = d->nodes[i]->upper;		
 	}	
-****/
+	****/
 	
 	/**** I need to check why I still use *cd below and not *ma2sa. ********/
 	Instance * cins = new Instance( *cd );
