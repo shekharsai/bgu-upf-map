@@ -469,7 +469,7 @@ int main( int argc, char *argv[] )
 	ma2sa->createPredicate( "TAKEN", StringVec( 1, "AGENT" ) );
 	ma2sa->createPredicate( "NEG-IN-JOINT" );
 	
-	// Create the start action
+	// Start: create the start action
 	Action start = ma2sa->createAction( "MULTI-START" );
 	ma2sa->addPre( 0, "MULTI-START", "NEG-IN-JOINT");
 	ma2sa->addEff( 1, "MULTI-START", "NEG-IN-JOINT");
@@ -501,7 +501,6 @@ int main( int argc, char *argv[] )
 		for( unsigned l = 0; oldeff && l < oldeff->conds.size(); ++l )
 		{
 			// bool concurEffs = 0; 
-			// The regular effects
 			// concurEffs |= addEff( ma2sa, act, oldeff->conds[l] );		
 			Condition *c = oldeff->conds[l];
 			Not * n = dynamic_cast <Not*> ( c );
@@ -553,17 +552,64 @@ int main( int argc, char *argv[] )
 				}				
 			}
 		}
-		/** End: if push appears in 2push then 2push will have an effect p-push  **/
-		
+		/** End: if push appears in 2push then 2push will have an effect p-push  **/		
 	}
 	
-	// Create the end action
-	Action end = ma2sa->createAction( "MULTI-END" );
+	/** Start: create the end action **/
+	Action *end = ma2sa->createAction( "MULTI-END" );
 	ma2sa->addPre( 1, "MULTI-END", "NEG-IN-JOINT");
 	ma2sa->addEff( 0, "MULTI-END", "NEG-IN-JOINT");
 	
+	// Forall actions, p-action proposition in act-multi-end
+	for( unsigned i = 0; i < d->actions.size(); ++i ) 
+	{
+		Forall *f = new Forall;		
+		// IntVec predParam = d->convertTypes( d->typeList( d->actions[i] ) ); 
+		// std::cout << " d->actions[i] " << d->typeList( d->actions[i] ) <<std::endl;
+		// std::cout << "param: " << StringVec( 1, "AGENT" ) << std::endl;
+		// f->params = predParam; //d->actions[i]->params;
+		f->params = ma2sa->convertTypes( d->typeList(d->actions[i]) );		
+		f->cond = new Not( new Ground( ma2sa->preds.get( "P-" + d->actions[i]->name ),  
+																incvec(0, f->params.size() ) ) );
+		dynamic_cast< And* >(end->eff)->add(f); 		
+	}
+	
+	// Forall predicate, p-predicate proposition in act-multi-end
+	for( unsigned i = 0; i < d->preds.size(); ++i ) 
+	{   
+		Forall *f = new Forall; When *condition = new When;
+		And *formula = new And; And *locAnd = new And;		
+		f->params = ma2sa->convertTypes( d->typeList( d->preds[i] ) );
+		condition->pars = new Ground( ma2sa->preds.get( "POS-" + d->preds[i]->name ), incvec(0, f->params.size() ) );
+		locAnd->add( new Ground( ma2sa->preds.get( d->preds[i]->name ), incvec(0, f->params.size() ) ) );
+		locAnd->add( new Not( new Ground( ma2sa->preds.get( "POS-" + d->preds[i]->name ), incvec(0, f->params.size() ) ) ) );
+		condition->cond = locAnd;
+		formula->add(condition);
+		f->cond = formula;
+		dynamic_cast< And* >(end->eff)->add(f); 	
+		
+		f = new Forall; condition = new When;
+		formula = new And; locAnd = new And;		
+		f->params = ma2sa->convertTypes( d->typeList( d->preds[i] ) );
+		condition->pars = new Ground( ma2sa->preds.get( "NEG-" + d->preds[i]->name ), incvec(0, f->params.size() ) );
+		locAnd->add( new Not( new Ground( ma2sa->preds.get( d->preds[i]->name ), incvec(0, f->params.size() ) ) ) );
+		locAnd->add( new Not( new Ground( ma2sa->preds.get( "NEG-" + d->preds[i]->name ), incvec(0, f->params.size() ) ) ) );
+		condition->cond = locAnd;
+		formula->add(condition);
+		f->cond = formula;
+		dynamic_cast< And* >(end->eff)->add(f); 
+	}
+	
+	// Forall agents, not taken proposition in act-multi-end
+	Forall * f = new Forall;		
+	f->params = ma2sa->convertTypes( StringVec( 1, "AGENT" ) );
+	f->cond = new Not( new Ground( ma2sa->preds.get( "TAKEN" ), {0}));
+	dynamic_cast< And* >( end->eff )->add( f );
+	/** End: create the end action **/
+	
 	// Writing in the domain file
-	std::cerr << *ma2sa;
+	std::cout << *ma2sa;
+	
 
 /*** The below code snippet is useless as per AIJ conventions (kept because it was part of ICAPS work) **/	
 /********************************************************************************************************/    
@@ -1714,7 +1760,7 @@ int main( int argc, char *argv[] )
 	}	
 	cins->addGoal( "NEG-IN-JOINT" );
 	
-	// std::cerr << *cins;
+	std::cerr << *cins;
 	
 	
 	// end time
@@ -1724,6 +1770,7 @@ int main( int argc, char *argv[] )
     std::cout<< "\n;;Domain compilation time is: " << diff/CLOCKS_PER_SEC << std::endl <<"\n";
     
 	delete cins;
+	delete ma2sa;
 	delete cd;
 	delete ins;
 	delete d;    

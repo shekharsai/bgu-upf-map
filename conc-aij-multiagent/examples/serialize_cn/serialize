@@ -1338,8 +1338,9 @@ int main( int argc, char *argv[] )
 				}
 			}
 		
-			// Our version of END- action that does all the bookkeepings, as per our algorithm
-			if ( i->second.size() > 1 || d->nodes[x]->upper > 1 ) {
+			// ICAPS version of the END- action that does all the bookkeeping
+			if ( i->second.size() > 1 || d->nodes[x]->upper > 1 ) 
+			{
 				std::string name = "END-" + d->nodes[x]->name;
 				unsigned size = d->nodes[x]->params.size();
 				Action * end = cd->createAction( name, d->typeList( d->nodes[x] ) );
@@ -1361,7 +1362,8 @@ int main( int argc, char *argv[] )
 					cd->addEff( 1, name, "ACTIVE-" + d->nodes[x]->name, incvec( 0, size ) );
 					
 					// the below snippet is for adding all the P-Action( n->nodes[x]->params )
-					for( unsigned d1 = 0; d1 < d->nodes[x]->templates.size(); d1++) {
+					for( unsigned d1 = 0; d1 < d->nodes[x]->templates.size(); d1++) 
+					{
 						int action = d->actions.index( d->nodes[x]->templates[d1]->name );
 						std::string actionName = d->actions[action]->name;
 						
@@ -1382,7 +1384,7 @@ int main( int argc, char *argv[] )
 						// if( actionName.find( "ACTIVITY" ) == std::string::npos ) : changed later
 						f->cond = new Not( new Ground( cd->preds.get( "P-" + actionName ),  paramsNew));
 						dynamic_cast< And* >( end->eff )->add( f );
-						//std::cout << "\n\n actionName " << actionName <<"\n\n";
+						// std::cout << "\n\n actionName " << actionName <<"\n\n";
 						// cd->addEff( 1, name, "P-" + actionName, incvec( 0, size ) );
 					}
 					
@@ -1397,7 +1399,8 @@ int main( int argc, char *argv[] )
 					std::set< std::vector < unsigned >>::iterator it;
 					std::vector< std::vector< unsigned >> choicesToAdd;
 					std::vector< unsigned > choicesToAdd_flag;
-					for( it = probVector.begin(); it != probVector.end(); ++it ) { 
+					for( it = probVector.begin(); it != probVector.end(); ++it ) 
+					{ 
 						std::vector< unsigned > deleteChoices  = ( std::vector< unsigned > ) *it;				
 						choicesToAdd.push_back( deleteChoices );
 						choicesToAdd_flag.push_back( 0 );
