@@ -49,8 +49,8 @@ bool isTheDomainDescriptionAmbiguous( parser::multiagent::MultiagentDomain *d ) 
 	}		
 }
 
-// These are very specific checks that are bases on parameters 
-// It is solely based on the idea of sharing object subset like CJR's
+/** These are very specific checks that are bases on parameters 
+	It is solely based on the idea of sharing object subset like CJR's **/
 bool doTheyTargetTheSameObjectSubset( 
 	IntVec network, 
 	IntVec legal, 
@@ -79,7 +79,7 @@ bool doTheyTargetTheSameObjectSubset(
 	return decision;
 }
 
-// how many times a word has occured in a long string
+/** How many times a text has occured in a long string **/
 int key_search(const std::string& s, const std::string& key) {
     int count = 0; size_t pos=0;
     while ((pos = s.find(key, pos)) != std::string::npos) {
@@ -88,12 +88,120 @@ int key_search(const std::string& s, const std::string& key) {
     return count;
 }
 
+/** Basic add-delete list check. Depending on the domain representation a more sophisticated approach is required. */
+std::map< std::string, std::vector<std::string> > MutexActionDictionary( const Domain *cd )
+{
+	std::map<std::string, std::vector<std::string>> mutexActDictionary;	
+	for( unsigned i = 0; i < cd->actions.size(); i++ )
+	{	
+		std::vector<std::string> listOfAct; Action *legal = cd->actions[i];		
+		// std::cout << i << " i legal " << legal->name << std::endl;		
+		for( unsigned j = 0; j < cd->actions.size(); j++ )
+		{
+			if( i == j )
+				continue;				
+			Action *mayBeLegal = cd->actions[j];
+									
+			// add vs delete lists		
+			bool ambiguous1 = false; bool loc1 = false;			
+			for( unsigned k = 0; k < legal->addEffects().size(); ++k ) 
+			{			
+				for( unsigned l = 0; l < mayBeLegal->deleteEffects().size(); ++l ) 
+				{					
+					std::string name1 = (dynamic_cast<Ground *> (legal->addEffects()[k]))->name;
+					std::string name2 = (dynamic_cast<Ground *> (mayBeLegal->deleteEffects()[l]))->name;
+					bool loc = false; ambiguous1 = false;
+					if( name1 == name2 && 
+						(legal->addEffects()[k]->params).size() == (mayBeLegal->deleteEffects()[l]->params).size() )
+					{
+						loc = true;
+						for( unsigned t = 0; t < (legal->addEffects()[k]->params).size(); t++ )
+						{
+							if( legal->params[(legal->addEffects()[k]->params)[t]] !=
+							 	mayBeLegal->params[(mayBeLegal->deleteEffects()[l]->params)[t]] )
+							 {
+							 	ambiguous1 = true; break;
+							 }	
+							 
+							 else if( legal->params[(legal->addEffects()[k]->params)[t]] == 
+							 	mayBeLegal->params[(mayBeLegal->deleteEffects()[l]->params)[t]] )
+							 {
+							 	if( legal->params[(legal->addEffects()[k]->params)[t]] == 1)
+							 	{
+							 		ambiguous1 = true; break;
+							 	}
+							 }
+						}						
+					}
+					if( !ambiguous1 && loc )
+					{
+						loc1 = true; break;
+					}
+				}
+				if( loc1 )
+				{
+					break;
+				}
+			}
+			
+			// delete vs add lists
+			ambiguous1 = false; bool loc2 = false;			
+			for( unsigned k = 0; k < legal->deleteEffects().size(); ++k ) 
+			{			
+				for( unsigned l = 0; l < mayBeLegal->addEffects().size(); ++l ) 
+				{					
+					std::string name1 = (dynamic_cast<Ground *> (legal->deleteEffects()[k]))->name;
+					std::string name2 = (dynamic_cast<Ground *> (mayBeLegal->addEffects()[l]))->name;
+					bool loc = false; ambiguous1 = false;
+					if( name1 == name2 && 
+						(legal->deleteEffects()[k]->params).size() == (mayBeLegal->addEffects()[l]->params).size() )
+					{
+						loc = true;
+						for( unsigned t = 0; t < (legal->deleteEffects()[k]->params).size(); t++ )
+						{
+							if( legal->params[(legal->deleteEffects()[k]->params)[t]] !=
+							 	mayBeLegal->params[(mayBeLegal->addEffects()[l]->params)[t]] )
+							 {
+							 	ambiguous1 = true; break;
+							 }	
+							 
+							 else if( legal->params[(legal->deleteEffects()[k]->params)[t]] == 
+							 	mayBeLegal->params[(mayBeLegal->addEffects()[l]->params)[t]] )
+							 {
+							 	if( legal->params[(legal->deleteEffects()[k]->params)[t]] == 1)
+							 	{
+							 		ambiguous1 = true; break;
+							 	}
+							 }
+						}						
+					}
+					if( !ambiguous1 && loc )
+					{
+						loc2 = true; break;
+					}
+				}
+				if( loc2 )
+				{
+					break;
+				}
+			}
+			if( loc1 || loc2 )
+			{
+				listOfAct.push_back( mayBeLegal->name );
+			}
+		}
+		mutexActDictionary[legal->name] = listOfAct;		
+	}
+	return mutexActDictionary;		
+}
+
 // Returns pair of actions (sa or collaborative) with different effects on a set of objects.
 // Following the domain file, the below snippet checks for each concurrency-constraint node v1.
 // Two actions with negative interactions, are different too, as of now. 
 // Activity-drop-table contains 2 agents by default, otherwise parse the number of agents.
 std::map< std::string, std::vector<std::string> > 
-	actionPairWithDiffEffOnObjSet( const parser::multiagent::NetworkNode * n, const Domain & cd ) {		
+	actionPairWithDiffEffOnObjSet( const parser::multiagent::NetworkNode * n, const Domain & cd ) 
+{		
 	std::map< std::string, std::vector<std::string> > listOfAmbiguousActions;	
 	for( unsigned i = 0; i < n->templates.size(); ++i ) 
 	{
@@ -474,10 +582,13 @@ int main( int argc, char *argv[] )
 	ma2sa->addPre( 0, "MULTI-START", "NEG-IN-JOINT");
 	ma2sa->addEff( 1, "MULTI-START", "NEG-IN-JOINT");
 	
+	std::map <std::string, std::vector<std::string>> mutexActDictionary = MutexActionDictionary( d );
+	std::cout << "List:\t" << mutexActDictionary << std::endl;
+	
 	for( unsigned i = 0; i < d->actions.size(); ++i ) 
 	{
 		ma2sa->createPredicate( "P-" + d->actions[i]->name, d->typeList( d->actions[i] ) );  
-		  
+		
 		Action *act = ma2sa->createAction( d->actions[i]->name, d->typeList( d->actions[i] ) );
 		
 		And * oldpre = dynamic_cast< And * >( d->actions[i]->pre );
@@ -493,10 +604,17 @@ int main( int argc, char *argv[] )
 			{
 				ma2sa->addPre( 1, d->actions[i]->name, "TAKEN", IntVec( 1, k ) );
 			}
+		}		
+		ma2sa->addPre( 1, d->actions[i]->name, "NEG-IN-JOINT" );
+		
+		/** add mutex actions in the precondition **/
+		std::vector<std::string> listOfActions = mutexActDictionary[d->actions[i]->name];
+		for( auto act : listOfActions)
+		{
+			Action * mutex = d->actions[ d->actions.index( act )];
+			
 		}
 		
-		ma2sa->addPre( 1, d->actions[i]->name, "NEG-IN-JOINT" );
-										
 		And * oldeff = dynamic_cast< And * >( d->actions[i]->eff );			
 		for( unsigned l = 0; oldeff && l < oldeff->conds.size(); ++l )
 		{
@@ -603,7 +721,7 @@ int main( int argc, char *argv[] )
 	/** End: create the end action **/
 	
 	/** Writing in the domain file, jump directly to problem file after next line **/
-	std::cout << *ma2sa;
+	// std::cout << *ma2sa;
 	
 	
 	/*** The below code snippet is never used as per AIJ conventions (kept because it was part of ICAPS work) **/	
@@ -1755,7 +1873,7 @@ int main( int argc, char *argv[] )
 	}	
 	cins->addGoal( "NEG-IN-JOINT" );
 	
-	std::cerr << *cins;
+	// std::cerr << *cins;
 	
 	
 	// end time

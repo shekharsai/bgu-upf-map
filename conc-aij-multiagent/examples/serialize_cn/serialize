@@ -93,7 +93,8 @@ int key_search(const std::string& s, const std::string& key) {
 // Two actions with negative interactions, are different too, as of now. 
 // Activity-drop-table contains 2 agents by default, otherwise parse the number of agents.
 std::map< std::string, std::vector<std::string> > 
-	actionPairWithDiffEffOnObjSet( const parser::multiagent::NetworkNode * n, const Domain & cd ) {		
+	actionPairWithDiffEffOnObjSet( const parser::multiagent::NetworkNode * n, const Domain & cd ) 
+{		
 	std::map< std::string, std::vector<std::string> > listOfAmbiguousActions;	
 	for( unsigned i = 0; i < n->templates.size(); ++i ) 
 	{
@@ -1087,7 +1088,8 @@ int main( int argc, char *argv[] )
 						cd->addPre( 0, end_JA, "AFREE" );
 					
 					// newly added effects
-					if ( i->second.size() > 1 || d->nodes[x]->upper > 1 ) {
+					if ( i->second.size() > 1 || d->nodes[x]->upper > 1 ) 
+					{
 						cd->addEff( 1, end_JA, "IN-JOINT" );	
 						std::stringstream convert; convert << noOfAgents;
 						std::string s2 = convert.str();
@@ -1103,8 +1105,7 @@ int main( int argc, char *argv[] )
 						cd->addEff( 0, end_JA, "COUNT-" + d->nodes[x]->name, incvec( size + 1, size + 2 ) );
 					}
 				} 
-				/*
-				 ** When the action is single agent action irrespective of it being a component of a multi-action. */			
+				/*** When the action is single agent action irrespective of it being a component of a multi-action. ***/			
 				else 
 				{ 
 					name = "DO-" + d->actions[action]->name;
