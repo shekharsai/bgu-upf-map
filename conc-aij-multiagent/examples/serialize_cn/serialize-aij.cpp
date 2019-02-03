@@ -578,12 +578,12 @@ int main( int argc, char *argv[] )
 	ma2sa->createPredicate( "NEG-IN-JOINT" );
 	
 	/** Start: create the start action **/
-	Action start = ma2sa->createAction( "MULTI-START" );
+	Action start = ma2sa->createAction( "MULTI-START" ); 
 	ma2sa->addPre( 0, "MULTI-START", "NEG-IN-JOINT");
 	ma2sa->addEff( 1, "MULTI-START", "NEG-IN-JOINT");
 	
 	std::map <std::string, std::vector<std::string>> mutexActDictionary = MutexActionDictionary( d );
-	std::cout << "List:\t" << mutexActDictionary << std::endl;
+	std::cout << "\nList:\t" << mutexActDictionary << std::endl;
 	
 	for( unsigned i = 0; i < d->actions.size(); ++i ) 
 	{
@@ -607,7 +607,7 @@ int main( int argc, char *argv[] )
 		}		
 		ma2sa->addPre( 1, d->actions[i]->name, "NEG-IN-JOINT" );
 		
-		/** add mutex actions in the precondition **/
+		/** Added mutex actions in the precondition **/
 		std::vector<std::string> listOfActions = mutexActDictionary[d->actions[i]->name];
 		for( auto act : listOfActions)
 		{
