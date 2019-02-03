@@ -88,21 +88,25 @@ int key_search(const std::string& s, const std::string& key) {
     return count;
 }
 
-/** Basic add-delete list check. Depending on the domain representation a more sophisticated approach is required. */
-std::map< std::string, std::vector<std::string> > MutexActionDictionary( const Domain *cd )
+/** Basic add-delete list check. Depending on the domain representation a more sophisticated approach is required. **/
+std::map< std::string, std::vector< std::map< std::string, Ground* > > > MutexActionDictionary( const Domain *cd )
 {
-	std::map<std::string, std::vector<std::string>> mutexActDictionary;	
+	std::map< std::string, std::vector< std::map< std::string, Ground* > > > mutexCondActDictionary;	
 	for( unsigned i = 0; i < cd->actions.size(); i++ )
 	{	
-		std::vector<std::string> listOfAct; Action *legal = cd->actions[i];		
-		// std::cout << i << " i legal " << legal->name << std::endl;		
+		std::vector< std::map< std::string, Ground* > > listOfAct; 
+		Action *legal = cd->actions[i];		
 		for( unsigned j = 0; j < cd->actions.size(); j++ )
 		{
 			if( i == j )
-				continue;				
+			{
+				continue;	
+			}
+							
 			Action *mayBeLegal = cd->actions[j];
+			Ground *conflictingProp;
 									
-			// add vs delete lists		
+			/** Add vs Delete lists **/
 			bool ambiguous1 = false; bool loc1 = false;			
 			for( unsigned k = 0; k < legal->addEffects().size(); ++k ) 
 			{			
@@ -130,11 +134,12 @@ std::map< std::string, std::vector<std::string> > MutexActionDictionary( const D
 							 	{
 							 		ambiguous1 = true; break;
 							 	}
-							 }
+							 }							 
 						}						
 					}
 					if( !ambiguous1 && loc )
 					{
+						conflictingProp = (dynamic_cast<Ground *> (legal->addEffects()[k]));
 						loc1 = true; break;
 					}
 				}
@@ -142,57 +147,62 @@ std::map< std::string, std::vector<std::string> > MutexActionDictionary( const D
 				{
 					break;
 				}
-			}
-			
-			// delete vs add lists
-			ambiguous1 = false; bool loc2 = false;			
-			for( unsigned k = 0; k < legal->deleteEffects().size(); ++k ) 
-			{			
-				for( unsigned l = 0; l < mayBeLegal->addEffects().size(); ++l ) 
-				{					
-					std::string name1 = (dynamic_cast<Ground *> (legal->deleteEffects()[k]))->name;
-					std::string name2 = (dynamic_cast<Ground *> (mayBeLegal->addEffects()[l]))->name;
-					bool loc = false; ambiguous1 = false;
-					if( name1 == name2 && 
-						(legal->deleteEffects()[k]->params).size() == (mayBeLegal->addEffects()[l]->params).size() )
-					{
-						loc = true;
-						for( unsigned t = 0; t < (legal->deleteEffects()[k]->params).size(); t++ )
+			}			
+			/** Delete vs Add lists **/
+			ambiguous1 = false; bool loc2 = false;	
+			if( !loc1 )
+			{						
+				for( unsigned k = 0; k < legal->deleteEffects().size(); ++k ) 
+				{			
+					for( unsigned l = 0; l < mayBeLegal->addEffects().size(); ++l ) 
+					{					
+						std::string name1 = (dynamic_cast<Ground *> (legal->deleteEffects()[k]))->name;
+						std::string name2 = (dynamic_cast<Ground *> (mayBeLegal->addEffects()[l]))->name;
+						bool loc = false; ambiguous1 = false;
+						if( name1 == name2 && 
+							(legal->deleteEffects()[k]->params).size() == (mayBeLegal->addEffects()[l]->params).size() )
 						{
-							if( legal->params[(legal->deleteEffects()[k]->params)[t]] !=
-							 	mayBeLegal->params[(mayBeLegal->addEffects()[l]->params)[t]] )
-							 {
-							 	ambiguous1 = true; break;
-							 }	
-							 
-							 else if( legal->params[(legal->deleteEffects()[k]->params)[t]] == 
-							 	mayBeLegal->params[(mayBeLegal->addEffects()[l]->params)[t]] )
-							 {
-							 	if( legal->params[(legal->deleteEffects()[k]->params)[t]] == 1)
-							 	{
-							 		ambiguous1 = true; break;
-							 	}
-							 }
-						}						
+							loc = true;
+							for( unsigned t = 0; t < (legal->deleteEffects()[k]->params).size(); t++ )
+							{
+								if( legal->params[(legal->deleteEffects()[k]->params)[t]] !=
+								 	mayBeLegal->params[(mayBeLegal->addEffects()[l]->params)[t]] )
+								 {
+								 	ambiguous1 = true; break;
+								 }	
+								 
+								 else if( legal->params[(legal->deleteEffects()[k]->params)[t]] == 
+								 	mayBeLegal->params[(mayBeLegal->addEffects()[l]->params)[t]] )
+								 {
+								 	if( legal->params[(legal->deleteEffects()[k]->params)[t]] == 1)
+								 	{
+								 		ambiguous1 = true; break;
+								 	}
+								 }
+							}						
+						}
+						if( !ambiguous1 && loc )
+						{
+							conflictingProp = (dynamic_cast<Ground *> (legal->deleteEffects()[k]));
+							loc2 = true; break;
+						}
 					}
-					if( !ambiguous1 && loc )
+					if( loc2 )
 					{
-						loc2 = true; break;
+						break;
 					}
-				}
-				if( loc2 )
-				{
-					break;
 				}
 			}
 			if( loc1 || loc2 )
 			{
-				listOfAct.push_back( mayBeLegal->name );
+				std::map< std::string, Ground* > actionCondMap;
+				actionCondMap[ mayBeLegal->name ] = conflictingProp; 				
+				listOfAct.push_back( actionCondMap );
 			}
 		}
-		mutexActDictionary[legal->name] = listOfAct;		
+		mutexCondActDictionary[legal->name] = listOfAct;		
 	}
-	return mutexActDictionary;		
+	return mutexCondActDictionary;		
 }
 
 // Returns pair of actions (sa or collaborative) with different effects on a set of objects.
@@ -582,7 +592,7 @@ int main( int argc, char *argv[] )
 	ma2sa->addPre( 0, "MULTI-START", "NEG-IN-JOINT");
 	ma2sa->addEff( 1, "MULTI-START", "NEG-IN-JOINT");
 	
-	std::map <std::string, std::vector<std::string>> mutexActDictionary = MutexActionDictionary( d );
+	std::map< std::string, std::vector< std::map< std::string, Ground* > > > mutexActDictionary = MutexActionDictionary( d );
 	std::cout << "\nList:\t" << mutexActDictionary << std::endl;
 	
 	for( unsigned i = 0; i < d->actions.size(); ++i ) 
@@ -607,12 +617,19 @@ int main( int argc, char *argv[] )
 		}		
 		ma2sa->addPre( 1, d->actions[i]->name, "NEG-IN-JOINT" );
 		
-		/** Added mutex actions in the precondition **/
-		std::vector<std::string> listOfActions = mutexActDictionary[d->actions[i]->name];
-		for( auto act : listOfActions)
+		/** Added mutex actions in the precondition **/		
+		std::vector< std::map< std::string, Ground* > > listOfActionsCond = mutexActDictionary[d->actions[i]->name];
+		for( auto map1 : listOfActionsCond)
 		{
-			Action * mutex = d->actions[ d->actions.index( act )];
-			
+			std::map< std::string, Ground* >::iterator it = map1.begin();
+			std::string act; Ground *cond;
+			while( it != map1.end() )
+			{
+				act = it->first;
+				cond = it->second;
+			}
+			Action * mutex = d->actions[ d->actions.index( act )];		
+				
 		}
 		
 		And * oldeff = dynamic_cast< And * >( d->actions[i]->eff );			
