@@ -2070,7 +2070,7 @@ int main( int argc, char *argv[] )
 	}	
 	cins->addGoal( "NEG-IN-JOINT" );
 	
-	// std::cerr << *cins;	
+	std::cerr << *cins;	
 	
 	// end time
 	t2 = clock();
