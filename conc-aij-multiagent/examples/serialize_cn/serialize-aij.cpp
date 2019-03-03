@@ -14,6 +14,8 @@
 #include <vector>
 #include <time.h>
 
+#include <unistd.h>
+
 using namespace parser::pddl;
 using namespace std;
 
@@ -79,6 +81,7 @@ bool doTheyTargetTheSameObjectSubset(
 	return decision;
 }
 
+
 /** How many times a text has occured in a long string **/
 int key_search(const std::string& s, const std::string& key) {
     int count = 0; size_t pos=0;
@@ -88,23 +91,59 @@ int key_search(const std::string& s, const std::string& key) {
     return count;
 }
 
-/** Basic add-delete list check. Depending on the domain representation a more sophisticated approach is required. **/
-std::map< std::string, std::vector< std::map< std::string, Ground* > > > MutexActionDictionary( const Domain *cd )
+std::vector<Action*> elementListOfACollabAction( Action *passedAct, const Domain *cd )
 {
-	std::map< std::string, std::vector< std::map< std::string, Ground* > > > mutexCondActDictionary;	
+	std::vector<Action*> listOfElements;
+	for( unsigned i = 0; i < cd->actions.size(); i++ )
+	{
+		Action *act = cd->actions[i];
+		if( act->name == passedAct->name )
+		{
+			continue;
+		}		
+		if( std::find_if(act->name.begin(), act->name.end(), ::isdigit) != act->name.end() )
+		{
+			continue;
+		}
+		if( passedAct->name.find(act->name) != std::string::npos )
+		{
+			/** How many times, SA action has occurred **/
+			std::stringstream ss; ss << passedAct->name; std::string temp; int found; 
+		    while( !ss.eof() ) 
+		    { 
+        		ss >> temp; 
+        		if (stringstream(temp) >> found) 
+        		{
+            		
+            	}
+            	temp = ""; 
+    		}
+    		for( int s = 0; s < found; s++ ) 			
+    		{
+				listOfElements.push_back(act);
+			}
+		}		
+	}
+	return listOfElements;
+}
+
+/** Basic add-delete list check. Depending on the domain representation a more sophisticated approach is required. **/
+std::map< std::string, std::vector< std::map< std::string, std::vector< Ground* > > > > MutexActionDictionary( const Domain *cd )
+{
+	std::map< std::string, std::vector< std::map< std::string, std::vector< Ground* > > > > mutexCondActDictionary;	
 	for( unsigned i = 0; i < cd->actions.size(); i++ )
 	{	
-		std::vector< std::map< std::string, Ground* > > listOfAct; 
+		std::vector< std::map< std::string, std::vector< Ground* > > > listOfAct; 
 		Action *legal = cd->actions[i];		
 		for( unsigned j = 0; j < cd->actions.size(); j++ )
 		{
-			if( i == j )
-			{
+			// Uncommented for ungrounded actions
+			if( i == j ) {
 				continue;	
-			}
+			}			
 							
 			Action *mayBeLegal = cd->actions[j];
-			Ground *conflictingProp;
+			std::vector< Ground* > conflictingProp;
 									
 			/** Add vs Delete lists **/
 			bool ambiguous1 = false; bool loc1 = false;			
@@ -139,7 +178,8 @@ std::map< std::string, std::vector< std::map< std::string, Ground* > > > MutexAc
 					}
 					if( !ambiguous1 && loc )
 					{
-						conflictingProp = (dynamic_cast<Ground *> (legal->addEffects()[k]));
+						conflictingProp.push_back( dynamic_cast<Ground *> (legal->addEffects()[k]) );
+						conflictingProp.push_back( dynamic_cast<Ground *> (mayBeLegal->deleteEffects()[l]) );
 						loc1 = true; break;
 					}
 				}
@@ -183,7 +223,8 @@ std::map< std::string, std::vector< std::map< std::string, Ground* > > > MutexAc
 						}
 						if( !ambiguous1 && loc )
 						{
-							conflictingProp = (dynamic_cast<Ground *> (legal->deleteEffects()[k]));
+							conflictingProp.push_back( dynamic_cast<Ground *> (legal->deleteEffects()[k]) );
+							conflictingProp.push_back( dynamic_cast<Ground *> (mayBeLegal->addEffects()[l]) );
 							loc2 = true; break;
 						}
 					}
@@ -195,7 +236,7 @@ std::map< std::string, std::vector< std::map< std::string, Ground* > > > MutexAc
 			}
 			if( loc1 || loc2 )
 			{
-				std::map< std::string, Ground* > actionCondMap;
+				std::map< std::string, std::vector< Ground* > > actionCondMap;
 				actionCondMap[ mayBeLegal->name ] = conflictingProp; 				
 				listOfAct.push_back( actionCondMap );
 			}
@@ -265,96 +306,113 @@ std::map< std::string, std::vector<std::string> >
 // propositions dealing with common objects set (keeping agent privacy in mind). 
 std::map< std::string, std::vector< std::string > > ambiguousActions( const parser::multiagent::NetworkNode * n, const Domain & cd ) 
 {
-		std::map< std::string, std::vector < std::string > > listOfAmbiguousActions;
-		for( unsigned i = 0; i < n->templates.size(); ++i ) {
-			Action * legal_a = d->actions[ d->actions.index( n->templates[i]->name ) ];			
-			std::vector< std::string > ambActions;			
-			for( unsigned j = 0; j < n->templates.size(); j++ )	
-				if( i != j ) 
-				{
-					bool ambiguous1 = false; 
-					bool ambiguous2 = false;			
-					Action * probably_legal_a = d->actions[ d->actions.index( n->templates[j]->name )];	
-					for( unsigned k = 0; k < legal_a->addEffects().size(); ++k ) 			
-						for( unsigned l = 0; l < probably_legal_a->deleteEffects().size(); ++l ) 
-						{
-							if((( dynamic_cast< Ground * > (legal_a->addEffects()[k]))->name == 
-									(dynamic_cast< Ground * > (probably_legal_a->deleteEffects()[l]))->name )) 
-								{
-									ambiguous1 = doTheyTargetTheSameObjectSubset( 
-															n->params,
-															legal_a->addEffects()[k]->params,
-															legal_a->params,
-															probably_legal_a->deleteEffects()[l]->params,
-															probably_legal_a->params );
-									if( ambiguous1 )
-										break;												
-								}
-						}
-					if( !ambiguous1 ) {
-						for( unsigned k = 0; k < legal_a->deleteEffects().size(); ++k ) 			
-							for( unsigned l = 0; l < probably_legal_a->addEffects().size(); ++l ) 
+	std::map< std::string, std::vector < std::string > > listOfAmbiguousActions;
+	for( unsigned i = 0; i < n->templates.size(); ++i ) {
+		Action * legal_a = d->actions[ d->actions.index( n->templates[i]->name ) ];			
+		std::vector< std::string > ambActions;			
+		for( unsigned j = 0; j < n->templates.size(); j++ )	
+			if( i != j ) 
+			{
+				bool ambiguous1 = false; 
+				bool ambiguous2 = false;			
+				Action * probably_legal_a = d->actions[ d->actions.index( n->templates[j]->name )];	
+				for( unsigned k = 0; k < legal_a->addEffects().size(); ++k ) 			
+					for( unsigned l = 0; l < probably_legal_a->deleteEffects().size(); ++l ) 
+					{
+						if((( dynamic_cast< Ground * > (legal_a->addEffects()[k]))->name == 
+								(dynamic_cast< Ground * > (probably_legal_a->deleteEffects()[l]))->name )) 
 							{
-								if(((dynamic_cast<Ground *> (legal_a->deleteEffects()[k]))->name == 
-									(dynamic_cast<Ground *> (probably_legal_a->addEffects()[l]))->name)) 
-									{	
-										ambiguous2 = doTheyTargetTheSameObjectSubset(															
-															n->params,
-															legal_a->deleteEffects()[k]->params,
-															legal_a->params,
-															probably_legal_a->addEffects()[l]->params,
-															probably_legal_a->params );
-										if( ambiguous2 ) break;												
-									}
+								ambiguous1 = doTheyTargetTheSameObjectSubset( 
+														n->params,
+														legal_a->addEffects()[k]->params,
+														legal_a->params,
+														probably_legal_a->deleteEffects()[l]->params,
+														probably_legal_a->params );
+								if( ambiguous1 )
+									break;												
 							}
 					}
-					if ( ambiguous1 || ambiguous2 ) 
-						ambActions.push_back( (std::string) probably_legal_a->name );
-				}		
-			listOfAmbiguousActions[ (std::string) legal_a->name ] = ambActions;		
-		}
-		return listOfAmbiguousActions;
+				if( !ambiguous1 ) {
+					for( unsigned k = 0; k < legal_a->deleteEffects().size(); ++k ) 			
+						for( unsigned l = 0; l < probably_legal_a->addEffects().size(); ++l ) 
+						{
+							if(((dynamic_cast<Ground *> (legal_a->deleteEffects()[k]))->name == 
+								(dynamic_cast<Ground *> (probably_legal_a->addEffects()[l]))->name)) 
+								{	
+									ambiguous2 = doTheyTargetTheSameObjectSubset	
+									(															
+										n->params,
+										legal_a->deleteEffects()[k]->params,
+										legal_a->params,
+										probably_legal_a->addEffects()[l]->params,
+										probably_legal_a->params 
+									);
+									if( ambiguous2 ) break;												
+								}
+						}
+				}
+				if ( ambiguous1 || ambiguous2 ) 
+					ambActions.push_back( (std::string) probably_legal_a->name );
+			}		
+		listOfAmbiguousActions[ (std::string) legal_a->name ] = ambActions;		
+	}
+	return listOfAmbiguousActions;
 }
 
-// Returns true is action possibleComp appears in the Joint Activity, jointActivity.
-bool isActionAComponentOfJA( Action * jointActivity,  Action * possibleComp ) {
-	bool decision = false;
-	int counter = 0;	
-	std::vector< int > activityParams;
+/** Returns true is action possibleComp appears in the joint activity: jointActivity. **/
+bool isActionAComponentOfJA( Action *jointActivity,  Action *possibleComp ) 
+{
+	bool decision = false; int counter = 0; std::vector< int > activityParams;	
 	for( int &j : jointActivity->params )
+	{
 		activityParams.push_back( j );
-	if( ( jointActivity->name ).find( possibleComp->name ) != std::string::npos ) {
+	}
+	
+	if( ( jointActivity->name ).find( possibleComp->name ) != std::string::npos ) 
+	{
 		for( unsigned i = 0; i < possibleComp->params.size(); i++ )
+		{
 			for( unsigned j = 0; j < activityParams.size(); j++ ) 
-				if( possibleComp->params[i] == activityParams[j] ) { 					
+			{
+				if( possibleComp->params[i] == activityParams[j] ) 
+				{ 					
 					counter++;
 					activityParams.erase( activityParams.begin() + j );
 					break;
 				}
+			}
+		}
 		if( counter == (int) possibleComp->params.size() )
+		{
 			decision = true;		
+		}
 	}
 	return decision; 
 }
 
 // Just handles |< push, 2-push (JA) >| or |< push, clean, <push-clean (JA) >>|
 // Action-component-name should always appear in JA, along with its whole paramList() 
-std::map< std::string, std::vector< std::string > > findComponentsOfJointActivities( 
-	const parser::multiagent::NetworkNode * n ) {
-	std::map < std::string, std::vector < std::string > > listOfJointActivityComponents;
-	for( unsigned i = 0; i < n->templates.size(); ++i ) {
+std::map< std::string, std::vector< std::string > > findComponentsOfJointActivities( const parser::multiagent::NetworkNode * n ) 
+{
+	std::map< std::string, std::vector< std::string > > listOfJointActivityComponents;
+	for( unsigned i = 0; i < n->templates.size(); ++i ) 
+	{
 		std::vector< std::string > listOfComp;
-		Action * jointActivity = d->actions[ d->actions.index( n->templates[i]->name ) ];		
+		Action *jointActivity = d->actions[ d->actions.index( n->templates[i]->name ) ];		
 		if( ( jointActivity->name ).find( "ACTIVITY" ) != std::string::npos ) 
 		{
 			for ( unsigned j = 0; j < n->templates.size(); ++j ) 
-				if ( i != j ) {					
+			{
+				if ( i != j ) 
+				{					
 					Action * possibleComp = d->actions[ d->actions.index( n->templates[j]->name ) ];					
 					bool decision = isActionAComponentOfJA( jointActivity, possibleComp );	
-					if (decision) {
+					if (decision) 
+					{
 						listOfComp.push_back( possibleComp->name );
 					}				
 				}
+			}
 			listOfJointActivityComponents[ jointActivity->name ] = listOfComp;
 		}
 	}
@@ -465,7 +523,8 @@ bool addEff( Domain * cd, Action * a, Condition * c, std::string nodeName ) {
 	return 0;	
 }
 
-bool addEff( Domain * cd, Action * a, Condition * c ) {
+bool addEff( Domain * cd, Action * a, Condition * c ) 
+{
 	Not * n = dynamic_cast< Not * >( c );
 	Ground * g = dynamic_cast< Ground * >( c );		
 	if ( n )
@@ -480,7 +539,8 @@ bool addEff( Domain * cd, Action * a, Condition * c ) {
 	return 0;
 }
 
-bool canAddNewCondition( Domain * cd, std::string actaualAction, std::string cond ) {
+bool canAddNewCondition( Domain * cd, std::string actaualAction, std::string cond ) 
+{
 	bool decision = true;
 	for( unsigned i7 = 0; i7 < cd->actions.size(); i7++) 
 		if( actaualAction == cd->actions[i7]->name ) 
@@ -496,7 +556,8 @@ bool canAddNewCondition( Domain * cd, std::string actaualAction, std::string con
 	return decision;
 }
 
-bool canAddNewEffect( Domain * cd, std::string actaualAction, std::string cond ) {
+bool canAddNewEffect( Domain * cd, std::string actaualAction, std::string cond ) 
+{
 	bool decision = true;
 	for( unsigned i7 = 0; i7 < cd->actions.size(); i7++) 
 		if( actaualAction == cd->actions[i7]->name ) 
@@ -521,7 +582,8 @@ bool canAddNewEffect( Domain * cd, std::string actaualAction, std::string cond )
 
 // Need to be done properly, as of now kind of hard coded
 // Does not consider a proposition, if an agent is involved in it. 
-bool agentInvolved( StringVec paramList, IntVec params ) {
+bool agentInvolved( StringVec paramList, IntVec params ) 
+{
 	for( unsigned j = 0; j < params.size(); j++ )
 		if( paramList[ params[ j ] ] == "AGENT" && params[j]!=1 ) 
 			return true;
@@ -529,7 +591,8 @@ bool agentInvolved( StringVec paramList, IntVec params ) {
 }
 
 // Captures only cases when node[i]->params is subset of del[j]->params or vice versa.
-bool subsetVector( IntVec parent, IntVec child ) {
+bool subsetVector( IntVec parent, IntVec child ) 
+{
 	unsigned counter;
 	IntVec pr, ch;
 	counter = 0; pr.clear(); ch.clear();
@@ -562,13 +625,14 @@ int main( int argc, char *argv[] )
 	d = new parser::multiagent::MultiagentDomain( argv[1] );
 	ins = new Instance( *d, argv[2] );	
 	
-	/** The compiled SA planning domain **/
+	/** The compiled SA planning domain. **/
 	Domain * ma2sa = new Domain;	
 	ma2sa->name = d->name;
 	ma2sa->condeffects = d->condeffects; 
 	ma2sa->cons = false;
 	d->typed = true;
 	ma2sa->typed = true;
+	ma2sa->typed = d->typed;
 	ma2sa->factored = d->factored;
 	ma2sa->unfactored = d->unfactored;
 	ma2sa->neg = d->neg;
@@ -581,19 +645,19 @@ int main( int argc, char *argv[] )
 	for( unsigned i = 0; i < d->preds.size(); ++i ) 
 	{    
 		ma2sa->createPredicate( d->preds[i]->name, d->typeList( d->preds[i] ) );
-		ma2sa->createPredicate( "POS-"+d->preds[i]->name, d->typeList( d->preds[i] ) );
-		ma2sa->createPredicate( "NEG-"+d->preds[i]->name, d->typeList( d->preds[i] ) );
+		ma2sa->createPredicate( "POS-" + d->preds[i]->name, d->typeList( d->preds[i] ) );
+		ma2sa->createPredicate( "NEG-" + d->preds[i]->name, d->typeList( d->preds[i] ) );
 	}
 	ma2sa->createPredicate( "TAKEN", StringVec( 1, "AGENT" ) );
 	ma2sa->createPredicate( "NEG-IN-JOINT" );
 	
-	/** Start: create the start action **/
+	/** Start: create the start action. **/
 	Action start = ma2sa->createAction( "MULTI-START" ); 
 	ma2sa->addPre( 0, "MULTI-START", "NEG-IN-JOINT");
 	ma2sa->addEff( 1, "MULTI-START", "NEG-IN-JOINT");
 	
-	std::map< std::string, std::vector< std::map< std::string, Ground* > > > mutexActDictionary = MutexActionDictionary( d );
-	std::cout << "\nList:\t" << mutexActDictionary << std::endl;
+	std::map< std::string, std::vector< std::map< std::string, std::vector< Ground* > > > > mutexActDictionary = MutexActionDictionary( d );
+	// std::cout << "\nList:\t" << mutexActDictionary << std::endl;
 	
 	for( unsigned i = 0; i < d->actions.size(); ++i ) 
 	{
@@ -617,20 +681,54 @@ int main( int argc, char *argv[] )
 		}		
 		ma2sa->addPre( 1, d->actions[i]->name, "NEG-IN-JOINT" );
 		
-		/** Added mutex actions in the precondition **/		
-		std::vector< std::map< std::string, Ground* > > listOfActionsCond = mutexActDictionary[d->actions[i]->name];
-		for( auto map1 : listOfActionsCond)
+		/** Added mutex actions in the precondition. **/
+		/** Done manually : a problematic situation: {a_start,row(boat,l1,l2),row(boat,l1,l3), a_end} is a valid multi-action    
+			Inconsistent effect – The user may need to explicitly express the fact that certain effects are inconsistent. **/		
+		/** Planned for the future research in this direction. **/	
+		std::vector< std::map< std::string, std::vector< Ground* > > > listOfActionsCond = mutexActDictionary[ d->actions[i]->name ];
+		for( auto map1 : listOfActionsCond )
 		{
-			std::map< std::string, Ground* >::iterator it = map1.begin();
-			std::string act; Ground *cond;
-			while( it != map1.end() )
+			std::map< std::string, std::vector< Ground* > >::iterator it = map1.begin();
+			std::string actLoc; 
+			std::vector< Ground* > condList;
+			
+			while( it != map1.end() ) 
 			{
-				act = it->first;
-				cond = it->second;
-			}
-			Action * mutex = d->actions[ d->actions.index( act )];		
-				
-		}
+				actLoc = it->first; 
+				condList = it->second; 
+				++it;
+			}			
+			
+			// Ground *condOrg = condList[0];
+			// Ground *condOther = condList[1];
+			// Forall *f = new Forall;
+			// f->params = {1,1,3};
+			// f->cond = new Not( new Ground( ma2sa->preds.get( "TAKEN" ), {0}));
+			// 	dynamic_cast< And* >( end->eff )->add( f );						
+			
+			// std::cout<< f;
+			
+			// std::cout << " param == " << d->convertTypes( StringVec( 1, "AGENT" ) ) << std::endl; 
+			
+			// Action * mutex = d->actions[ d->actions.index( actLoc ) ];		
+			// std::cout << "action1 " << d->actions[ d->actions.index( d->actions[i]->name ) ] << std::endl;
+			// std::cout << "param1 " << d->typeList( d->actions[ d->actions.index( d->actions[i]->name) ] ) << std::endl;
+			// std::cout << "param1: " << ( d->actions[ d->actions.index( d->actions[i]->name) ] )->params  << std::endl;
+			// std::cout << "common1 " << condList[0]->params << std::endl;
+			
+			// std::cout << "\naction2 " <<  mutex  << std::endl;
+			// std::cout << "param2 " << d->typeList( mutex ) << std::endl;
+			// std::cout << "param2: " << mutex->params << std::endl;
+			// std::cout << "common2 " << condList[1]->params << std::endl;
+			// std::cout << std::endl;
+			/*
+			Forall * f = new Forall;		
+			f->params = ma2sa->convertTypes( StringVec( 1, "AGENT" ) );
+			f->cond = new Not( new Ground( ma2sa->preds.get( "TAKEN" ), {0}));
+			dynamic_cast< And* >( end->eff )->add( f );						
+			*/			
+			// exit(0);
+		}			
 		
 		And * oldeff = dynamic_cast< And * >( d->actions[i]->eff );			
 		for( unsigned l = 0; oldeff && l < oldeff->conds.size(); ++l )
@@ -689,6 +787,47 @@ int main( int argc, char *argv[] )
 		/** End: if push appears in 2push then 2push will have an effect p-push  **/		
 	}
 	
+	/** Step 2(d) from the AIJ-submission is implemented below. **/
+	for( unsigned i = 0; i < d->actions.size(); i++ )
+	{	
+		Action *primaryAction = d->actions[i];		
+		std::vector<Action*> primaryElements = elementListOfACollabAction( primaryAction, d );
+		
+		if( primaryElements.size() == 0 )
+		{
+			continue;
+		}
+		
+		for( unsigned j = 0; j < d->actions.size(); j++ )
+		{
+			std::vector<Action*> extraElements;			
+			if( i == j ) {
+				continue;	
+			}
+			Action *secondaryAction = d->actions[j];											
+			std::vector<Action*> secondaryElements = elementListOfACollabAction( secondaryAction, d );
+			
+			if( primaryElements.size() >= secondaryElements.size() )
+			{
+				continue;
+			}
+			
+			/** Note that this won't work when we have activity-push-clean and 2-activity-push **/
+			int diff = - ( primaryElements.size() - secondaryElements.size() ); 			
+			for( int s = 0; s < diff; s++)
+			{
+				extraElements.push_back( secondaryElements[primaryElements.size() + s] );
+			} 			
+			// std::cout << primaryAction->name << std::endl;
+			// std::cout << secondaryAction->name << std::endl;
+			// std::cout << diff << std::endl;
+			// std::cout << extraElements << std::endl;
+			// std::cout << std::endl;
+						
+			
+		}				
+	}
+	
 	/** Start: create the end action **/
 	Action *end = ma2sa->createAction( "MULTI-END" );
 	ma2sa->addPre( 1, "MULTI-END", "NEG-IN-JOINT");
@@ -699,8 +838,7 @@ int main( int argc, char *argv[] )
 	{
 		Forall *f = new Forall;		
 		f->params = ma2sa->convertTypes( d->typeList(d->actions[i]) );		
-		f->cond = new Not( new Ground( ma2sa->preds.get( "P-" + d->actions[i]->name ),  
-																incvec(0, f->params.size() ) ) );
+		f->cond = new Not( new Ground( ma2sa->preds.get( "P-" + d->actions[i]->name ), incvec(0, f->params.size() ) ) );
 		dynamic_cast< And* >(end->eff)->add(f); 		
 	}
 	
@@ -741,9 +879,9 @@ int main( int argc, char *argv[] )
 	// std::cout << *ma2sa;
 	
 	
-	/*** The below code snippet is never used as per AIJ conventions (kept because it was part of ICAPS work) **/	
-	/********************************************************************************************************/    
-	/** Actions with conflicting effects, e.g., <stack, [unstack,pickup]> **/
+/*** The code snippet below is never used as per AIJ conventions (kept because it was part of ICAPS work) ***/	
+//**********************************************************************************************************//    
+//** Actions with conflicting effects, e.g., <stack, [unstack,pickup]> **//
 	
 	std::vector< std::map< std::string, std::map< std::string, std::vector< std::string >>> > pairOfProbActions;
 	for( unsigned i = 0; i < d->nodes.size(); ++i ) {
@@ -1186,7 +1324,8 @@ int main( int argc, char *argv[] )
 											std::vector<int> paramsNode = d->nodes[x]->templates[k]->params;
 											paramsNew.insert( paramsNew.end(), (paramsNode).begin(), paramsNode.end());			
 											a1->add( new Not ( new Ground( cd->preds.get( "P-" + it->first ), paramsNew ) ) );
-											// f->cond = new Ground( cd->preds.get( "P-" + it->first ), paramsNew );								
+											// f->cond = new Ground( cd->preds.get( "P-" + it->first ), paramsNew
+											// );								
 											// dynamic_cast< And* >( doit->pre )->add( f );	
 										}		 		
 									}
@@ -1890,14 +2029,13 @@ int main( int argc, char *argv[] )
 	}	
 	cins->addGoal( "NEG-IN-JOINT" );
 	
-	// std::cerr << *cins;
-	
+	// std::cerr << *cins;	
 	
 	// end time
 	t2 = clock();
 		
 	float diff ((float)t2-(float)t1);
-    std::cout<< "\n;;Domain compilation time is: " << diff/CLOCKS_PER_SEC << std::endl <<"\n";
+    	std::cout<< "\n;The domain compilation time is: " << diff/CLOCKS_PER_SEC << std::endl <<"\n";
     
 	delete cins;
 	delete ma2sa;
