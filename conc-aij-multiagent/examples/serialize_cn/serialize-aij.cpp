@@ -785,49 +785,90 @@ int main( int argc, char *argv[] )
 			}
 		}
 		/** End: if push appears in 2push then 2push will have an effect p-push  **/		
-	}
-	
-	/** Step 2(d) from the AIJ-submission is implemented below. **/
-	for( unsigned i = 0; i < d->actions.size(); i++ )
-	{	
+		
+		/** Start: Step 2(d) from the AIJ-submission is implemented below. **/		
 		Action *primaryAction = d->actions[i];		
 		std::vector<Action*> primaryElements = elementListOfACollabAction( primaryAction, d );
 		
-		if( primaryElements.size() == 0 )
-		{
-			continue;
-		}
-		
-		for( unsigned j = 0; j < d->actions.size(); j++ )
-		{
-			std::vector<Action*> extraElements;			
-			if( i == j ) {
-				continue;	
-			}
-			Action *secondaryAction = d->actions[j];											
-			std::vector<Action*> secondaryElements = elementListOfACollabAction( secondaryAction, d );
-			
-			if( primaryElements.size() >= secondaryElements.size() )
+		if( primaryElements.size() > 0 )
+		{			
+			for( unsigned j = 0; j < d->actions.size(); j++ )
 			{
-				continue;
-			}
-			
-			/** Note that this won't work when we have activity-push-clean and 2-activity-push **/
-			int diff = - ( primaryElements.size() - secondaryElements.size() ); 			
-			for( int s = 0; s < diff; s++)
-			{
-				extraElements.push_back( secondaryElements[primaryElements.size() + s] );
-			} 			
-			// std::cout << primaryAction->name << std::endl;
-			// std::cout << secondaryAction->name << std::endl;
-			// std::cout << diff << std::endl;
-			// std::cout << extraElements << std::endl;
-			// std::cout << std::endl;
+				std::vector<Action*> extraElements;			
+				if( i != j ) 
+				{				
+					Action *secondaryAction = d->actions[j];											
+					std::vector<Action*> secondaryElements = elementListOfACollabAction( secondaryAction, d );			
+					if( primaryElements.size() < secondaryElements.size() )
+					{						
+						/** Note that this won't work when we have activity-push-clean and 2-activity-push **/
+						int diff = secondaryElements.size() - primaryElements.size(); 			
+						for( int s = 0; s < diff; s++)
+						{
+							extraElements.push_back( secondaryElements[primaryElements.size() + s] );
+						}
 						
+						Forall *f = new Forall;
+						std::stringstream ss; ss << primaryAction->name; std::string temp; int found; 
+						while( !ss.eof() ) 
+						{ 
+							ss >> temp; 
+							if (stringstream(temp) >> found)
+							{ }
+							temp = ""; 
+						}		
+						
+						std::vector<int> intVecParamTemp;
+						for( int x = 0; x < (int) extraElements.size(); x++ )
+						{
+							intVecParamTemp.push_back( ma2sa->convertTypes(StringVec(1, "AGENT"))[0] );
+						}
+						f->params = intVecParamTemp;
+						And *a1 = new And;
+						for( int k = 0; k < (int) intVecParamTemp.size(); k++)
+						{
+							std::vector<int> intVecParam;
+							intVecParam.push_back( (int) (act->params.size() + k) );						
+							for( int x = found; x < (int) act->params.size(); x++)
+							{
+								intVecParam.push_back( x );
+							}
+							a1->add( new Not( new Ground( "P-" + extraElements[k]->name, intVecParam) ) );							
+						}
+						f->cond = a1;
+						dynamic_cast< And* >( act->pre )->add(  f );
+					}
+				}
+			}										
+		}
+		else 
+		{
+			// if there is at least one activity
+			bool decision = false;
+			for( unsigned h = 0; h < d->actions.size(); ++h ) 
+			{
+				if( i == h) continue;
+				if( d->actions[h]->name.find(act->name) != std::string::npos)
+				{
+					decision = true; break;
+				}
+			}
 			
-		}				
+			if( !decision ) continue;				
+			Forall *f = new Forall;
+			f->params = ma2sa->convertTypes(StringVec(1, "AGENT"));
+			std::vector<int> intVecParam; int found = 1;
+			intVecParam.push_back( (int) (act->params.size() ) );						
+			for( int x = found; x < (int) act->params.size(); x++)
+			{
+				intVecParam.push_back( x );
+			}
+			f->cond = new Not( new Ground( "P-" + act->name, intVecParam) );
+			dynamic_cast< And* >( act->pre )->add(  f );
+		}		
+		/** End: Step 2(d) **/
 	}
-	
+		
 	/** Start: create the end action **/
 	Action *end = ma2sa->createAction( "MULTI-END" );
 	ma2sa->addPre( 1, "MULTI-END", "NEG-IN-JOINT");
@@ -876,7 +917,7 @@ int main( int argc, char *argv[] )
 	/** End: create the end action **/
 	
 	/** Writing in the domain file, jump directly to problem file after next line **/
-	// std::cout << *ma2sa;
+	std::cout << *ma2sa;
 	
 	
 /*** The code snippet below is never used as per AIJ conventions (kept because it was part of ICAPS work) ***/	
@@ -2043,3 +2084,4 @@ int main( int argc, char *argv[] )
 	delete ins;
 	delete d;    
 }
+
