@@ -679,8 +679,7 @@ int main( int argc, char *argv[] )
 	ma2sa->addEff( 1, "MULTI-START", "NEG-IN-JOINT");
 	
 	std::map< std::string, std::vector< std::map< std::string, std::vector< Ground* > > > > mutexActDictionary = MutexActionDictionary( d );
-	// std::cout << "\nList:\t" << mutexActDictionary << std::endl;
-	
+		
 	for( unsigned i = 0; i < d->actions.size(); ++i ) 
 	{
 		ma2sa->createPredicate( "P-" + d->actions[i]->name, d->typeList( d->actions[i] ) );  
@@ -704,9 +703,9 @@ int main( int argc, char *argv[] )
 		ma2sa->addPre( 1, d->actions[i]->name, "NEG-IN-JOINT" );
 		
 		/** Added mutex actions in the precondition. **/
-		/** Done manually : a problematic situation: {a_start,row(boat,l1,l2),row(boat,l1,l3), a_end} is a valid multi-action    
-			Inconsistent effect – The user may need to explicitly express the fact that certain effects are inconsistent. **/		
-		/** Planned for the future research in this direction. **/	
+		/** For now it is done manually : a problematic situation: {a_start,row(boat,l1,l2),row(boat,l1,l3), a_end} is a valid multi-action    
+		 ** Inconsistent Effect – The user may need to explicitly express the fact that certain effects are inconsistent. **/		
+		/** Intended to automate this in future research in this direction. **/	
 		std::vector< std::map< std::string, std::vector< Ground* > > > listOfActionsCond = mutexActDictionary[ d->actions[i]->name ];
 		for( auto map1 : listOfActionsCond )
 		{
@@ -743,12 +742,7 @@ int main( int argc, char *argv[] )
 			// std::cout << "param2: " << mutex->params << std::endl;
 			// std::cout << "common2 " << condList[1]->params << std::endl;
 			// std::cout << std::endl;
-			/*
-			Forall * f = new Forall;		
-			f->params = ma2sa->convertTypes( StringVec( 1, "AGENT" ) );
-			f->cond = new Not( new Ground( ma2sa->preds.get( "TAKEN" ), {0}));
-			dynamic_cast< And* >( end->eff )->add( f );						
-			*/			
+						
 			// exit(0);
 		}			
 		
@@ -808,7 +802,7 @@ int main( int argc, char *argv[] )
 		}
 		/** End: if push appears in 2push then 2push will have an effect p-push  **/		
 		
-		/** Start: Step 2(d) from the AIJ-submission is implemented below. **/		
+		/** Start: Step 2(d) as per the aij-submission, is implemented below. **/		
 		Action *primaryAction = d->actions[i];		
 		std::vector<Action*> primaryElements = elementListOfACollabAction( primaryAction, d );
 		
@@ -823,7 +817,7 @@ int main( int argc, char *argv[] )
 					std::vector<Action*> secondaryElements = elementListOfACollabAction( secondaryAction, d );			
 					if( primaryElements.size() < secondaryElements.size() )
 					{						
-						/** Note that this won't work when we have activity-push-clean and 2-activity-push **/
+						/** Note that this won't work when we have activity-push-clean and 2-activity-push. **/
 						int diff = secondaryElements.size() - primaryElements.size(); 			
 						for( int s = 0; s < diff; s++)
 						{
@@ -865,7 +859,7 @@ int main( int argc, char *argv[] )
 		}
 		else 
 		{
-			// if there is at least one activity
+			/** If there is at least one activity **/
 			bool decision = false;
 			for( unsigned h = 0; h < d->actions.size(); ++h ) 
 			{
@@ -941,6 +935,7 @@ int main( int argc, char *argv[] )
 	/** Writing in the domain file, jump directly to problem file after next line **/
 	std::cout << *ma2sa;
 	
+	// Jump to the line "I need to check why", and work on the problem file.
 	
 /*** The code snippet below is never used as per AIJ conventions (kept because it was part of ICAPS work) ***/	
 //**********************************************************************************************************//    
@@ -2046,7 +2041,8 @@ int main( int argc, char *argv[] )
 	}	
 	****/
 	
-	/**** I need to check why I still use *cd below and not *ma2sa. ********/
+/*************************************************************************************************/ 
+/** I need to check why I still use *cd below and not *ma2sa. **/
 	Instance * cins = new Instance( *cd );
 	cins->name = ins->name;
 	
