@@ -2,12 +2,16 @@
 **@Author: Shashank Shekhar
 **Institute: BGU of the Negev, Israel
 ****************************************************************************************************
-*	To check for memory leaks: 
-* 		valgrind --leak-check=yes examples/serialize
+* To check for memory leaks: 
+* 	valgrind --leak-check=yes examples/serialize
 *				../multiagent/../tablemover/tablemover.pddl 
-*						../multiagent/../tablemover/table1_1.pddl 
+*							../multiagent/../tablemover/table1_1.pddl 
 ****************************************************************************************************
-*** Code applicable for AIJ paper **/
+*** Code applicable for the submitted AIJ paper. **/
+
+/** Impportant link
+***	https://groups.google.com/forum/#!topic/fast-downward/9qGIIi-yQss
+**/
 
 #include <parser/Instance.h>
 #include <multiagent/MultiagentDomain.h>
@@ -32,8 +36,8 @@ std::map< std::string, std::vector<std::string> > actionPairWithDiffEffOnObjSet(
 // Here, we are interested in different effects on shared object, e.g., pushed(B) or not-pushed(B). 
 // Partially done!! Since we added a stronger interpretation (aij journal), this check is not mandatory. 
 // for a domain description. Follow up for the potential weaknesses mentioned in the ICAPS paper.   
-bool isTheDomainDescriptionAmbiguous( parser::multiagent::MultiagentDomain *d ) {
-	
+bool isTheDomainDescriptionAmbiguous( parser::multiagent::MultiagentDomain *d ) 
+{
 	return false;
 	
 	for( unsigned i=0; i<d->nodes.size(); i++) {
@@ -53,13 +57,8 @@ bool isTheDomainDescriptionAmbiguous( parser::multiagent::MultiagentDomain *d ) 
 
 /** These are very specific checks that are bases on parameters 
 	It is solely based on the idea of sharing object subset like CJR's **/
-bool doTheyTargetTheSameObjectSubset( 
-	IntVec network, 
-	IntVec legal, 
-	IntVec legalActionParams, 
-	IntVec illegal, 
-	IntVec illegalActionParams
-	) {
+bool doTheyTargetTheSameObjectSubset( IntVec network, IntVec legal, IntVec legalActionParams, IntVec illegal, IntVec illegalActionParams ) 
+{
 	bool decision = false;
 	unsigned count = 0;
 	for( int &i : network ) {
@@ -67,15 +66,18 @@ bool doTheyTargetTheSameObjectSubset(
 		for( int &j : legal ) {
 			if( i == legalActionParams[j] )
 				for( int &k : illegal )
-					if( i == illegalActionParams[k] ) {
+					if( i == illegalActionParams[k] ) 
+					{
 						count++; 
 						flag = true;
 						break;
 					}
-			if( flag )	break;
+			if( flag )	
+				break;
 		}
 	}
-	if( count == network.size() ) {
+	if( count == network.size() ) 
+	{
 		decision = true;
 	}	
 	return decision;
@@ -83,9 +85,11 @@ bool doTheyTargetTheSameObjectSubset(
 
 
 /** How many times a text has occured in a long string **/
-int key_search(const std::string& s, const std::string& key) {
+int key_search(const std::string& s, const std::string& key) 
+{
     int count = 0; size_t pos=0;
-    while ((pos = s.find(key, pos)) != std::string::npos) {
+    while ((pos = s.find(key, pos)) != std::string::npos) 
+    {
         ++count; ++pos;
     }
     return count;
@@ -113,9 +117,7 @@ std::vector<Action*> elementListOfACollabAction( Action *passedAct, const Domain
 		    { 
         		ss >> temp; 
         		if (stringstream(temp) >> found) 
-        		{
-            		
-            	}
+        		{ }
             	temp = ""; 
     		}
     		for( int s = 0; s < found; s++ ) 			
@@ -250,8 +252,7 @@ std::map< std::string, std::vector< std::map< std::string, std::vector< Ground* 
 // Following the domain file, the below snippet checks for each concurrency-constraint node v1.
 // Two actions with negative interactions, are different too, as of now. 
 // Activity-drop-table contains 2 agents by default, otherwise parse the number of agents.
-std::map< std::string, std::vector<std::string> > 
-	actionPairWithDiffEffOnObjSet( const parser::multiagent::NetworkNode * n, const Domain & cd ) 
+std::map< std::string, std::vector<std::string> > actionPairWithDiffEffOnObjSet( const parser::multiagent::NetworkNode * n, const Domain & cd ) 
 {		
 	std::map< std::string, std::vector<std::string> > listOfAmbiguousActions;	
 	for( unsigned i = 0; i < n->templates.size(); ++i ) 
@@ -264,7 +265,8 @@ std::map< std::string, std::vector<std::string> >
 			for( unsigned k = 0; k < legal_a->addEffects().size(); ++k ) { 			
 				for( unsigned l = 0; l < probably_legal_a->deleteEffects().size(); ++l ) {
 					if( (dynamic_cast< Ground * > (legal_a->addEffects()[k]))->name == 
-						(dynamic_cast< Ground * > (probably_legal_a->deleteEffects()[l]))->name ) {
+						(dynamic_cast< Ground * > (probably_legal_a->deleteEffects()[l]))->name ) 
+						{
 							ambiguous1 = doTheyTargetTheSameObjectSubset( 
 													n->params,
 													legal_a->addEffects()[k]->params,
@@ -276,9 +278,12 @@ std::map< std::string, std::vector<std::string> >
 						}
 				}
 			}
-			if( !ambiguous1 ) {
-				for( unsigned k = 0; k < legal_a->deleteEffects().size(); ++k ) { 			
-					for( unsigned l = 0; l < probably_legal_a->addEffects().size(); ++l ) {
+			if( !ambiguous1 ) 
+			{
+				for( unsigned k = 0; k < legal_a->deleteEffects().size(); ++k ) 
+				{ 			
+					for( unsigned l = 0; l < probably_legal_a->addEffects().size(); ++l ) 
+					{
 						if(((dynamic_cast<Ground *> (legal_a->deleteEffects()[k]))->name == 
 							(dynamic_cast<Ground *> (probably_legal_a->addEffects()[l]))->name)) 
 							{	
@@ -420,8 +425,10 @@ std::map< std::string, std::vector< std::string > > findComponentsOfJointActivit
 }
 
 // Currently, only the deleted effects are being checked against the preconditions
-bool deletes( const Ground * ground, const parser::multiagent::NetworkNode * n, IntVec impParams) {
-	for( unsigned i = 0; i < n->templates.size(); ++i ) {
+bool deletes( const Ground * ground, const parser::multiagent::NetworkNode * n, IntVec impParams) 
+{
+	for( unsigned i = 0; i < n->templates.size(); ++i ) 
+	{
 		std::vector< int > list = n->templates[i]->params;			
 		Action * a = d->actions[ d->actions.index( n->templates[i]->name )];		
 		CondVec pres = a->precons();				
@@ -431,9 +438,11 @@ bool deletes( const Ground * ground, const parser::multiagent::NetworkNode * n, 
 			if( n ) continue;	
 			Ground * g = dynamic_cast< Ground * >( pres[j] );												
 			int counter = 0;
-			if( g && g->name == ground->name ) {
+			if( g && g->name == ground->name ) 
+			{
 				bool decision = false;
-				for( unsigned h = 0; h < g->params.size(); h++ ) {
+				for( unsigned h = 0; h < g->params.size(); h++ ) 
+				{
 					for( unsigned f = 0; f < list.size(); f++ )											
 						if( list[ f ] == g->params[ h ] && g->params.size() <= list.size() ) 
 					 		decision = true;				
@@ -450,23 +459,29 @@ bool deletes( const Ground * ground, const parser::multiagent::NetworkNode * n, 
 
 // Currently, only the deleted effects are being checked against the preconditions
 // not elegantly done, just for the sake of the aaai deadline!
-bool deletes_old( const Ground * ground, const parser::multiagent::NetworkNode * n, IntVec impParams ) {
+bool deletes_old( const Ground * ground, const parser::multiagent::NetworkNode * n, IntVec impParams ) 
+{
 	IntVec networkParams = n->params;
-	for( unsigned i = 0; i < n->templates.size(); ++i ) {			
+	for( unsigned i = 0; i < n->templates.size(); ++i ) 
+	{			
 		Action * a = d->actions[ d->actions.index( n->templates[i]->name )];		
 		IntVec currActParams = a->params;
 		CondVec pres = a->precons();				
-		for( unsigned j = 0; j < pres.size(); ++j ) {		
+		for( unsigned j = 0; j < pres.size(); ++j ) 
+		{		
 			Ground * g = dynamic_cast< Ground * >( pres[j] );			
 			int counter = 0;						
-			if( g && g->name == ground->name ) {
-				for( int d1 = 0; d1 < (int) networkParams.size(); d1++ ) {   			    
+			if( g && g->name == ground->name ) 
+			{
+				for( int d1 = 0; d1 < (int) networkParams.size(); d1++ ) 
+				{   			    
 					std::vector< int > list;
 					for( int d2 = 0; d2 < (int) currActParams.size(); d2++)
 						if( networkParams[d1] == currActParams[d2] ) 
 							list.push_back(d2);				
 					bool decision = false;
-					for( int &h : list ) {						
+					for( int &h : list ) 
+					{						
 						std::stringstream number;
 						number << h << std::endl;
 						std::stringstream precond1;
@@ -489,23 +504,28 @@ bool deletes_old( const Ground * ground, const parser::multiagent::NetworkNode *
 }
 
 // TODO returns true if (>=1) instances of "POS-" or "NEG-" or both get added, related to the constrained object
-bool addEff( Domain * cd, Action * a, Condition * c, std::string nodeName ) {		
+bool addEff( Domain * cd, Action * a, Condition * c, std::string nodeName ) 
+{		
 	probVector.clear();
 	probVector = node_wise_probVector[ nodeName ];
 	Not * n = dynamic_cast< Not * >( c );
 	Ground * g = dynamic_cast< Ground * >( c );
 	std::set< std::vector < unsigned > >::iterator it;
-	for ( it = probVector.begin(); it != probVector.end(); ++it ) { 
+	for ( it = probVector.begin(); it != probVector.end(); ++it ) 
+	{ 
 		std::vector< unsigned > deleteChoices  = ( std::vector< unsigned > ) *it;
-		if ( n && deleteChoices[0] == (unsigned) d->preds.index( n->cond->name ) && (int) deleteChoices[1] == 1) {
+		if ( n && deleteChoices[0] == (unsigned) d->preds.index( n->cond->name ) && (int) deleteChoices[1] == 1) 
+		{
 			cd->addEff( 0, a->name, "NEG-" + n->cond->name, n->cond->params );
 			return 1;
 		}
-		if ( g && deleteChoices[0] == (unsigned) d->preds.index( g->name ) && (int) deleteChoices[1] == 1 ) {
+		if ( g && deleteChoices[0] == (unsigned) d->preds.index( g->name ) && (int) deleteChoices[1] == 1 ) 
+		{
 			cd->addEff( 0, a->name, "POS-" + g->name, g->params );
 			return 1;
 		}
-		if ( n && deleteChoices[0] == (unsigned) d->preds.index( n->cond->name ) && (int) deleteChoices[1] == 2) {
+		if ( n && deleteChoices[0] == (unsigned) d->preds.index( n->cond->name ) && (int) deleteChoices[1] == 2) 
+		{
 			cd->addEff( 0, a->name, "NEG-" + n->cond->name, n->cond->params );
 			return 1;
 		}
@@ -600,9 +620,11 @@ bool subsetVector( IntVec parent, IntVec child )
 		pr.push_back(i);
 	for( int &i: child )
 		ch.push_back(i);
-	for( unsigned i = 0; i < pr.size(); i++ ) {
+	for( unsigned i = 0; i < pr.size(); i++ ) 
+	{
 		for( unsigned j = 0; j < ch.size(); j++ )
-			if( pr[i] == ch[j] ) {
+			if( pr[i] == ch[j] ) 
+			{
 				counter++; 
 				ch.erase( ch.begin() + j ); 
 				break;
