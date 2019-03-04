@@ -19,6 +19,9 @@
 	(connected loc2 loc1)
 	(connected loc3 loc2)
 	(connected loc2 loc3)	
+	(same-agent a1 a1)
+	(same-agent a2 a2)
+	(same-agent a3 a3)
 )
 ;
 (:goal 

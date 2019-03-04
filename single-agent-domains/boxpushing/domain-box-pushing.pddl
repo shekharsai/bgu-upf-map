@@ -1,34 +1,25 @@
-;
-;NOTE - in each collaborative action, we consider the symmetric effects for all the agents that 
-;appear as parameters, we do not mention the symmetric effects for all the agents in the action 
-;schema, as similar effects can be considered for other agents.
-;This reduces the effort required in the splitting phase. 
-;However, if the case is otherwise, our code can be modified easily to support a collaborative 
-;action with full action description. 
-;These specifications are suitable for privacy preserving planning, where agents get only 
-;partial view of a public action.  
-;
-;; 			Box-Pushing domain
 ;;
-(define (domain boxpushing)
-	
-	(:requirements :typing :concurrency-network :multi-agent) 
-  	
+;; The Box-Pushing domain
+;; Note that, for each action we use (:agent ?a - agent) that has no explicit or specific meaning. 
+;; We want to use the parser from upf-map hence we need to place that agent parameter there - a regular parameter.
+;;
+(define (domain boxpushing)	
+	(:requirements :typing :concurrency-network :multi-agent)   	
   	(:types		
   		agent 
 		box 	
 		location 		
-  	)
-  	
+  	)  	
   	(:predicates 	
   		(box-at-loc ?box - box ?location - location)
 		(agent-at-loc ?agent - agent ?loc - location)
 		(connected ?from - location ?to - location)
 		(tired ?agent - agent)
+		(same-agent ?a1 - agent ?a2 - agent)
+		(intact ?b - box)
   	)
-
 	(:action move-agent
-		:agent ?agent - agent 
+		:agent ?agent - agent
 	  	:parameters (?from-location - location ?to-location - location)
 	  	:precondition 
 	  		(and 
@@ -40,10 +31,9 @@
 	  			(not (agent-at-loc ?agent ?from-location))
 	  			(agent-at-loc ?agent ?to-location)
 	  		)
-	)
-	  
+	)	  
 	(:action push-box
-		:agent ?agent - agent 
+		:agent ?agent - agent
 	  	:parameters (?box - box ?from-location - location ?to-location - location)
 	  	:precondition 
 	  		(and 	  			
@@ -60,37 +50,102 @@
 	  			(not (box-at-loc ?box ?from-location))
 	  			(tired ?agent)
 	  		)
-	)
-	  
-	(:action activity-push-box-push-box
-		:agent ?agent0 - agent 
-	  	:parameters (?agent1 - agent ?box - box ?from-location - location ?to-location - location)
+	)		
+	(:action 2-push-box
+		:agent ?agent - agent
+		:parameters (?a1 - agent ?box - box ?from-location - location ?to-location - location)
 	  	:precondition 
 	  		(and 	  			
-	  			(agent-at-loc ?agent0 ?from-location)
+	  			(agent-at-loc ?agent ?from-location)
+	  			(agent-at-loc ?a1 ?from-location)
 	  			(box-at-loc ?box ?from-location)
 	  			(connected ?from-location ?to-location)
-	  			(not (tired ?agent0))
+	  			(not (tired ?agent))
+	  			(not (tired ?a1))
+	  			(not (same-agent ?agent ?a1))
 	  		)
 	  	:effect 
 	  		(and	  			
-	  			(agent-at-loc ?agent0 ?to-location)
+	  			(agent-at-loc ?agent ?to-location)
+	  			(agent-at-loc ?a1 ?to-location)
 	  			(box-at-loc ?box ?to-location)
-	  			(not (agent-at-loc ?agent0 ?from-location))
+	  			(not (agent-at-loc ?agent ?from-location))
+	  			(not (agent-at-loc ?a1 ?from-location))
 	  			(not (box-at-loc ?box ?from-location))
 	  		)
 	)
-
-(:concurrency-constraint v2
-    :parameters (?box - box ?from-location - location ?to-location - location) 
-    :bounds (2 2) 
-    :actions ( (push-box 1 2 3) (activity-push-box-push-box 2 3 4) ) 
-)
-
-(:concurrency-constraint v1
-    :parameters (?from-location - location ?to-location - location) 
-    :bounds (1 4) 
-    :actions ( ( move-agent 1 2 ) ) 
-)
-
+	(:action 3-push-box
+		:agent ?agent - agent
+		:parameters (?a1 - agent ?a2 - agent ?box - box ?from-location - location ?to-location - location)
+	  	:precondition 
+	  		(and 	  			
+	  			(agent-at-loc ?agent ?from-location)
+	  			(agent-at-loc ?a1 ?from-location)
+	  			(agent-at-loc ?a2 ?from-location)
+	  			(box-at-loc ?box ?from-location)
+	  			(connected ?from-location ?to-location)
+	  			(not (tired ?agent))
+	  			(not (tired ?a1))
+	  			(not (tired ?a2))
+	  			(not (same-agent ?agent ?a1))
+	  			(not (same-agent ?a1 ?agent))
+	  			(not (same-agent ?agent ?a2))
+	  			(not (same-agent ?a2 ?agent))
+	  			(not (same-agent ?a2 ?a1))
+	  			(not (same-agent ?a1 ?a2))
+	  		)
+	  	:effect 
+	  		(and	  			
+	  			(agent-at-loc ?agent ?to-location)
+	  			(agent-at-loc ?a1 ?to-location)
+	  			(agent-at-loc ?a2 ?to-location)
+	  			(box-at-loc ?box ?to-location)
+	  			(not (agent-at-loc ?agent ?from-location))
+	  			(not (agent-at-loc ?a1 ?from-location))
+	  			(not (agent-at-loc ?a2 ?from-location))
+	  			(not (box-at-loc ?box ?from-location))
+	  		)
+	)
+	(:action 4-push-box
+		:agent ?agent - agent
+		:parameters (?a1 - agent ?a2 - agent ?a3 - agent ?box - box ?from-location - location ?to-location - location)
+	  	:precondition 
+	  		(and 	  			
+	  			(agent-at-loc ?agent ?from-location)
+	  			(agent-at-loc ?a1 ?from-location)
+	  			(agent-at-loc ?a2 ?from-location)
+	  			(agent-at-loc ?a3 ?from-location)
+	  			(box-at-loc ?box ?from-location)
+	  			(connected ?from-location ?to-location)
+	  			(not (tired ?agent))
+	  			(not (tired ?a1))
+	  			(not (tired ?a2))
+	  			(not (tired ?a3))
+	  			(not (same-agent ?agent ?a1))
+	  			(not (same-agent ?a1 ?agent))
+	  			(not (same-agent ?agent ?a2))
+	  			(not (same-agent ?a2 ?agent))
+	  			(not (same-agent ?agent ?a3))
+	  			(not (same-agent ?a3 ?agent))
+	  			(not (same-agent ?a2 ?a1))
+	  			(not (same-agent ?a1 ?a2))
+	  			(not (same-agent ?a3 ?a1))
+	  			(not (same-agent ?a1 ?a3))
+	  			(not (same-agent ?a2 ?a3))
+	  			(not (same-agent ?a3 ?a2))
+	  		)
+	  	:effect 
+	  		(and	  			
+	  			(agent-at-loc ?agent ?to-location)
+	  			(agent-at-loc ?a1 ?to-location)
+	  			(agent-at-loc ?a2 ?to-location)
+	  			(agent-at-loc ?a3 ?to-location)
+	  			(box-at-loc ?box ?to-location)
+	  			(not (agent-at-loc ?agent ?from-location))
+	  			(not (agent-at-loc ?a1 ?from-location))
+	  			(not (agent-at-loc ?a2 ?from-location))
+	  			(not (agent-at-loc ?a3 ?from-location))
+	  			(not (box-at-loc ?box ?from-location))
+	  		)
+	)
 )
