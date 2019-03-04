@@ -78,6 +78,11 @@
 			( ?AGENT4 - AGENT )
 			( NOT ( P-PUSH-BOX ?AGENT4 ?BOX1 ?LOCATION2 ?LOCATION3 ) )
 		)
+		;added by hand
+		( FORALL
+			( ?AGENT4 - AGENT ?LOCATION5 - LOCATION )
+			( NOT ( P-PUSH-BOX ?AGENT4 ?BOX1 ?LOCATION2 ?LOCATION5 ) )
+		)
 	)
   :EFFECT
 	( AND
@@ -106,7 +111,7 @@
 		( NOT ( NEG-IN-JOINT ) )
 		( FORALL
 			( ?AGENT5 - AGENT )
-			( OR
+			( AND
 				( NOT ( P-PUSH-BOX ?AGENT5 ?BOX2 ?LOCATION3 ?LOCATION4 ) )
 			)
 		)
@@ -116,6 +121,11 @@
 				( NOT ( P-PUSH-BOX ?AGENT5 ?BOX2 ?LOCATION3 ?LOCATION4 ) )
 				( NOT ( P-PUSH-BOX ?AGENT6 ?BOX2 ?LOCATION3 ?LOCATION4 ) )
 			)
+		)
+		;;added by hand
+		( FORALL
+			( ?AGENT5 - AGENT ?AGENT6 - AGENT ?LOCATION7 - LOCATION )
+			( NOT ( P-2-PUSH-BOX ?AGENT5 ?AGENT6 ?BOX2 ?LOCATION3 ?LOCATION7 ) )
 		)
 	)
   :EFFECT
@@ -160,6 +170,11 @@
 			( OR
 				( NOT ( P-PUSH-BOX ?AGENT6 ?BOX3 ?LOCATION4 ?LOCATION5 ) )
 			)
+		)
+		;;added by hand
+		( FORALL
+			( ?AGENT6 - AGENT ?AGENT7 - AGENT ?AGENT8 - AGENT ?LOCATION9 - LOCATION )
+			( NOT ( P-3-PUSH-BOX ?AGENT6 ?AGENT7 ?AGENT8 ?BOX3 ?LOCATION4 ?LOCATION9 ) )
 		)
 	)
   :EFFECT
@@ -212,6 +227,11 @@
 		( NOT ( TAKEN ?AGENT2 ) )
 		( NOT ( TAKEN ?AGENT3 ) )
 		( NOT ( NEG-IN-JOINT ) )
+		;;added by hand
+		( FORALL
+			( ?AGENT7 - AGENT ?AGENT8 - AGENT ?AGENT9 - AGENT ?AGENT10 - AGENT ?LOCATION11 - LOCATION )
+			( NOT ( P-4-PUSH-BOX ?AGENT7 ?AGENT8 ?AGENT9 ?AGENT10 ?BOX4 ?LOCATION5 ?LOCATION11 ) )
+		)
 	)
   :EFFECT
 	( AND
@@ -417,5 +437,5 @@
 )
 )
 
-;The domain compilation time is: 0.003583
+;The domain compilation time is: 0.004721
 
