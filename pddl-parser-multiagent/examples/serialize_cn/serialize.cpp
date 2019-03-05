@@ -703,7 +703,7 @@ int main( int argc, char *argv[] )
 	cd->createPredicate( "AFREE" );
 	
 	/** In case if a joint activity can also participate **/
-	cd->createPredicate( "IN-JOINT" ); 
+	cd->createPredicate( "IN-JOINT" );  
 	
 	/** Generate all the updated actions **/
 	for( VecMap::iterator i = ccs.begin(); i != ccs.end(); ++i ) 
