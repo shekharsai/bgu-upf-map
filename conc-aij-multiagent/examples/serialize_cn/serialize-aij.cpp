@@ -909,9 +909,9 @@ int main( int argc, char *argv[] )
 		locAnd->add( new Ground( ma2sa->preds.get( d->preds[i]->name ), incvec(0, f->params.size() ) ) );
 		locAnd->add( new Not( new Ground( ma2sa->preds.get( "POS-" + d->preds[i]->name ), incvec(0, f->params.size() ) ) ) );
 		condition->cond = locAnd;
-		formula->add(condition);
+		formula->add( condition );
 		f->cond = formula;
-		dynamic_cast< And* >(end->eff)->add(f); 	
+		dynamic_cast< And* >( end->eff )->add( f ); 	
 		
 		f = new Forall; condition = new When;
 		formula = new And; locAnd = new And;		
@@ -922,7 +922,7 @@ int main( int argc, char *argv[] )
 		condition->cond = locAnd;
 		formula->add(condition);
 		f->cond = formula;
-		dynamic_cast< And* >(end->eff)->add(f); 
+		dynamic_cast< And* >( end->eff )->add( f ); 
 	}
 	
 	/** Forall agents, not taken proposition in act-multi-end **/
@@ -935,11 +935,11 @@ int main( int argc, char *argv[] )
 	/** Writing in the domain file, jump directly to problem file after next line **/
 	std::cout << *ma2sa;
 	
-	// Jump to the line "I need to check why", and work on the problem file.
+	/** Now, jump to the line starting with "I need to check why...", and work on the problem file. **/
 	
-/*** The code snippet below is never used as per AIJ conventions (kept because it was part of ICAPS work) ***/	
-//**********************************************************************************************************//    
-//** Actions with conflicting effects, e.g., <stack, [unstack,pickup]> **//
+/*** Code below is never used as per the AIJ conventions (new) (kept this portion as is because it was part of ICAPS work). **/	
+/*****************************************************************************************************************************/    
+/************************* Actions with conflicting effects, e.g., <stack, [unstack,pickup]> *********************************/
 	
 	std::vector< std::map< std::string, std::map< std::string, std::vector< std::string >>> > pairOfProbActions;
 	for( unsigned i = 0; i < d->nodes.size(); ++i ) {
@@ -1012,7 +1012,8 @@ int main( int argc, char *argv[] )
 		ccs[d->mf[i]].push_back( i );
 	}
 
-	// If someone uses the notion of well-defined multi-actions
+	/** If someone uses the notion of well-defined multi-actions **/
+	/** Only partly done - based on what reviewers have suggested from icaps-2018 **/
 	if( isTheDomainDescriptionAmbiguous( d ) ) {		
 		std::cout << "\n\nAmbiguous domain description!" << std::endl;
 		std::cout << "\nThe modeler is advised to modify this domain." << std::endl;
@@ -1022,7 +1023,7 @@ int main( int argc, char *argv[] )
 		exit( 1 );
 	}
 	
-	// Create a classical domain
+	/** Create a classical domain **/
 	Domain * cd = new Domain;
 	cd->name = d->name;
 	cd->condeffects = d->condeffects; 
@@ -2025,8 +2026,7 @@ int main( int argc, char *argv[] )
 			}
 		}
 	}
-	
-	//std::cout << *cd;
+
 	/** The above code is useless as per AIJ conventions (kept because it was part of ICAPS work) **/	    
 	/** Nothing from the above is executable as our domain definition is not based on CJR's definition anymore. **/
 
@@ -2042,7 +2042,8 @@ int main( int argc, char *argv[] )
 	****/
 	
 /*************************************************************************************************/ 
-/** I need to check why I still use *cd below and not *ma2sa. **/
+/******************* I need to check why I still use *cd below and not *ma2sa *******************/
+
 	Instance * cins = new Instance( *cd );
 	cins->name = ins->name;
 	
