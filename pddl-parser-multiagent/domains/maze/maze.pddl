@@ -35,7 +35,7 @@
 				(not (at ?a ?x)) 
 			) 
 )
-(:action activity-joint-row 
+(:action activity-2-row 
 	:agent ?a0 - agent
 	:parameters (?a1 - agent ?b - boat ?x - loaction ?y - location)
 	:precondition (and
