@@ -1,0 +1,65 @@
+Solution found!
+Actual search time: 0.404921s [t=0.599538s]
+start-v2 loc2 loc1 (1)
+do-move-agent a1 loc2 loc1 acount-0 acount-1 (1)
+end-v2 loc2 loc1 acount-1 (1)
+start-v2 loc2 loc3 (1)
+do-move-agent a2 loc2 loc3 acount-0 acount-1 (1)
+end-v2 loc2 loc3 acount-1 (1)
+start-v2 loc2 loc1 (1)
+do-move-agent a3 loc2 loc1 acount-0 acount-1 (1)
+end-v2 loc2 loc1 acount-1 (1)
+start-v1 box1 loc1 loc2 (1)
+do-activity-2-push-box-1 a1 box1 loc1 loc2 acount-0 acount-1 (1)
+do-activity-2-push-box-2 a3 box1 loc1 loc2 acount-1 acount-2 (1)
+end-v1 box1 loc1 loc2 acount-2 (1)
+start-v2 loc2 loc1 (1)
+do-move-agent a1 loc2 loc1 acount-0 acount-1 (1)
+end-v2 loc2 loc1 acount-1 (1)
+start-v1 box1 loc2 loc3 (1)
+do-activity-2-push-box-1 a3 box1 loc2 loc3 acount-0 acount-1 (1)
+do-activity-2-push-box-2 a4 box1 loc2 loc3 acount-1 acount-2 (1)
+end-v1 box1 loc2 loc3 acount-2 (1)
+start-v1 box3 loc3 loc2 (1)
+do-activity-2-push-box-1 a2 box3 loc3 loc2 acount-0 acount-1 (1)
+do-activity-2-push-box-2 a3 box3 loc3 loc2 acount-1 acount-2 (1)
+end-v1 box3 loc3 loc2 acount-2 (1)
+start-v1 box3 loc2 loc4 (1)
+do-activity-2-push-box-1 a2 box3 loc2 loc4 acount-0 acount-1 (1)
+do-activity-2-push-box-2 a3 box3 loc2 loc4 acount-1 acount-2 (1)
+end-v1 box3 loc2 loc4 acount-2 (1)
+start-v2 loc4 loc2 (1)
+do-move-agent a2 loc4 loc2 acount-0 acount-1 (1)
+end-v2 loc4 loc2 acount-1 (1)
+start-v2 loc2 loc1 (1)
+do-move-agent a2 loc2 loc1 acount-0 acount-1 (1)
+end-v2 loc2 loc1 acount-1 (1)
+start-v1 box2 loc1 loc2 (1)
+do-activity-2-push-box-1 a1 box2 loc1 loc2 acount-0 acount-1 (1)
+do-activity-2-push-box-2 a2 box2 loc1 loc2 acount-1 acount-2 (1)
+end-v1 box2 loc1 loc2 acount-2 (1)
+start-v1 box2 loc2 loc3 (1)
+do-activity-2-push-box-1 a1 box2 loc2 loc3 acount-0 acount-1 (1)
+do-activity-2-push-box-2 a2 box2 loc2 loc3 acount-1 acount-2 (1)
+end-v1 box2 loc2 loc3 acount-2 (1)
+start-v1 box4 loc3 loc2 (1)
+do-activity-2-push-box-1 a1 box4 loc3 loc2 acount-0 acount-1 (1)
+do-activity-2-push-box-2 a2 box4 loc3 loc2 acount-1 acount-2 (1)
+end-v1 box4 loc3 loc2 acount-2 (1)
+start-v1 box4 loc2 loc4 (1)
+do-activity-2-push-box-1 a1 box4 loc2 loc4 acount-0 acount-1 (1)
+do-activity-2-push-box-2 a2 box4 loc2 loc4 acount-1 acount-2 (1)
+end-v1 box4 loc2 loc4 acount-2 (1)
+Plan length: 50 step(s).
+Plan cost: 50
+Expanded 382 state(s).
+Reopened 0 state(s).
+Evaluated 1120 state(s).
+Evaluations: 1120
+Generated 4106 state(s).
+Dead ends: 737 state(s).
+Number of registered states: 1120
+Search time: 0.404933s
+Total time: 0.599542s
+Solution found.
+Peak memory: 16088 KB

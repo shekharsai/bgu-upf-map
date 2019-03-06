@@ -29,11 +29,6 @@
 	(connected loc4 loc5)
 	(connected loc5 loc4)
 	
-	(same-agent a1 a1)
-	(same-agent a2 a2)
-	(same-agent a3 a3)
-	(same-agent a4 a4)	
-	(same-agent a5 a5)
 )
 ;
 (:goal 
