@@ -111,7 +111,7 @@
 		( NOT ( NEG-IN-JOINT ) )
 		( FORALL
 			( ?AGENT5 - AGENT )
-			( AND
+			( OR
 				( NOT ( P-PUSH-BOX ?AGENT5 ?BOX2 ?LOCATION3 ?LOCATION4 ) )
 			)
 		)

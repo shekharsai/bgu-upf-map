@@ -492,5 +492,5 @@
 )
 )
 
-;Domain compilation time is: 0.006002
+;Domain compilation time is: 0.003101
 

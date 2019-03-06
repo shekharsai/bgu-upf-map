@@ -1,0 +1,30 @@
+Solution found!
+Actual search time: 0.0946619s [t=0.642645s]
+do-move a1 d10 loc2x3 loc3x3 (1)
+do-move a1 d13 loc3x3 loc3x4 (1)
+do-pushswitch a2 s3 loc3x3 loc1x3 loc2x3 (1)
+do-move a2 d10 loc3x3 loc2x3 (1)
+do-move a2 d5 loc2x3 loc1x3 (1)
+do-move a2 d3 loc1x3 loc1x2 (1)
+start-v3 b2 loc3x4 loc2x4 (1)
+do-cross a1 b2 loc3x4 loc2x4 acount-0 acount-1 (1)
+end-v3 b2 loc3x4 loc2x4 acount-1 (1)
+do-move a3 d15 loc4x3 loc4x4 (1)
+do-move a3 d14 loc4x4 loc3x4 (1)
+do-move a3 d13 loc3x4 loc3x3 (1)
+do-move a3 d12 loc3x3 loc3x2 (1)
+do-move a3 d11 loc3x2 loc3x1 (1)
+Plan length: 14 step(s).
+Plan cost: 14
+Expanded 112 state(s).
+Reopened 0 state(s).
+Evaluated 231 state(s).
+Evaluations: 231
+Generated 45501 state(s).
+Dead ends: 118 state(s).
+Number of registered states: 231
+Search time: 0.0946931s
+Total time: 0.64265s
+Solution found.
+Peak memory: 18192 KB
+
