@@ -1,8 +1,4 @@
-;;
-;; The Box-Pushing domain
-;; Note that, for each action we use (:agent ?a - agent) that has no explicit or specific meaning. 
-;; We want to use the parser from upf-map hence we need to place that agent parameter there - a regular parameter.
-;;
+
 (define (domain boxpushing)	
 	(:requirements :typing :concurrency-network :multi-agent)   	
   	(:types		
