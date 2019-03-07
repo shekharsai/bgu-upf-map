@@ -1,85 +1,71 @@
 Solution found!
-Actual search time: 1139.54s [t=1140.04s]
+Actual search time: 3.34369s [t=3.77204s]
 multi-start  (1)
-2-push-box a1 a2 box3 loc2 loc3 (1)
-multi-end  (1)
-multi-start  (1)
-2-push-box a1 a2 box3 loc3 loc4 (1)
+2-push-box a1 a2 box3 loc2 loc1 (1)
 2-push-box a3 a4 box4 loc2 loc3 (1)
 multi-end  (1)
 multi-start  (1)
-2-push-box a3 a4 box4 loc3 loc2 (1)
-push-box a1 box3 loc4 loc3 (1)
-multi-end  (1)
-multi-start  (1)
-2-push-box a3 a4 box4 loc2 loc3 (1)
-move-agent a2 loc4 loc3 (1)
-multi-end  (1)
-multi-start  (1)
-2-push-box a2 a3 box3 loc3 loc4 (1)
-move-agent a4 loc3 loc2 (1)
-multi-end  (1)
-multi-start  (1)
-move-agent a4 loc2 loc1 (1)
-multi-end  (1)
-multi-start  (1)
-push-box a4 box1 loc1 loc2 (1)
-move-agent a2 loc4 loc3 (1)
-multi-end  (1)
-multi-start  (1)
-move-agent a2 loc3 loc2 (1)
-multi-end  (1)
-multi-start  (1)
-move-agent a2 loc2 loc1 (1)
-move-agent a3 loc4 loc3 (1)
-multi-end  (1)
-multi-start  (1)
-move-agent a2 loc1 loc2 (1)
+2-push-box a1 a2 box1 loc1 loc2 (1)
 move-agent a3 loc3 loc2 (1)
 multi-end  (1)
 multi-start  (1)
-2-push-box a2 a3 box1 loc2 loc3 (1)
-multi-end  (1)
-multi-start  (1)
-move-agent a2 loc3 loc2 (1)
-move-agent a3 loc3 loc2 (1)
-multi-end  (1)
-multi-start  (1)
-move-agent a2 loc2 loc1 (1)
+2-push-box a1 a2 box1 loc2 loc3 (1)
 move-agent a3 loc2 loc1 (1)
 multi-end  (1)
 multi-start  (1)
-2-push-box a2 a3 box2 loc1 loc2 (1)
+2-push-box a1 a2 box1 loc3 loc2 (1)
+move-agent a4 loc3 loc2 (1)
 multi-end  (1)
 multi-start  (1)
-2-push-box a2 a3 box2 loc2 loc3 (1)
+2-push-box a1 a2 box1 loc2 loc3 (1)
+move-agent a4 loc2 loc1 (1)
 multi-end  (1)
 multi-start  (1)
-2-push-box a2 a3 box1 loc3 loc4 (1)
+2-push-box a1 a2 box1 loc3 loc4 (1)
+multi-end  (1)
+multi-start  (1)
+2-push-box a3 a4 box2 loc1 loc2 (1)
+move-agent a1 loc4 loc3 (1)
 multi-end  (1)
 multi-start  (1)
 move-agent a2 loc4 loc3 (1)
+2-push-box a3 a4 box2 loc2 loc1 (1)
+move-agent a1 loc3 loc2 (1)
 multi-end  (1)
 multi-start  (1)
-push-box a2 box2 loc3 loc4 (1)
+2-push-box a3 a4 box2 loc1 loc2 (1)
+move-agent a2 loc3 loc2 (1)
 multi-end  (1)
 multi-start  (1)
-move-agent a3 loc4 loc3 (1)
+2-push-box a1 a2 box2 loc2 loc3 (1)
+move-agent a3 loc2 loc1 (1)
+move-agent a4 loc2 loc1 (1)
 multi-end  (1)
 multi-start  (1)
-push-box a3 box4 loc3 loc4 (1)
+2-push-box a1 a2 box2 loc3 loc4 (1)
+2-push-box a3 a4 box3 loc1 loc2 (1)
 multi-end  (1)
-Plan length: 69 step(s).
-Plan cost: 69
-Expanded 1494423 state(s).
+multi-start  (1)
+2-push-box a3 a4 box3 loc2 loc3 (1)
+multi-end  (1)
+multi-start  (1)
+2-push-box a3 a4 box3 loc3 loc4 (1)
+move-agent a1 loc4 loc3 (1)
+move-agent a2 loc4 loc3 (1)
+multi-end  (1)
+multi-start  (1)
+2-push-box a1 a2 box4 loc3 loc4 (1)
+multi-end  (1)
+Plan length: 56 step(s).
+Plan cost: 56
+Expanded 5845 state(s).
 Reopened 0 state(s).
-Evaluated 1511437 state(s).
-Evaluations: 1511437
-Generated 4888781 state(s).
-Dead ends: 17013 state(s).
-Number of registered states: 1511437
-Search time: 1139.54s
-Total time: 1140.04s
+Evaluated 5846 state(s).
+Evaluations: 5846
+Generated 48598 state(s).
+Dead ends: 0 state(s).
+Number of registered states: 5846
+Search time: 3.34374s
+Total time: 3.77204s
 Solution found.
-Peak memory: 1639220 KB
-
+Peak memory: 14996 KB

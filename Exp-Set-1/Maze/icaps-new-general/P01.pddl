@@ -72,7 +72,7 @@
 	(has-door d14 loc3x4 loc4x4)
 	(has-door d14 loc4x4 loc3x4)
 	(has-boat bt5 loc4x1 loc4x2)
-	(has-boat bt5 loc4x2 loc4x1) 
+	(has-boat bt5 loc4x2 loc4x1)
 	(has-boat bt6 loc4x2 loc4x3)
 	(has-boat bt6 loc4x3 loc4x2)
 	(has-door d15 loc4x3 loc4x4)

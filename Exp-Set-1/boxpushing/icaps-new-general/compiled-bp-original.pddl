@@ -78,6 +78,11 @@
 			( ?AGENT4 - AGENT )
 			( NOT ( P-PUSH-BOX ?AGENT4 ?BOX1 ?LOCATION2 ?LOCATION3 ) )
 		)
+		;added by hand
+		( FORALL
+			( ?AGENT4 - AGENT ?LOCATION5 - LOCATION )
+			( NOT ( P-PUSH-BOX ?AGENT4 ?BOX1 ?LOCATION2 ?LOCATION5 ) )
+		)
 	)
   :EFFECT
 	( AND
@@ -106,17 +111,17 @@
 		( NOT ( NEG-IN-JOINT ) )
 		( FORALL
 			( ?AGENT5 - AGENT )
-			( AND
+			( OR
 				( NOT ( P-PUSH-BOX ?AGENT5 ?BOX2 ?LOCATION3 ?LOCATION4 ) )
 			)
 		)
 		( FORALL
 			( ?AGENT5 - AGENT ?AGENT6 - AGENT )
-			( AND
+			( OR
 				( NOT ( P-PUSH-BOX ?AGENT5 ?BOX2 ?LOCATION3 ?LOCATION4 ) )
 				( NOT ( P-PUSH-BOX ?AGENT6 ?BOX2 ?LOCATION3 ?LOCATION4 ) )
 			)
-		)
+		)		
 	)
   :EFFECT
 	( AND
@@ -147,14 +152,14 @@
 		( NOT ( TIRED ?AGENT2 ) )
 		( NOT ( SAME-AGENT ?AGENT0 ?AGENT1 ) )
 		( NOT ( SAME-AGENT ?AGENT0 ?AGENT2 ) )
-		( NOT ( SAME-AGENT ?AGENT2 ?AGENT1 ) )
+		( NOT ( SAME-AGENT ?AGENT1 ?AGENT2 ) )
 		( NOT ( TAKEN ?AGENT0 ) )
 		( NOT ( TAKEN ?AGENT1 ) )
 		( NOT ( TAKEN ?AGENT2 ) )
 		( NOT ( NEG-IN-JOINT ) )
 		( FORALL
 			( ?AGENT6 - AGENT )
-			( AND
+			( OR
 				( NOT ( P-PUSH-BOX ?AGENT6 ?BOX3 ?LOCATION4 ?LOCATION5 ) )
 			)
 		)
@@ -195,14 +200,14 @@
 		( NOT ( SAME-AGENT ?AGENT0 ?AGENT1 ) )
 		( NOT ( SAME-AGENT ?AGENT0 ?AGENT2 ) )
 		( NOT ( SAME-AGENT ?AGENT0 ?AGENT3 ) )
-		( NOT ( SAME-AGENT ?AGENT2 ?AGENT1 ) )
-		( NOT ( SAME-AGENT ?AGENT3 ?AGENT1 ) )
+		( NOT ( SAME-AGENT ?AGENT1 ?AGENT2 ) )
+		( NOT ( SAME-AGENT ?AGENT1 ?AGENT3 ) )
 		( NOT ( SAME-AGENT ?AGENT2 ?AGENT3 ) )
 		( NOT ( TAKEN ?AGENT0 ) )
 		( NOT ( TAKEN ?AGENT1 ) )
 		( NOT ( TAKEN ?AGENT2 ) )
 		( NOT ( TAKEN ?AGENT3 ) )
-		( NOT ( NEG-IN-JOINT ) )
+		( NOT ( NEG-IN-JOINT ) )		
 	)
   :EFFECT
 	( AND
@@ -408,5 +413,5 @@
 )
 )
 
-;The domain compilation time is: 0.00408
+;The domain compilation time is: 0.004721
 
