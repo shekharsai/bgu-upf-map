@@ -1,5 +1,5 @@
 Solution found!
-Actual search time: 23.9171s [t=24.1447s]
+Actual search time: 8.56293s [t=8.62214s]
 multi-start  (1)
 move a5 d9 loc4x1 loc3x1 (1)
 move a1 d6 loc3x2 loc2x2 (1)
@@ -49,23 +49,8 @@ multi-start  (1)
 cross a4 b1 loc1x4 loc2x4 (1)
 multi-end  (1)
 multi-start  (1)
-move a4 d7 loc2x4 loc3x4 (1)
-2-row a1 a2 bt3 loc2x3 loc2x2 (1)
-move a3 d9 loc4x1 loc3x1 (1)
-multi-end  (1)
-multi-start  (1)
-2-row a1 a2 bt3 loc2x2 loc2x3 (1)
-multi-end  (1)
-multi-start  (1)
-2-row a1 a2 bt3 loc2x3 loc2x2 (1)
-pushswitch a3 s4 loc3x1 loc3x2 loc3x3 (1)
-multi-end  (1)
-multi-start  (1)
-2-row a1 a2 bt3 loc2x2 loc2x3 (1)
-move a3 d9 loc3x1 loc4x1 (1)
-multi-end  (1)
-multi-start  (1)
 2-row a1 a5 bt3 loc2x3 loc2x2 (1)
+move a4 d7 loc2x4 loc3x4 (1)
 multi-end  (1)
 multi-start  (1)
 move a1 d6 loc2x2 loc3x2 (1)
@@ -95,9 +80,14 @@ multi-start  (1)
 cross a5 b2 loc2x1 loc3x1 (1)
 move a1 d6 loc2x2 loc3x2 (1)
 move a2 d2 loc1x2 loc1x3 (1)
+move a4 d12 loc3x4 loc3x3 (1)
 multi-end  (1)
 multi-start  (1)
+move a4 d12 loc3x3 loc3x4 (1)
 move a2 d4 loc1x3 loc2x3 (1)
+pushswitch a5 s4 loc3x1 loc3x2 loc3x3 (1)
+multi-end  (1)
+multi-start  (1)
 move a1 d10 loc3x2 loc3x3 (1)
 move a4 d12 loc3x4 loc3x3 (1)
 multi-end  (1)
@@ -112,16 +102,16 @@ move a4 d12 loc3x3 loc3x4 (1)
 move a1 d10 loc3x3 loc3x2 (1)
 move a2 d10 loc3x3 loc3x2 (1)
 multi-end  (1)
-Plan length: 112 step(s).
-Plan cost: 112
-Expanded 71363 state(s).
+Plan length: 102 step(s).
+Plan cost: 102
+Expanded 98880 state(s).
 Reopened 0 state(s).
-Evaluated 71364 state(s).
-Evaluations: 71364
-Generated 323607 state(s).
+Evaluated 98881 state(s).
+Evaluations: 98881
+Generated 453902 state(s).
 Dead ends: 0 state(s).
-Number of registered states: 71364
-Search time: 23.9171s
-Total time: 24.1447s
+Number of registered states: 98881
+Search time: 8.56294s
+Total time: 8.62216s
 Solution found.
-Peak memory: 38480 KB
+Peak memory: 16740 KB

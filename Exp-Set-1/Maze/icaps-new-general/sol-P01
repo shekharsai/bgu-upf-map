@@ -1,5 +1,5 @@
 Solution found!
-Actual search time: 0.0035737s [t=0.0283596s]
+Actual search time: 0.00178081s [t=0.0141517s]
 multi-start  (1)
 move a1 d10 loc2x3 loc3x3 (1)
 move a2 d10 loc3x3 loc2x3 (1)
@@ -31,7 +31,7 @@ Evaluations: 38
 Generated 124 state(s).
 Dead ends: 0 state(s).
 Number of registered states: 38
-Search time: 0.00358515s
-Total time: 0.0283636s
+Search time: 0.0017922s
+Total time: 0.0141556s
 Solution found.
-Peak memory: 4716 KB
+Peak memory: 4340 KB

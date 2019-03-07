@@ -1,5 +1,5 @@
 Solution found!
-Actual search time: 1.0163s [t=1.10989s]
+Actual search time: 0.305506s [t=0.335305s]
 multi-start  (1)
 move a1 d6 loc3x2 loc2x2 (1)
 multi-end  (1)
@@ -99,14 +99,15 @@ move a2 d6 loc2x2 loc3x2 (1)
 multi-end  (1)
 Plan length: 97 step(s).
 Plan cost: 97
-Expanded 5719 state(s).
+Expanded 5500 state(s).
 Reopened 0 state(s).
-Evaluated 5720 state(s).
-Evaluations: 5720
-Generated 27232 state(s).
+Evaluated 5501 state(s).
+Evaluations: 5501
+Generated 26547 state(s).
 Dead ends: 0 state(s).
-Number of registered states: 5720
-Search time: 1.01631s
-Total time: 1.10989s
+Number of registered states: 5501
+Search time: 0.305551s
+Total time: 0.335309s
 Solution found.
-Peak memory: 7444 KB
+Peak memory: 5204 KB
+
