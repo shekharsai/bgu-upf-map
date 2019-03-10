@@ -1,5 +1,5 @@
 Solution found!
-Actual search time: 0.469744s [t=0.793455s]
+Actual search time: 0.464576s [t=0.782264s]
 multi-start  (1)
 move-agent a1 loc2 loc1 (1)
 move-agent a2 loc2 loc1 (1)
@@ -47,8 +47,7 @@ Evaluations: 978
 Generated 10649 state(s).
 Dead ends: 0 state(s).
 Number of registered states: 978
-Search time: 0.469756s
-Total time: 0.793459s
+Search time: 0.464588s
+Total time: 0.782268s
 Solution found.
-Peak memory: 12612 KB
-
+Peak memory: 12604 KB

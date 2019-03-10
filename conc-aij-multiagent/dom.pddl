@@ -109,9 +109,7 @@
 		( NOT ( NEG-IN-JOINT ) )
 		( FORALL
 			( ?AGENT5 - AGENT )
-			( AND
-				( NOT ( P-ROW ?AGENT5 ?BOAT2 ?LOCATION3 ?LOCATION4 ) )
-			)
+			( NOT ( P-ROW ?AGENT5 ?BOAT2 ?LOCATION3 ?LOCATION4 ) )
 		)
 	)
   :EFFECT
@@ -142,6 +140,10 @@
 		( NOT ( TAKEN ?AGENT1 ) )
 		( NOT ( TAKEN ?AGENT2 ) )
 		( NOT ( NEG-IN-JOINT ) )
+		( FORALL
+			( ?AGENT6 - AGENT )
+			( NOT ( P-ROW ?AGENT6 ?BOAT3 ?LOCATION4 ?LOCATION5 ) )
+		)
 	)
   :EFFECT
 	( AND
@@ -429,5 +431,5 @@
 )
 )
 
-;The domain compilation time is: 0.005334
+;The domain compilation time is: 0.005388
 

@@ -1,5 +1,5 @@
 Solution found!
-Actual search time: 80.6639s [t=80.7453s]
+Actual search time: 93.8548s [t=93.9359s]
 multi-start  (1)
 pushswitch a1 s2 loc1x2 loc1x2 loc1x3 (1)
 move a5 d4 loc2x4 loc1x4 (1)
@@ -150,15 +150,15 @@ move a2 d9 loc3x1 loc4x1 (1)
 multi-end  (1)
 Plan length: 148 step(s).
 Plan cost: 148
-Expanded 750558 state(s).
+Expanded 750564 state(s).
 Reopened 0 state(s).
-Evaluated 750559 state(s).
-Evaluations: 750559
-Generated 3276512 state(s).
+Evaluated 750565 state(s).
+Evaluations: 750565
+Generated 3276515 state(s).
 Dead ends: 0 state(s).
-Number of registered states: 750559
-Search time: 80.6639s
-Total time: 80.7453s
+Number of registered states: 750565
+Search time: 93.8549s
+Total time: 93.9359s
 Solution found.
-Peak memory: 95828 KB
+Peak memory: 95900 KB
 

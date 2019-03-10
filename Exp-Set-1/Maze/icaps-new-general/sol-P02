@@ -1,5 +1,5 @@
 Solution found!
-Actual search time: 0.305506s [t=0.335305s]
+Actual search time: 0.339644s [t=0.372758s]
 multi-start  (1)
 move a1 d6 loc3x2 loc2x2 (1)
 multi-end  (1)
@@ -106,8 +106,7 @@ Evaluations: 5501
 Generated 26547 state(s).
 Dead ends: 0 state(s).
 Number of registered states: 5501
-Search time: 0.305551s
-Total time: 0.335309s
+Search time: 0.339686s
+Total time: 0.372776s
 Solution found.
-Peak memory: 5204 KB
-
+Peak memory: 5264 KB
