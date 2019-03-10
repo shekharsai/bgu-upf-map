@@ -95,6 +95,23 @@ int key_search(const std::string& s, const std::string& key)
     return count;
 }
 
+bool isThisASAAction( Action *passedAct, const Domain *cd )
+{
+	std::cout << " passedAct " << passedAct->name << std::endl;
+	/** How many times, SA action has occurred **/
+	std::stringstream ss; ss << passedAct->name; std::string temp; int found; 
+    while( !ss.eof() ) 
+    { 
+		ss >> temp; 
+		if (stringstream(temp) >> found) 
+		{ }
+    	temp = ""; 
+	}
+	if( found )
+		return false;
+	return true;
+}
+
 std::vector<Action*> elementListOfACollabAction( Action *passedAct, const Domain *cd )
 {
 	std::vector<Action*> listOfElements;
@@ -120,12 +137,38 @@ std::vector<Action*> elementListOfACollabAction( Action *passedAct, const Domain
         		{ }
             	temp = ""; 
     		}
-    		for( int s = 0; s < found; s++ ) 			
+    		if( std::to_string( found ) + "-" + act->name == passedAct->name )
     		{
-				listOfElements.push_back(act);
+    			for( int s = 0; s < found; s++ ) 			
+    			{
+					listOfElements.push_back(act);
+				}
 			}
 		}		
-	}
+	}	
+	return listOfElements;
+}
+
+std::vector<Action*> elementListOfASingleAgentAction( Action *passedAct, const Domain *cd )
+{
+	std::vector<Action*> listOfElements;
+	for( unsigned i = 0; i < cd->actions.size(); i++ )
+	{
+		Action *act = cd->actions[i];
+		/** How many times, SA action has occurred **/
+		std::stringstream ss; ss << passedAct->name; std::string temp; int found; 
+	    while( !ss.eof() ) 
+	    { 
+    		ss >> temp; 
+    		if (stringstream(temp) >> found) 
+    		{ }
+        	temp = ""; 
+		}
+		if( found == 0 && act->name == passedAct->name )
+		{
+			listOfElements.push_back(act);			
+		}	
+	}	
 	return listOfElements;
 }
 
@@ -806,6 +849,7 @@ int main( int argc, char *argv[] )
 		Action *primaryAction = d->actions[i];		
 		std::vector<Action*> primaryElements = elementListOfACollabAction( primaryAction, d );
 		
+		/** If primary action is a collaborative action **/
 		if( primaryElements.size() > 0 )
 		{			
 			for( unsigned j = 0; j < d->actions.size(); j++ )
@@ -814,8 +858,32 @@ int main( int argc, char *argv[] )
 				if( i != j ) 
 				{				
 					Action *secondaryAction = d->actions[j];											
-					std::vector<Action*> secondaryElements = elementListOfACollabAction( secondaryAction, d );			
-					if( primaryElements.size() < secondaryElements.size() )
+					std::vector<Action*> secondaryElements = elementListOfACollabAction( secondaryAction, d );
+					if( secondaryElements.size() == 0 ) 			
+					{					
+						secondaryElements = elementListOfASingleAgentAction( secondaryAction, d );
+					}
+					
+					bool doTheyShareElements = false;
+					for( unsigned s = 0; s < primaryElements.size(); s++ ) 
+					{
+						for( unsigned t = 0; t < secondaryElements.size(); t++ )
+						{
+							if( primaryElements[s]->name == secondaryElements[t]->name )
+							{
+								doTheyShareElements = true;								
+								break;
+							}
+							if( doTheyShareElements )
+							{
+								break;
+							}
+						}
+					}
+					
+					/** This if condition is currently not in use. If we modify the domain description we need to modify 
+					the if condition below. **/
+					if( ( primaryElements.size() < secondaryElements.size() ) && doTheyShareElements )
 					{						
 						/** Note that this won't work when we have activity-push-clean and 2-activity-push. **/
 						int diff = secondaryElements.size() - primaryElements.size(); 			
@@ -852,8 +920,35 @@ int main( int argc, char *argv[] )
 							a1->add( new Not( new Ground( "P-" + extraElements[k]->name, intVecParam) ) );							
 						}
 						f->cond = a1;
-						dynamic_cast< And* >( act->pre )->add(  f );
+						// dynamic_cast< And* >( act->pre )->add(  f );
 					}
+					
+					/** For our current domain, we have decided to have just one proposition in the precondition of all the 
+					collaborative actions, however it is not a generalized. It is sufficient though. **/
+					else if( doTheyShareElements && secondaryElements.size() == 1 ) 		
+					{
+						std::vector<int> intVecParamTemp;
+						std::vector<int> intVecParam;
+						intVecParamTemp.push_back( ma2sa->convertTypes(StringVec(1, "AGENT"))[0] );
+						Forall *f = new Forall;
+						f->params = intVecParamTemp;
+						
+						std::stringstream ss; ss << primaryAction->name; std::string temp; int found; 
+						while( !ss.eof() ) 
+						{ 
+							ss >> temp; 
+							if (stringstream(temp) >> found)
+							{ }
+							temp = ""; 
+						}						
+						intVecParam.push_back( act->params.size() );
+						for( int x = found; x < (int) act->params.size(); x++)
+						{
+							intVecParam.push_back( x );
+						}						
+						f->cond = new Not( new Ground( "P-" + secondaryElements[0]->name, intVecParam) );
+						dynamic_cast< And* >( act->pre )->add(  f );		
+					}			
 				}
 			}										
 		}
@@ -863,14 +958,29 @@ int main( int argc, char *argv[] )
 			bool decision = false;
 			for( unsigned h = 0; h < d->actions.size(); ++h ) 
 			{
-				if( i == h) continue;
+				if( i == h) 
+					continue;
 				if( d->actions[h]->name.find(act->name) != std::string::npos)
 				{
-					decision = true; break;
+					std::stringstream ss; ss << d->actions[h]->name; std::string temp; int found; 
+					while( !ss.eof() ) 
+					{ 
+						ss >> temp; 
+						if (stringstream(temp) >> found)
+						{ }
+						temp = ""; 
+					}
+					if( std::to_string(found) + "-" + act->name == d->actions[h]->name )
+					{ 
+						decision = true; 
+						break;
+					}
 				}
 			}
 			
-			if( !decision ) continue;				
+			if( !decision ) 
+				continue;	
+							
 			Forall *f = new Forall;
 			f->params = ma2sa->convertTypes(StringVec(1, "AGENT"));
 			std::vector<int> intVecParam; int found = 1;
@@ -1622,11 +1732,14 @@ int main( int argc, char *argv[] )
 
 					// add new parameters
 					if( i->second.size() > 1 || d->nodes[x]->upper > 1 )
+					{
 						cd->addParams( name, StringVec( 2, "AGENT-COUNT" ) );
+					}
 
 					// add new preconditions
 					TokenStruct< Lifted * > predcts = cd->listOfPredicates();
-					if( i->second.size() > 1 || d->nodes[x]->upper > 1 ) {
+					if( i->second.size() > 1 || d->nodes[x]->upper > 1 ) 
+					{
 						cd->addPre( 1, name, "IN-JOINT" ); 
 						cd->addPre( 0, name, "ACTIVE-" + d->nodes[x]->name, d->nodes[x]->templates[k]->params );
 						cd->addPre( 1, name, "TAKEN", IntVec( 1, 0 ) );
@@ -2089,7 +2202,7 @@ int main( int argc, char *argv[] )
 	}	
 	cins->addGoal( "NEG-IN-JOINT" );
 	
-	std::cerr << *cins;	
+	// std::cerr << *cins;	
 	
 	// end time
 	t2 = clock();

@@ -70,7 +70,7 @@
 			)
 )
 ;
-(:action activity-2-load-furniture 
+(:action 2-load-furniture 
 	:agent ?a - agent
 	:parameters (?a1 - agent ?fur - furniture ?tr - truck ?loc - location)
 	:precondition (and
@@ -99,7 +99,7 @@
 			)
 )
 ;
-(:action activity-2-unload-furniture 
+(:action 2-unload-furniture 
 	:agent ?a - agent
 	:parameters (?a1 - agent ?fur - furniture ?tr - truck ?loc1 - location)
 	:precondition (and
@@ -114,7 +114,7 @@
 			 )
 )
 ;
-(:action activity-3-unload-furniture 
+(:action 3-unload-furniture 
 	:agent ?a - agent
 	:parameters (?a1 - agent ?a2 - agent ?fur - furniture ?tr - truck ?loc1 - location)
 	:precondition (and
@@ -164,7 +164,7 @@
 				 )
 )
 ;
-(:action activity-2-load-carton
+(:action 2-load-carton
 	:agent ?a - agent 
 	:parameters (?a0 - agent ?cb - carton ?t - truck ?r1 - location)
 	:precondition (and
@@ -196,7 +196,7 @@
 				 )
 )
 ;
-(:action activity-2-unload-carton
+(:action 2-unload-carton
 	:agent ?a - agent 
 	:parameters (?a0 - agent ?cb - carton ?t - truck ?r1 - location)
 	:precondition (and
@@ -242,72 +242,5 @@
 				 )
 )
 ;
-(:concurrency-constraint v1-1
-	:parameters (?a - agent)
-	:bounds (1 1)
-	:actions ( (consume 0) )
 )
-;
-(:concurrency-constraint v1-2
-	:parameters (?a - agent)
-	:bounds (1 1)
-	:actions ( (move-agent 0) )
-)
-;
-(:concurrency-constraint v2
-	:parameters (?cb - carton ?l - location)
-	:bounds (2 2)
-	:actions( 
-				(load-carton 1 3) 
-				(activity-2-load-carton 2 4) 
-			)
-)
-;
-(:concurrency-constraint v3
-	:parameters (?cb - carton ?t - truck)
-	:bounds (2 2)
-	:actions( 
-				(unload-carton 1 2) 
-				(activity-2-unload-carton 2 3) 
-			)
-)
-;
-(:concurrency-constraint v4
-	:parameters (?t - truck ?l1 - location ?l2 - location)
-	:bounds (2 2)
-	:actions ( (drive-truck 1 2 3) )
-)
-;
-(:concurrency-constraint v5
-	:parameters (?f - furniture ?tr - truck ?loc - location)
-	:bounds (2 2)
-	:actions( 
-				(load-furniture  1 2 3) 
-				(activity-2-load-furniture 2 3 4) 
-			)
-)
-;
-(:concurrency-constraint v6
-	:parameters (?f - furniture ?tr - truck)
-	:bounds (2 3)
-	:actions( 
-				(unload-furniture  1 2) 
-				(activity-2-unload-furniture 2 3) 
-				(activity-3-unload-furniture 3 4) 
-			)
-)
-;
-(:concurrency-constraint v7
-	:parameters (?cb - carton ?loc1 - location)
-	:bounds (1 3)
-	:actions ( (pack-appliance 2 3) )
-)
-;
-(:concurrency-constraint v8
-	:parameters (?cb - carton ?loc1 - location)
-	:bounds (1 3)
-	:actions ( (unpack-appliance 2 3) )
-)
-;
-)
-;
+
