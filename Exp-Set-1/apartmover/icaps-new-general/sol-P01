@@ -1,0 +1,58 @@
+Solution found!
+Actual search time: 0.0132842s [t=0.0369992s]
+multi-start  (1)
+drive-truck a1 tr1 loc1 loc2 (1)
+pack-appliance a2 ac carton1 loc1 (1)
+pack-appliance a3 fridge carton1 loc1 (1)
+multi-end  (1)
+multi-start  (1)
+consume a1 (1)
+2-load-furniture a2 a3 bed tr2 loc1 (1)
+multi-end  (1)
+multi-start  (1)
+pack-appliance a2 tv carton1 loc1 (1)
+multi-end  (1)
+multi-start  (1)
+2-load-carton a2 a3 carton1 tr2 loc1 (1)
+multi-end  (1)
+multi-start  (1)
+2-load-furniture a2 a3 sofa tr2 loc1 (1)
+multi-end  (1)
+multi-start  (1)
+2-load-furniture a2 a3 table tr2 loc1 (1)
+multi-end  (1)
+multi-start  (1)
+move-agent a2 loc1 loc2 (1)
+drive-truck a3 tr2 loc1 loc2 (1)
+multi-end  (1)
+multi-start  (1)
+2-unload-furniture a1 a2 bed tr2 loc2 (1)
+multi-end  (1)
+multi-start  (1)
+2-unload-furniture a1 a2 sofa tr2 loc2 (1)
+multi-end  (1)
+multi-start  (1)
+2-unload-furniture a1 a2 table tr2 loc2 (1)
+multi-end  (1)
+multi-start  (1)
+2-unload-carton a1 a2 carton1 tr2 loc2 (1)
+multi-end  (1)
+multi-start  (1)
+unpack-appliance a1 ac carton1 loc2 (1)
+unpack-appliance a2 fridge carton1 loc2 (1)
+unpack-appliance a3 tv carton1 loc2 (1)
+multi-end  (1)
+Plan length: 42 step(s).
+Plan cost: 42
+Expanded 198 state(s).
+Reopened 0 state(s).
+Evaluated 199 state(s).
+Evaluations: 199
+Generated 878 state(s).
+Dead ends: 0 state(s).
+Number of registered states: 199
+Search time: 0.0133025s
+Total time: 0.037003s
+Solution found.
+Peak memory: 4768 KB
+

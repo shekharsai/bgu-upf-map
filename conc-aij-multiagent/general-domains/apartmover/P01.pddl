@@ -18,22 +18,21 @@
 	(agent-at a3 loc1)
 	(can-walk a1)
 	(can-walk a2)
-	(can-walk a3)
-	
+	(can-walk a3)	
 	(truck-at tr1 loc1)
-	(truck-at tr2 loc1)		
-	
+	(truck-at tr2 loc1)			
 	(furniture-at sofa loc1)
 	(furniture-at table loc1)
 	(furniture-at bed loc1)	
 	(electronics-at TV loc1)
 	(electronics-at fridge loc1)
-	(electronics-at AC loc1)
-	
+	(electronics-at AC loc1)	
 	(connected loc1 loc2 )
-	(connected loc2 loc1 )
-	
+	(connected loc2 loc1 )	
 	(carton-at carton1 loc1)	
+	(same-agent a1 a1)			
+	(same-agent a2 a2)
+	(same-agent a3 a3)
 )
 ;
 (:goal 

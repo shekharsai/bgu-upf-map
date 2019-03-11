@@ -2,9 +2,7 @@
 ;;	Apartmentmover domain
 ;
 (define (domain apartmentmovers)
-;
 (:requirements :typing :conditional-effects :multi-agent :concurrency-network)
-;
 (:types	
 	agent 
 	furniture
@@ -13,7 +11,6 @@
 	truck	
 	location 
 )
-;
 (:predicates
 	(agent-at ?agent - agent ?loc - location)
 	(furniture-at ?furniture - furniture ?loc - location)	
@@ -25,12 +22,11 @@
 	(loaded-furniture ?furniture - furniture ?tr - truck)
 	(loaded-carton ?carton - carton ?tr - truck)
 	(inside ?e - electronics ?bigcarton - carton)	
-	(packed ?cb - carton)
-	;- private -;
+	(packed ?cb - carton)	
 	(tired ?a - agent)
-	(can-walk ?a - agent)	
+	(can-walk ?a - agent)
+	(same-agent ?a1 - agent ?a2 - agent) 	
 )
-;
 (:action consume
 	:agent ?a - agent 
 	:parameters ()
@@ -41,7 +37,6 @@
 				(not (tired ?a))
 			)
 )
-;
 (:action move-agent
 	:agent ?a - agent 
 	:parameters (?r1 - location ?r2 - location)
@@ -55,7 +50,6 @@
 					(not (agent-at ?a ?r1))
 				 )
 )
-;
 (:action load-furniture 
 	:agent ?a - agent
 	:parameters (?fur - furniture ?tr - truck ?loc - location)
@@ -69,22 +63,44 @@
 				(tired ?a)
 			)
 )
-;
 (:action 2-load-furniture 
 	:agent ?a - agent
 	:parameters (?a1 - agent ?fur - furniture ?tr - truck ?loc - location)
 	:precondition (and
 					(agent-at ?a ?loc)
+					(agent-at ?a1 ?loc)
 					(furniture-at ?fur ?loc)
 					(truck-at ?tr ?loc)
-					(not (tired ?a))	
+					(not (tired ?a))
+					(not (tired ?a1))
+					(not (same-agent ?a ?a1))		
 				  )
 	:effect	(and
 				(loaded-furniture ?fur ?tr)	
 				(not (furniture-at ?fur ?loc)) 			
 			 )
 )
-;
+(:action 3-load-furniture 
+	:agent ?a - agent
+	:parameters (?a1 - agent ?a2 - agent ?fur - furniture ?tr - truck ?loc - location)
+	:precondition (and
+					(agent-at ?a ?loc)
+					(agent-at ?a1 ?loc)
+					(agent-at ?a2 ?loc)
+					(furniture-at ?fur ?loc)
+					(truck-at ?tr ?loc)
+					(not (tired ?a))
+					(not (tired ?a1))
+					(not (tired ?a2))	
+					(not (same-agent ?a ?a1))			
+					(not (same-agent ?a ?a2))
+					(not (same-agent ?a1 ?a2))
+				  )
+	:effect	(and
+				(loaded-furniture ?fur ?tr)	
+				(not (furniture-at ?fur ?loc)) 			
+			 )
+)
 (:action unload-furniture 
 	:agent ?a - agent
 	:parameters (?fur - furniture ?tr - truck ?loc1 - location)
@@ -98,37 +114,44 @@
 				(tired ?a)
 			)
 )
-;
 (:action 2-unload-furniture 
 	:agent ?a - agent
 	:parameters (?a1 - agent ?fur - furniture ?tr - truck ?loc1 - location)
 	:precondition (and
 					(loaded-furniture ?fur ?tr)
 					(agent-at ?a ?loc1)
+					(agent-at ?a1 ?loc1)
 					(truck-at ?tr ?loc1)
-					(not (tired ?a))	
+					(not (tired ?a))
+					(not (tired ?a1))	
+					(not (same-agent ?a ?a1))	
 				  )
 	:effect	(and
 				(furniture-at ?fur ?loc1)
 				(not (loaded-furniture ?fur ?tr))
 			 )
 )
-;
 (:action 3-unload-furniture 
 	:agent ?a - agent
 	:parameters (?a1 - agent ?a2 - agent ?fur - furniture ?tr - truck ?loc1 - location)
 	:precondition (and
 					(loaded-furniture ?fur ?tr)
 					(agent-at ?a ?loc1)
+					(agent-at ?a1 ?loc1)
+					(agent-at ?a2 ?loc1)
 					(truck-at ?tr ?loc1)
-					(not (tired ?a))	
+					(not (tired ?a))
+					(not (tired ?a1))
+					(not (tired ?a2))
+					(not (same-agent ?a ?a1))			
+					(not (same-agent ?a ?a2))
+					(not (same-agent ?a1 ?a2))			
 				  )
 	:effect	(and
 				(furniture-at ?fur ?loc1)
 				(not (loaded-furniture ?fur ?tr))
 			 )
 )
-;
 (:action drive-truck
 	:agent ?a - agent
 	:parameters (?t - truck ?r1 - location ?r2 - location)
@@ -146,7 +169,6 @@
 				(tired ?a)				
 			)
 )
-;
 (:action load-carton
 	:agent ?a - agent 
 	:parameters (?cb - carton ?t - truck ?r1 - location)
@@ -163,23 +185,24 @@
 					(tired ?a)
 				 )
 )
-;
 (:action 2-load-carton
 	:agent ?a - agent 
-	:parameters (?a0 - agent ?cb - carton ?t - truck ?r1 - location)
+	:parameters (?a1 - agent ?cb - carton ?t - truck ?r1 - location)
 	:precondition (and
 					(carton-at ?cb ?r1)
 					(packed ?cb) 
 					(agent-at ?a ?r1)
+					(agent-at ?a1 ?r1)
 					(truck-at ?t ?r1)
-					(not (tired ?a))							
+					(not (tired ?a))
+					(not (tired ?a1))
+					(not (same-agent ?a ?a1))														
 				  )
 	:effect	(and
 					(loaded-carton ?cb ?t)
 					(not (carton-at ?cb ?r1))
 				 )
 )
-;
 (:action unload-carton
 	:agent ?a - agent 
 	:parameters (?cb - carton ?t - truck ?r1 - location)
@@ -195,22 +218,23 @@
 					(tired ?a)
 				 )
 )
-;
 (:action 2-unload-carton
 	:agent ?a - agent 
-	:parameters (?a0 - agent ?cb - carton ?t - truck ?r1 - location)
+	:parameters (?a1 - agent ?cb - carton ?t - truck ?r1 - location)
 	:precondition (and
 					(loaded-carton ?cb ?t)
 					(truck-at ?t ?r1)
 					(agent-at ?a ?r1)
-					(not (tired ?a))							
+					(agent-at ?a1 ?r1)
+					(not (tired ?a))
+					(not (tired ?a1))
+					(not (same-agent ?a ?a1))							
 				  )
 	:effect	(and
 					(not (loaded-carton ?cb ?t))					
 					(carton-at ?cb ?r1)
 				 )
 )
-;
 (:action unpack-appliance
 	:agent ?a - agent 
 	:parameters (?elec - electronics ?cb - carton ?loc1 - location)
@@ -226,7 +250,6 @@
 				(not (packed ?cb))
 			)
 )
-;
 (:action pack-appliance
 	:agent ?a - agent 
 	:parameters (?elec - electronics ?cb - carton ?loc1 - location)
@@ -241,6 +264,5 @@
 					(not (electronics-at ?elec ?loc1))
 				 )
 )
-;
 )
 
