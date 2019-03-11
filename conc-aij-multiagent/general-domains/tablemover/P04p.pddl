@@ -6,7 +6,7 @@
 (:objects
 	a1 a2 a3 a4 a5 - agent
 	r1x1 r1x2 r2x1 r2x2 r1x3 r2x3 r3x1 - room
-	t1 t2 t3 t4 - table
+	t1 t2 t3 - table
 )
 ;
 (:init
@@ -17,8 +17,7 @@
 	(in a5 r1x1)
 	(inroom t1 r1x1)
 	(inroom t2 r2x1)
-	(inroom t3 r1x1)
-	(inroom t4 r1x1)	
+	(inroom t3 r1x1)	
 	(available a1)
 	(available a2)
 	(available a3)
@@ -43,7 +42,6 @@
 	(intact t1)
 	(intact t2)
 	(intact t3)	
-	(intact t4)		
 	(has-charging-point r1x1)
 	(has-charging-point r2x2)
 	(has-charging-point r1x3)
@@ -58,12 +56,10 @@
 	(and
 		(inroom t1 r2x2)
 		(inroom t2 r2x3)
-		(inroom t3 r3x1)
-		(inroom t4 r3x1)		
+		(inroom t3 r3x1)		
 		(intact t1)		
 		(intact t2)
-		(intact t3)
-		(intact t4)				
+		(intact t3)				
  	)
 )
 ;
