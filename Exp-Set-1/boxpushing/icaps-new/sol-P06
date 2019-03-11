@@ -1,5 +1,5 @@
 Solution found!
-Actual search time: 52.1494s [t=52.8913s]
+Actual search time: 53.8282s [t=54.5463s]
 start-v1 box4 loc2 loc3 (1)
 do-activity-4-push-box-1 a1 box4 loc2 loc3 acount-0 acount-1 (1)
 do-activity-4-push-box-2 a2 box4 loc2 loc3 acount-1 acount-2 (1)
@@ -109,15 +109,11 @@ end-v1 box1 loc4 loc5 acount-2 (1)
 start-v2 loc5 loc4 (1)
 do-move-agent a2 loc5 loc4 acount-0 acount-1 (1)
 do-move-agent a3 loc5 loc4 acount-1 acount-2 (1)
-do-move-agent a4 loc5 loc4 acount-2 acount-3 (1)
-do-move-agent a5 loc5 loc4 acount-3 acount-4 (1)
-end-v2 loc5 loc4 acount-4 (1)
+end-v2 loc5 loc4 acount-2 (1)
 start-v1 box5 loc4 loc5 (1)
-do-activity-4-push-box-1 a2 box5 loc4 loc5 acount-0 acount-1 (1)
-do-activity-4-push-box-2 a3 box5 loc4 loc5 acount-1 acount-2 (1)
-do-activity-4-push-box-3 a4 box5 loc4 loc5 acount-2 acount-3 (1)
-do-activity-4-push-box-4 a5 box5 loc4 loc5 acount-3 acount-4 (1)
-end-v1 box5 loc4 loc5 acount-4 (1)
+do-activity-2-push-box-1 a2 box5 loc4 loc5 acount-0 acount-1 (1)
+do-activity-2-push-box-2 a3 box5 loc4 loc5 acount-1 acount-2 (1)
+end-v1 box5 loc4 loc5 acount-2 (1)
 start-v1 box5 loc5 loc6 (1)
 do-activity-4-push-box-1 a2 box5 loc5 loc6 acount-0 acount-1 (1)
 do-activity-4-push-box-2 a3 box5 loc5 loc6 acount-1 acount-2 (1)
@@ -200,17 +196,17 @@ do-activity-4-push-box-2 a2 box2 loc4 loc5 acount-1 acount-2 (1)
 do-activity-4-push-box-3 a3 box2 loc4 loc5 acount-2 acount-3 (1)
 do-activity-4-push-box-4 a4 box2 loc4 loc5 acount-3 acount-4 (1)
 end-v1 box2 loc4 loc5 acount-4 (1)
-Plan length: 200 step(s).
-Plan cost: 200
-Expanded 16486 state(s).
+Plan length: 196 step(s).
+Plan cost: 196
+Expanded 15731 state(s).
 Reopened 0 state(s).
-Evaluated 49643 state(s).
-Evaluations: 49643
-Generated 438356 state(s).
-Dead ends: 33156 state(s).
-Number of registered states: 49643
-Search time: 52.1495s
-Total time: 52.8913s
+Evaluated 48490 state(s).
+Evaluations: 48490
+Generated 432804 state(s).
+Dead ends: 32758 state(s).
+Number of registered states: 48490
+Search time: 53.8283s
+Total time: 54.5463s
 Solution found.
-Peak memory: 34512 KB
+Peak memory: 33248 KB
 

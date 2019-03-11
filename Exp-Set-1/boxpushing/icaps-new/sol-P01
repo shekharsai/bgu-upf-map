@@ -1,5 +1,5 @@
 Solution found!
-Actual search time: 0.0313036s [t=0.0695435s]
+Actual search time: 0.0278188s [t=0.0643774s]
 start-v2 loc2 loc1 (1)
 do-move-agent a1 loc2 loc1 acount-0 acount-1 (1)
 end-v2 loc2 loc1 acount-1 (1)
@@ -33,15 +33,15 @@ do-activity-2-push-box-2 a2 box1 loc2 loc3 acount-1 acount-2 (1)
 end-v1 box1 loc2 loc3 acount-2 (1)
 Plan length: 31 step(s).
 Plan cost: 31
-Expanded 130 state(s).
+Expanded 116 state(s).
 Reopened 0 state(s).
-Evaluated 307 state(s).
-Evaluations: 307
-Generated 714 state(s).
+Evaluated 293 state(s).
+Evaluations: 293
+Generated 700 state(s).
 Dead ends: 176 state(s).
-Number of registered states: 307
-Search time: 0.0313153s
-Total time: 0.0695475s
+Number of registered states: 293
+Search time: 0.0278305s
+Total time: 0.0643815s
 Solution found.
-Peak memory: 6852 KB
+Peak memory: 6828 KB
 

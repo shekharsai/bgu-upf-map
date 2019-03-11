@@ -83,16 +83,7 @@
 		( CONSEC ?AGENT-COUNT4 ?AGENT-COUNT5 )
 		( FORALL
 			( ?AGENT6 - AGENT )
-			( AND
-				( NOT ( P-ROW ?AGENT6 ?BOAT1 ?LOCATION2 ) )
-			)
-		)
-		( FORALL
-			( ?AGENT6 - AGENT ?AGENT7 - AGENT )
-			( AND
-				( NOT ( P-ROW ?AGENT6 ?BOAT1 ?LOCATION2 ) )
-				( NOT ( P-ROW ?AGENT7 ?BOAT1 ?LOCATION2 ) )
-			)
+			( NOT ( P-ROW ?AGENT6 ?BOAT1 ?LOCATION2 ) )			
 		)
 	)
   :EFFECT
@@ -118,9 +109,7 @@
 		( CONSEC ?AGENT-COUNT5 ?AGENT-COUNT6 )
 		( FORALL
 			( ?AGENT7 - AGENT )
-			( AND
-				( NOT ( P-ROW ?AGENT7 ?BOAT2 ?LOCATION3 ) )
-			)
+			( NOT ( P-ROW ?AGENT7 ?BOAT2 ?LOCATION3 ) )
 		)
 	)
   :EFFECT
@@ -171,6 +160,10 @@
 		( NOT ( TAKEN ?AGENT0 ) )
 		( COUNT-V2 ?AGENT-COUNT6 )
 		( CONSEC ?AGENT-COUNT6 ?AGENT-COUNT7 )
+		( FORALL
+			( ?AGENT8 - AGENT )
+			( NOT ( P-ROW ?AGENT8 ?BOAT3 ?LOCATION4 ) )
+		)
 	)
   :EFFECT
 	( AND
@@ -352,5 +345,5 @@
 )
 )
 
-;Domain compilation time is: 0.004815
+;Domain compilation time is: 0.004982
 

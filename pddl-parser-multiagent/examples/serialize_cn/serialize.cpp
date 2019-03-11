@@ -215,8 +215,8 @@ std::map< std::string, std::vector<std::string> > actionPairWithDiffEffOnObjSet(
 	return listOfAmbiguousActions;
 }
 
-/* Returns set of conflicting actions in network nodes.
-** Again, conflicting actions here, means, if they have something different to say about the propositions dealing with common objects set (keeping agents' privacy in mind). **/
+/** Returns set of conflicting actions in network nodes.
+	Again, conflicting actions here, means, if they have something different to say about the propositions dealing with common objects set (keeping agents' privacy in mind). **/
 std::map< std::string, std::vector< std::string > > ambiguousActions( const parser::multiagent::NetworkNode * n, const Domain & cd ) 
 {
 		std::map< std::string, std::vector < std::string > > listOfAmbiguousActions;

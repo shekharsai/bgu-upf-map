@@ -1,5 +1,5 @@
 Solution found!
-Actual search time: 33.8891s [t=34.4049s]
+Actual search time: 29.8974s [t=30.3887s]
 start-v1 box3 loc2 loc3 (1)
 do-activity-4-push-box-1 a1 box3 loc2 loc3 acount-0 acount-1 (1)
 do-activity-4-push-box-2 a2 box3 loc2 loc3 acount-1 acount-2 (1)
@@ -258,14 +258,15 @@ do-activity-4-push-box-4 a4 box5 loc4 loc5 acount-3 acount-4 (1)
 end-v1 box5 loc4 loc5 acount-4 (1)
 Plan length: 256 step(s).
 Plan cost: 256
-Expanded 14314 state(s).
+Expanded 13407 state(s).
 Reopened 0 state(s).
-Evaluated 39591 state(s).
-Evaluations: 39591
-Generated 285513 state(s).
-Dead ends: 25276 state(s).
-Number of registered states: 39591
-Search time: 33.8891s
-Total time: 34.4049s
+Evaluated 37769 state(s).
+Evaluations: 37769
+Generated 271883 state(s).
+Dead ends: 24361 state(s).
+Number of registered states: 37769
+Search time: 29.8974s
+Total time: 30.3887s
 Solution found.
-Peak memory: 29080 KB
+Peak memory: 28936 KB
+

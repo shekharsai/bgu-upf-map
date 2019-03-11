@@ -9,6 +9,7 @@
 	(has-boat ?b - boat ?x - location ?y - location)
 	(at-boat  ?b - boat ?loc1 - location)
 	(has-bridge ?b - bridge ?x - location ?y - location)
+	(same-agent ?a1 - agent ?a2 - agent)
 )
 (:action move 
 	:agent ?a - agent
@@ -35,28 +36,41 @@
 				(not (at ?a ?x)) 
 			) 
 )
-(:action activity-2-row 
+(:action 2-row 
 	:agent ?a0 - agent
 	:parameters (?a1 - agent ?b - boat ?x - location ?y - location)
 	:precondition (and
 				(at ?a0 ?x)
+				(at ?a1 ?x)
+				(not (same-agent ?a0 ?a1))
 				(has-boat ?b ?x ?y)				
 			 )
 	:effect	(and 
 			(at ?a0 ?y)
+			(at ?a1 ?y)
 			(not (at ?a0 ?x)) 			
+			(not (at ?a1 ?x))
 		)
 )
-(:action activity-3-row 
+(:action 3-row 
 	:agent ?a0 - agent
 	:parameters (?a1 - agent ?a2 - agent ?b - boat ?x - location ?y - location)
 	:precondition (and
 				(at ?a0 ?x)
+				(at ?a1 ?x)
+				(at ?a2 ?x)
+				(not (same-agent ?a0 ?a1))
+				(not (same-agent ?a0 ?a2))
+				(not (same-agent ?a2 ?a1))
 				(has-boat ?b ?x ?y)				
 			 )
 	:effect	(and 
 			(at ?a0 ?y)
+			(at ?a1 ?y)
+			(at ?a2 ?y)
 			(not (at ?a0 ?x)) 			
+			(not (at ?a1 ?x))
+			(not (at ?a2 ?x))
 		)
 )
 (:action cross 
@@ -85,29 +99,6 @@
 				(not (blocked ?z ?y))
 	)
 )
-(:concurrency-constraint v1
-	:parameters (?d - door)
-	:bounds (1 1)
-	:actions ( (move 1) )
-)
-(:concurrency-constraint v2
-	:parameters (?b - boat ?x - location)
-	:bounds (2 3)
-	:actions( 
-				(row 1 2) 
-				(activity-2-row 2 3)
-				(activity-3-row 3 4)   
-			)
-)
-(:concurrency-constraint v3
-	:parameters (?b - bridge ?x - location ?y - location)
-	:bounds (1 5)
-	:actions ( (cross 1 2 3) )
-)
-(:concurrency-constraint v4
-	:parameters (?s - switch)
-	:bounds (1 1)
-	:actions ( (pushswitch 1) )
-)
+
 )
 

@@ -1,0 +1,60 @@
+Solution found!
+Actual search time: 560.429s [t=560.749s]
+do-pushswitch a2 s6 loc1x2 loc3x3 loc3x4 (1)
+do-move a4 d6 loc2x2 loc3x2 (1)
+do-move a1 d8 loc3x2 loc3x1 (1)
+do-pushswitch a1 s4 loc3x1 loc3x2 loc3x3 (1)
+do-move a4 d10 loc3x2 loc3x3 (1)
+do-move a4 d12 loc3x3 loc3x4 (1)
+do-move a1 d9 loc3x1 loc4x1 (1)
+do-pushswitch a1 s1 loc4x1 loc1x2 loc1x3 (1)
+do-move a1 d9 loc4x1 loc3x1 (1)
+do-move a1 d8 loc3x1 loc3x2 (1)
+do-move a2 d2 loc1x2 loc1x3 (1)
+do-move a2 d3 loc1x3 loc1x4 (1)
+start-v3 b1 loc1x4 loc2x4 (1)
+do-cross a2 b1 loc1x4 loc2x4 acount-0 acount-1 (1)
+end-v3 b1 loc1x4 loc2x4 acount-1 (1)
+do-move a2 d7 loc2x4 loc3x4 (1)
+do-move a2 d12 loc3x4 loc3x3 (1)
+do-move a1 d10 loc3x2 loc3x3 (1)
+do-move a4 d12 loc3x4 loc3x3 (1)
+start-v2 bt5 loc3x3 (1)
+do-activity-3-row-1 a1 bt5 loc3x3 loc2x3 acount-0 acount-1 (1)
+do-activity-3-row-2 a2 bt5 loc3x3 loc2x3 acount-1 acount-2 (1)
+do-activity-3-row-3 a4 bt5 loc3x3 loc2x3 acount-2 acount-3 (1)
+end-v2 bt5 loc3x3 acount-3 (1)
+start-v2 bt5 loc2x3 (1)
+do-activity-3-row-1 a1 bt5 loc2x3 loc3x3 acount-0 acount-1 (1)
+do-activity-3-row-2 a2 bt5 loc2x3 loc3x3 acount-1 acount-2 (1)
+do-activity-3-row-3 a3 bt5 loc2x3 loc3x3 acount-2 acount-3 (1)
+end-v2 bt5 loc2x3 acount-3 (1)
+do-move a3 d10 loc3x3 loc3x2 (1)
+do-move a3 d8 loc3x2 loc3x1 (1)
+do-move a3 d9 loc3x1 loc4x1 (1)
+start-v2 bt5 loc3x3 (1)
+do-activity-2-row-1 a1 bt5 loc3x3 loc2x3 acount-0 acount-1 (1)
+do-activity-2-row-2 a2 bt5 loc3x3 loc2x3 acount-1 acount-2 (1)
+end-v2 bt5 loc3x3 acount-2 (1)
+start-v2 bt5 loc2x3 (1)
+do-activity-3-row-1 a1 bt5 loc2x3 loc3x3 acount-0 acount-1 (1)
+do-activity-3-row-2 a2 bt5 loc2x3 loc3x3 acount-1 acount-2 (1)
+do-activity-3-row-3 a4 bt5 loc2x3 loc3x3 acount-2 acount-3 (1)
+end-v2 bt5 loc2x3 acount-3 (1)
+do-move a1 d10 loc3x3 loc3x2 (1)
+do-move a2 d10 loc3x3 loc3x2 (1)
+do-move a4 d12 loc3x3 loc3x4 (1)
+Plan length: 44 step(s).
+Plan cost: 44
+Expanded 44044 state(s).
+Reopened 0 state(s).
+Evaluated 3288439 state(s).
+Evaluations: 3288439
+Generated 8622041 state(s).
+Dead ends: 3244394 state(s).
+Number of registered states: 3288439
+Search time: 560.429s
+Total time: 560.749s
+Solution found.
+Peak memory: 534216 KB
+
