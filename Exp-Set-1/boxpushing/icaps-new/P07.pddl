@@ -2,7 +2,7 @@
 (define (problem push-box-1_1) (:domain boxpushing)
 ;
 (:objects	
-	a1 a2 a3 a4 a5 a6 - agent
+	a1 a2 a3 a4 a5 - agent
 	box1 box2 box3 box4 box5 box6 box7 - box
 	loc1 loc2 loc3 loc4 loc5 loc6 - location
 )
@@ -13,7 +13,6 @@
 	(agent-at-loc a3 loc2)
 	(agent-at-loc a4 loc2)
 	(agent-at-loc a5 loc5)
-	(agent-at-loc a6 loc5)
 	
 	(box-at-loc box1 loc1)
 	(box-at-loc box2 loc1)

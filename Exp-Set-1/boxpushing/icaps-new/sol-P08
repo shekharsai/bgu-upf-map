@@ -1,5 +1,5 @@
 Solution found!
-Actual search time: 34.1565s [t=35.3124s]
+Actual search time: 100.771s [t=102.163s]
 start-v2 loc2 loc1 (1)
 do-move-agent a1 loc2 loc1 acount-0 acount-1 (1)
 end-v2 loc2 loc1 acount-1 (1)
@@ -248,7 +248,8 @@ Evaluations: 23123
 Generated 165798 state(s).
 Dead ends: 17526 state(s).
 Number of registered states: 23123
-Search time: 34.1565s
-Total time: 35.3124s
+Search time: 100.771s
+Total time: 102.163s
 Solution found.
 Peak memory: 51252 KB
+

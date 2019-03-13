@@ -23,7 +23,8 @@
 	(connected loc3 loc2)
 	(connected loc2 loc3)
 	(connected loc4 loc3)
-	(connected loc3 loc4)
+	(connected loc3 loc4)	
+	
 )
 ;
 (:goal 

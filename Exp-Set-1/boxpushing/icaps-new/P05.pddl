@@ -28,7 +28,6 @@
 	(connected loc3 loc4)
 	(connected loc4 loc5)
 	(connected loc5 loc4)
-	
 )
 ;
 (:goal 

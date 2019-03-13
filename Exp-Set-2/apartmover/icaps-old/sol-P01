@@ -1,0 +1,76 @@
+Solution found!
+Actual search time: 1.28364s [t=1.31859s]
+do-move-agent a1 loc1 loc2 (1)
+start-v5 bed tr1 loc1 (1)
+do-activity-2-load-furniture-1 a2 bed tr1 loc1 acount-0 acount-1 (1)
+do-activity-2-load-furniture-2 a3 bed tr1 loc1 acount-1 acount-2 (1)
+end-v5 bed tr1 loc1 acount-2 (1)
+start-v5 sofa tr2 loc1 (1)
+do-activity-2-load-furniture-1 a2 sofa tr2 loc1 acount-0 acount-1 (1)
+do-activity-2-load-furniture-2 a3 sofa tr2 loc1 acount-1 acount-2 (1)
+end-v5 sofa tr2 loc1 acount-2 (1)
+start-v5 table tr2 loc1 (1)
+do-activity-2-load-furniture-1 a2 table tr2 loc1 acount-0 acount-1 (1)
+do-activity-2-load-furniture-2 a3 table tr2 loc1 acount-1 acount-2 (1)
+end-v5 table tr2 loc1 acount-2 (1)
+start-v7 carton1 loc1 (1)
+do-pack-appliance a2 ac carton1 loc1 acount-0 acount-1 (1)
+do-pack-appliance a3 fridge carton1 loc1 acount-1 acount-2 (1)
+end-v7 carton1 loc1 acount-2 (1)
+start-v7 carton1 loc1 (1)
+do-pack-appliance a2 tv carton1 loc1 acount-0 acount-1 (1)
+end-v7 carton1 loc1 acount-1 (1)
+start-v4 tr2 loc1 loc2 (1)
+do-drive-truck a2 tr2 loc1 loc2 acount-0 acount-1 (1)
+do-drive-truck a3 tr2 loc1 loc2 acount-1 acount-2 (1)
+end-v4 tr2 loc1 loc2 acount-2 (1)
+do-move-agent a1 loc2 loc1 (1)
+do-consume a2 (1)
+do-consume a3 (1)
+start-v6 sofa tr2 (1)
+do-activity-2-unload-furniture-1 a2 sofa tr2 loc2 acount-0 acount-1 (1)
+do-activity-2-unload-furniture-2 a3 sofa tr2 loc2 acount-1 acount-2 (1)
+end-v6 sofa tr2 acount-2 (1)
+start-v6 table tr2 (1)
+do-activity-2-unload-furniture-1 a2 table tr2 loc2 acount-0 acount-1 (1)
+do-activity-2-unload-furniture-2 a3 table tr2 loc2 acount-1 acount-2 (1)
+end-v6 table tr2 acount-2 (1)
+do-move-agent a2 loc2 loc1 (1)
+start-v2 carton1 loc1 (1)
+do-activity-2-load-carton-1 a1 carton1 tr1 loc1 acount-0 acount-1 (1)
+do-activity-2-load-carton-2 a2 carton1 tr1 loc1 acount-1 acount-2 (1)
+end-v2 carton1 loc1 acount-2 (1)
+do-consume a1 (1)
+do-consume a2 (1)
+start-v4 tr1 loc1 loc2 (1)
+do-drive-truck a1 tr1 loc1 loc2 acount-0 acount-1 (1)
+do-drive-truck a2 tr1 loc1 loc2 acount-1 acount-2 (1)
+end-v4 tr1 loc1 loc2 acount-2 (1)
+do-consume a1 (1)
+start-v6 bed tr1 (1)
+do-activity-2-unload-furniture-1 a1 bed tr1 loc2 acount-0 acount-1 (1)
+do-activity-2-unload-furniture-2 a3 bed tr1 loc2 acount-1 acount-2 (1)
+end-v6 bed tr1 acount-2 (1)
+start-v3 carton1 tr1 (1)
+do-activity-2-unload-carton-1 a1 carton1 tr1 loc2 acount-0 acount-1 (1)
+do-activity-2-unload-carton-2 a3 carton1 tr1 loc2 acount-1 acount-2 (1)
+end-v3 carton1 tr1 acount-2 (1)
+start-v8 carton1 loc2 (1)
+do-unpack-appliance a1 ac carton1 loc2 acount-0 acount-1 (1)
+do-unpack-appliance a2 fridge carton1 loc2 acount-1 acount-2 (1)
+do-unpack-appliance a3 tv carton1 loc2 acount-2 acount-3 (1)
+end-v8 carton1 loc2 acount-3 (1)
+Plan length: 60 step(s).
+Plan cost: 60
+Expanded 6362 state(s).
+Reopened 0 state(s).
+Evaluated 17121 state(s).
+Evaluations: 17121
+Generated 50341 state(s).
+Dead ends: 10758 state(s).
+Number of registered states: 17121
+Search time: 1.28365s
+Total time: 1.3186s
+Solution found.
+Peak memory: 6832 KB
+

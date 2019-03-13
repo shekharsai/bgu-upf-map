@@ -1,6 +1,3 @@
-;; Agents are homogenous
-;; Their individual pre and eff are removed, to make things simpler.
-;;;;
 
 (define (domain boxpushing)	
 (:requirements :typing :concurrency-network :multi-agent)   	

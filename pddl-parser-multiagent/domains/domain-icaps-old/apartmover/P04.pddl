@@ -1,8 +1,8 @@
 ;
 ;;	Apartmentmovers Domain
 ;
-(define (problem apartmentmovers1_1) (:domain apartmentmovers)
-;
+(define (problem apartmentmovers1_1) 
+(:domain apartmentmovers)
 (:objects
 	a1 a2 a3 a4 a5 - agent
 	loc1 loc2 loc3 loc4 loc5 loc6 - location
@@ -13,7 +13,6 @@
 	carton2 - carton		
 	carton3 - carton
 )
-;
 (:init
 	(agent-at a1 loc1)
 	(agent-at a2 loc1)
@@ -25,29 +24,24 @@
 	(can-walk a3)
 	(can-walk a4)
 	(can-walk a5)
-		
 	(truck-at tr1 loc1)
 	(truck-at tr2 loc5)
 	(truck-at tr3 loc6)				
-	
 	(furniture-at sofa1 loc1)
 	(furniture-at table1 loc1)
 	(furniture-at bed1 loc1)	
 	(electronics-at TV1 loc1)
 	(electronics-at fridge1 loc1)
 	(electronics-at AC1 loc1)
-	
 	(furniture-at sofa2 loc3)
 	(furniture-at table2 loc3)
 	(furniture-at bed2 loc3)	
 	(electronics-at TV2 loc3)
 	(electronics-at fridge2 loc3)
 	(electronics-at AC2 loc3)
-	
 	(furniture-at sofa3 loc2)
 	(furniture-at table3 loc2)
 	(furniture-at bed3 loc2)	
-	
 	(connected loc1 loc3 )
 	(connected loc3 loc1 )
 	(connected loc3 loc2 )
@@ -58,12 +52,10 @@
 	(connected loc5 loc4 )
 	(connected loc6 loc3 )
 	(connected loc3 loc6 )
-	
 	(carton-at carton1 loc1)	
 	(carton-at carton2 loc3)
 	(carton-at carton3 loc2)
 )
-;
 (:goal 
 	(and
 		(furniture-at sofa1 loc4)
@@ -72,18 +64,15 @@
 		(electronics-at TV1 loc4)
 		(electronics-at fridge1 loc4)
 		(electronics-at AC1 loc4)
-	
 		(furniture-at sofa2 loc6)
 		(furniture-at table2 loc6)
 		(furniture-at bed2 loc6)	
 		(electronics-at TV2 loc6)
 		(electronics-at fridge2 loc6)
 		(electronics-at AC2 loc6)
-		
 		(furniture-at sofa3 loc5)
 		(furniture-at table3 loc5)
 		(furniture-at bed3 loc5)				
  	)
 )
-;
 )
