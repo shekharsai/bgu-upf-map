@@ -1,0 +1,63 @@
+Solution found!
+Actual search time: 29.1809s [t=29.2678s]
+do-pushswitch a2 s6 loc1x2 loc3x3 loc3x4 (1)
+do-move a4 d6 loc2x2 loc3x2 (1)
+do-move a5 d9 loc4x1 loc3x1 (1)
+do-pushswitch a5 s4 loc3x1 loc3x2 loc3x3 (1)
+do-move a4 d10 loc3x2 loc3x3 (1)
+do-move a4 d12 loc3x3 loc3x4 (1)
+do-move a4 d7 loc3x4 loc2x4 (1)
+start-v3 b1 (1)
+do-cross a4 b1 loc2x4 loc1x4 acount-0 acount-1 (1)
+end-v3 b1 acount-1 (1)
+do-move a4 d3 loc1x4 loc1x3 (1)
+start-v3 b2 (1)
+do-cross a5 b2 loc3x1 loc2x1 acount-0 acount-1 (1)
+end-v3 b2 acount-1 (1)
+do-pushswitch a5 s2 loc2x1 loc1x3 loc2x3 (1)
+do-move a4 d4 loc1x3 loc2x3 (1)
+do-move a1 d6 loc3x2 loc2x2 (1)
+do-pushswitch a1 s3 loc2x2 loc2x1 loc2x2 (1)
+do-move a5 d5 loc2x1 loc2x2 (1)
+do-move a1 d6 loc2x2 loc3x2 (1)
+do-move a5 d6 loc2x2 loc3x2 (1)
+do-move a5 d8 loc3x2 loc3x1 (1)
+start-v2 bt5 loc2x3 (1)
+do-activity-2-row-1 a3 bt5 loc2x3 loc3x3 acount-0 acount-1 (1)
+do-activity-2-row-2 a4 bt5 loc2x3 loc3x3 acount-1 acount-2 (1)
+end-v2 bt5 loc2x3 acount-2 (1)
+do-move a3 d10 loc3x3 loc3x2 (1)
+do-move a4 d12 loc3x3 loc3x4 (1)
+do-move a3 d8 loc3x2 loc3x1 (1)
+do-move a3 d9 loc3x1 loc4x1 (1)
+do-pushswitch a3 s1 loc4x1 loc1x2 loc1x3 (1)
+do-move a2 d2 loc1x2 loc1x3 (1)
+do-move a2 d4 loc1x3 loc2x3 (1)
+do-move a1 d10 loc3x2 loc3x3 (1)
+do-move a4 d12 loc3x4 loc3x3 (1)
+start-v2 bt5 loc3x3 (1)
+do-activity-2-row-1 a1 bt5 loc3x3 loc2x3 acount-0 acount-1 (1)
+do-activity-2-row-2 a4 bt5 loc3x3 loc2x3 acount-1 acount-2 (1)
+end-v2 bt5 loc3x3 acount-2 (1)
+start-v2 bt5 loc2x3 (1)
+do-row a1 bt5 loc2x3 loc3x3 acount-0 acount-1 (1)
+do-activity-2-row-1 a2 bt5 loc2x3 loc3x3 acount-1 acount-2 (1)
+do-activity-2-row-2 a4 bt5 loc2x3 loc3x3 acount-2 acount-3 (1)
+end-v2 bt5 loc2x3 acount-3 (1)
+do-move a1 d10 loc3x3 loc3x2 (1)
+do-move a2 d10 loc3x3 loc3x2 (1)
+do-move a4 d12 loc3x3 loc3x4 (1)
+Plan length: 47 step(s).
+Plan cost: 47
+Expanded 34485 state(s).
+Reopened 0 state(s).
+Evaluated 523285 state(s).
+Evaluations: 523285
+Generated 1685504 state(s).
+Dead ends: 488799 state(s).
+Number of registered states: 523285
+Search time: 29.1809s
+Total time: 29.2678s
+Solution found.
+Peak memory: 58112 KB
+

@@ -107,8 +107,8 @@
     	( 
     		(push-box 1 2 3) 
     		(activity-2-push-box 2 3 4)
-    		;(activity-3-push-box 3 4 5)
-    		;(activity-4-push-box 4 5 6)    
+    		(activity-3-push-box 3 4 5)
+    		(activity-4-push-box 4 5 6)    
     	) 
 )
 

@@ -1,0 +1,76 @@
+Solution found!
+Actual search time: 44.0198s [t=45.0968s]
+do-move a1 d48 loc5x5 loc4x5 (1)
+do-move a1 d45 loc4x5 loc4x4 (1)
+do-move a1 d32 loc4x4 loc3x4 (1)
+do-move a1 d29 loc3x4 loc3x3 (1)
+do-move a1 d18 loc3x3 loc2x3 (1)
+do-move a1 d4 loc2x3 loc1x3 (1)
+do-move a1 d2 loc1x3 loc1x2 (1)
+do-move a10 d9 loc1x6 loc2x6 (1)
+do-move a10 d22 loc2x6 loc3x6 (1)
+do-move a10 d36 loc3x6 loc4x6 (1)
+do-move a10 d50 loc4x6 loc5x6 (1)
+do-pushswitch a10 s4 loc5x6 loc4x2 loc4x3 (1)
+do-move a10 d61 loc5x6 loc5x7 (1)
+do-move a10 d64 loc5x7 loc6x7 (1)
+do-move a2 d60 loc5x5 loc6x5 (1)
+do-move a2 d75 loc6x5 loc7x5 (1)
+do-move a4 d63 loc5x8 loc5x7 (1)
+do-move a4 d61 loc5x7 loc5x6 (1)
+do-move a4 d50 loc5x6 loc4x6 (1)
+do-move a4 d36 loc4x6 loc3x6 (1)
+do-move a5 d40 loc4x1 loc4x2 (1)
+do-move a5 d42 loc4x2 loc4x3 (1)
+do-move a5 d44 loc4x3 loc5x3 (1)
+do-move a5 d56 loc5x3 loc6x3 (1)
+do-move a6 d62 loc6x6 loc5x6 (1)
+do-move a6 d59 loc5x6 loc5x5 (1)
+do-move a6 d48 loc5x5 loc4x5 (1)
+do-move a6 d45 loc4x5 loc4x4 (1)
+do-move a6 d32 loc4x4 loc3x4 (1)
+do-move a6 d29 loc3x4 loc3x3 (1)
+do-move a6 d18 loc3x3 loc2x3 (1)
+do-move a6 d4 loc2x3 loc1x3 (1)
+do-move a7 d35 loc3x7 loc3x6 (1)
+do-move a7 d22 loc3x6 loc2x6 (1)
+do-move a7 d20 loc2x6 loc2x5 (1)
+do-move a7 d19 loc2x5 loc2x4 (1)
+do-move a7 d17 loc2x4 loc2x3 (1)
+do-move a8 d29 loc3x3 loc3x4 (1)
+do-move a8 d32 loc3x4 loc4x4 (1)
+do-move a8 d46 loc4x4 loc5x4 (1)
+do-move a8 d58 loc5x4 loc6x4 (1)
+do-move a8 d72 loc6x4 loc6x5 (1)
+do-move a9 d60 loc6x5 loc5x5 (1)
+do-move a9 d57 loc5x5 loc5x4 (1)
+do-move a9 d46 loc5x4 loc4x4 (1)
+do-move a9 d32 loc4x4 loc3x4 (1)
+do-move a9 d29 loc3x4 loc3x3 (1)
+do-move a9 d27 loc3x3 loc3x2 (1)
+do-move a9 d16 loc3x2 loc2x2 (1)
+start-v3 b2 (1)
+do-cross a3 b2 loc1x4 loc1x3 acount-0 acount-1 (1)
+end-v3 b2 acount-1 (1)
+do-move a3 d4 loc1x3 loc2x3 (1)
+do-move a3 d17 loc2x3 loc2x4 (1)
+do-move a3 d19 loc2x4 loc2x5 (1)
+do-move a3 d20 loc2x5 loc2x6 (1)
+do-move a3 d22 loc2x6 loc3x6 (1)
+do-move a3 d35 loc3x6 loc3x7 (1)
+do-move a3 d38 loc3x7 loc4x7 (1)
+do-move a3 d51 loc4x7 loc4x8 (1)
+Plan length: 60 step(s).
+Plan cost: 60
+Expanded 14136 state(s).
+Reopened 0 state(s).
+Evaluated 28799 state(s).
+Evaluations: 28799
+Generated 4359499 state(s).
+Dead ends: 14662 state(s).
+Number of registered states: 28799
+Search time: 44.0199s
+Total time: 45.0968s
+Solution found.
+Peak memory: 62024 KB
+

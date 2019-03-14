@@ -3,8 +3,8 @@
 ;
 (:objects	
 	a1 a2 a3 a4 a5 a6 a7 - agent
-	box1 box2 box3 box4 box5 box6 box7 box8 box9 - box
-	loc1 loc2 loc3 loc4 loc5 loc6 loc7 loc8 loc9 - location
+	box1 box2 box3 box4 box5 box6 box7 box8 box9 box10 - box
+	loc1 loc2 loc3 loc4 loc5 loc6 loc7 loc8 loc9 loc10 loc11 - location
 )
 ;
 (:init
@@ -25,6 +25,7 @@
 	(box-at-loc box7 loc1)
 	(box-at-loc box8 loc1)
 	(box-at-loc box9 loc1)
+	(box-at-loc box10 loc11)
 	(connected loc1 loc2)
 	(connected loc2 loc1)
 	(connected loc3 loc2)
@@ -41,27 +42,24 @@
 	(connected loc8 loc7)
 	(connected loc9 loc8)
 	(connected loc8 loc9)
-	
-	(same-agent a1 a1)
-	(same-agent a2 a2)
-	(same-agent a3 a3)
-	(same-agent a4 a4)	
-	(same-agent a5 a5)
-	(same-agent a6 a6)	
-	(same-agent a7 a7)
+	(connected loc5 loc10)
+	(connected loc10 loc5)
+	(connected loc10 loc11)
+	(connected loc11 loc10)
 )
 ;
 (:goal 
 	(and
-		(box-at-loc box1 loc6)
-		(box-at-loc box2 loc6)
-		(box-at-loc box3 loc6)
+		(box-at-loc box1 loc11)
+		(box-at-loc box2 loc11)
+		(box-at-loc box3 loc11)
 		(box-at-loc box4 loc1)
 		(box-at-loc box5 loc1)
 		(box-at-loc box6 loc1)  
 		(box-at-loc box7 loc8)
 		(box-at-loc box8 loc8)
 		(box-at-loc box9 loc8)
+		(box-at-loc box10 loc9)
 	)
 )
 ;

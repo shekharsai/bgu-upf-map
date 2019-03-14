@@ -41,14 +41,6 @@
 	(connected loc8 loc7)
 	(connected loc9 loc8)
 	(connected loc8 loc9)
-	
-	(same-agent a1 a1)
-	(same-agent a2 a2)
-	(same-agent a3 a3)
-	(same-agent a4 a4)	
-	(same-agent a5 a5)
-	(same-agent a6 a6)	
-	(same-agent a7 a7)
 )
 ;
 (:goal 
