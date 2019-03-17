@@ -1,0 +1,54 @@
+Solution found!
+Actual search time: 1.39347s [t=1.44241s]
+do-move a1 d6 loc2x3 loc2x2 (1)
+do-move a1 d7 loc2x2 loc3x2 (1)
+do-move a1 d11 loc3x2 loc3x1 (1)
+do-move a2 d15 loc3x3 loc3x4 (1)
+do-move a2 d10 loc3x4 loc2x4 (1)
+do-move a3 d18 loc4x3 loc4x2 (1)
+do-pushswitch a3 s1 loc4x2 loc1x3 loc2x3 (1)
+do-move a10 d3 loc1x3 loc2x3 (1)
+do-move a10 d9 loc2x3 loc3x3 (1)
+do-move a3 d14 loc4x2 loc3x2 (1)
+do-move a3 d13 loc3x2 loc3x3 (1)
+do-move a4 d2 loc1x4 loc1x3 (1)
+do-move a4 d3 loc1x3 loc2x3 (1)
+do-move a4 d6 loc2x3 loc2x2 (1)
+do-move a5 d2 loc1x4 loc1x3 (1)
+do-move a5 d3 loc1x3 loc2x3 (1)
+do-move a5 d9 loc2x3 loc3x3 (1)
+do-move a5 d13 loc3x3 loc3x2 (1)
+do-move a5 d14 loc3x2 loc4x2 (1)
+do-move a6 d16 loc4x4 loc3x4 (1)
+do-move a6 d15 loc3x4 loc3x3 (1)
+do-move a6 d9 loc3x3 loc2x3 (1)
+do-move a6 d6 loc2x3 loc2x2 (1)
+do-move a7 d13 loc3x2 loc3x3 (1)
+do-move a7 d15 loc3x3 loc3x4 (1)
+do-move a7 d10 loc3x4 loc2x4 (1)
+do-move a8 d13 loc3x3 loc3x2 (1)
+do-move a8 d11 loc3x2 loc3x1 (1)
+do-move a9 d9 loc2x3 loc3x3 (1)
+do-move a9 d13 loc3x3 loc3x2 (1)
+start-v3 b2 (1)
+do-cross a10 b2 loc3x3 loc4x3 acount-0 acount-1 (1)
+end-v3 b2 acount-1 (1)
+do-move a2 d10 loc2x4 loc3x4 (1)
+do-move a2 d15 loc3x4 loc3x3 (1)
+do-move a2 d9 loc3x3 loc2x3 (1)
+do-move a2 d3 loc2x3 loc1x3 (1)
+do-move a2 d2 loc1x3 loc1x4 (1)
+Plan length: 38 step(s).
+Plan cost: 38
+Expanded 16301 state(s).
+Reopened 0 state(s).
+Evaluated 24991 state(s).
+Evaluations: 24991
+Generated 331160 state(s).
+Dead ends: 8689 state(s).
+Number of registered states: 24991
+Search time: 1.39348s
+Total time: 1.44242s
+Solution found.
+Peak memory: 9532 KB
+

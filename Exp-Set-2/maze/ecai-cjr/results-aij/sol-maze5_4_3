@@ -1,0 +1,40 @@
+Solution found!
+Actual search time: 0.0184959s [t=0.192719s]
+do-move a1 d6 loc2x2 loc3x2 (1)
+do-move a5 d9 loc4x1 loc3x1 (1)
+start-v2 bt3 loc2x2 (1)
+do-row a2 bt3 loc2x2 loc2x3 acount-0 acount-1 (1)
+do-row a4 bt3 loc2x2 loc2x3 acount-1 acount-2 (1)
+end-v2 bt3 loc2x2 acount-2 (1)
+start-v2 bt4 loc2x3 (1)
+do-row a2 bt4 loc2x3 loc2x4 acount-0 acount-1 (1)
+do-row a3 bt4 loc2x3 loc2x4 acount-1 acount-2 (1)
+do-row a4 bt4 loc2x3 loc2x4 acount-2 acount-3 (1)
+end-v2 bt4 loc2x3 acount-3 (1)
+do-move a4 d7 loc2x4 loc3x4 (1)
+start-v2 bt4 loc2x4 (1)
+do-row a2 bt4 loc2x4 loc2x3 acount-0 acount-1 (1)
+do-row a3 bt4 loc2x4 loc2x3 acount-1 acount-2 (1)
+end-v2 bt4 loc2x4 acount-2 (1)
+start-v2 bt3 loc2x3 (1)
+do-row a2 bt3 loc2x3 loc2x2 acount-0 acount-1 (1)
+do-row a3 bt3 loc2x3 loc2x2 acount-1 acount-2 (1)
+end-v2 bt3 loc2x3 acount-2 (1)
+do-move a2 d6 loc2x2 loc3x2 (1)
+do-move a3 d6 loc2x2 loc3x2 (1)
+do-move a3 d8 loc3x2 loc3x1 (1)
+do-move a3 d9 loc3x1 loc4x1 (1)
+Plan length: 24 step(s).
+Plan cost: 24
+Expanded 68 state(s).
+Reopened 0 state(s).
+Evaluated 107 state(s).
+Evaluations: 107
+Generated 14984 state(s).
+Dead ends: 38 state(s).
+Number of registered states: 107
+Search time: 0.0185228s
+Total time: 0.192723s
+Solution found.
+Peak memory: 10432 KB
+
