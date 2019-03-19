@@ -80,7 +80,7 @@
 )
 (:concurrency-constraint v2
 	:parameters (?b - boat ?x - location)
-	:bounds (2 inf) 
+	:bounds (2 4) 
 	:actions( 
 				(row 1 2)
 				(activity-2-row 2 3)				
@@ -88,7 +88,7 @@
 )
 (:concurrency-constraint v3
 	:parameters (?b - bridge ?x - location ?y - location)
-	:bounds (1 inf) 
+	:bounds (1 4) 
 	:actions ( (cross 1 2 3) )
 )
 (:concurrency-constraint v4
