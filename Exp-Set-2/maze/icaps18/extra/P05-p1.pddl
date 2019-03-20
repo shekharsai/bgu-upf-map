@@ -8,9 +8,9 @@
 	s1 s2 s3 s4 s5 s6 s7 s8 - switch
 )
 (:init
-	(at a1 loc1x1)
-	(at a2 loc3x2)
-	(at a3 loc4x3)
+	(at a1 loc1x2)
+	(at a2 loc1x2)
+	(at a3 loc1x2)
 	(at a4 loc1x2)
 	(has-boat bt1 loc1x1 loc1x2)
 	(has-boat bt1 loc1x2 loc1x1)

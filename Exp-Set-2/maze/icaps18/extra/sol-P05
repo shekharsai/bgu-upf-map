@@ -1,5 +1,5 @@
 Solution found!
-Actual search time: 1505.38s [t=1505.74s]
+Actual search time: 1587.42s [t=1587.78s]
 do-pushswitch a3 s7 loc4x3 loc3x3 loc4x3 (1)
 do-move a3 d10 loc4x3 loc3x3 (1)
 do-pushswitch a4 s1 loc1x2 loc1x1 loc2x1 (1)
@@ -58,8 +58,8 @@ Evaluations: 8981079
 Generated 23007675 state(s).
 Dead ends: 8856908 state(s).
 Number of registered states: 8981079
-Search time: 1505.38s
-Total time: 1505.74s
+Search time: 1587.42s
+Total time: 1587.78s
 Solution found.
 Peak memory: 1752144 KB
 
