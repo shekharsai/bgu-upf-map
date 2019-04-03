@@ -1,0 +1,5 @@
+
+1. dom-compiled-original.pddl is the compiled domain generated using the code provided
+
+2. dom-maze-compiled-modified.pddl is the modified domain in which some propositions not required 
+in the experiments are removed. These details are very involved, hence are missing in the text.

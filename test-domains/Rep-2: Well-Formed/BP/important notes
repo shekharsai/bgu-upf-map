@@ -1,0 +1,5 @@
+
+1. compiled-bp-original.pddl is the compiled domain generated using the code provided
+
+2. compiled-bp-modified.pddl is the modified domain in which some propositions not required in the 
+experiments are removed. These details are very involved, hence are missing in the text.

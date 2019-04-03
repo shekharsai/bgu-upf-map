@@ -1,0 +1,6 @@
+
+1. compiled-bp-original.pddl is the compiled domain generated using the code provided
+
+2. compiled-bp-modified.pddl is the modified domain in which mostly the mutex relations and a few 
+other subtle propositions required in the experiments are added manually. These details are very 
+involved, hence are missing in the text.
