@@ -2,7 +2,7 @@
 needed for the experiments (modifications contain mutex relations etc), and problems used in the 
 experiments are placed in test-domains.
 
-2. Same version of the code is applicable for Rep 1: well-defined and Rep 2: well-formed case and 
+2. Same version of the code is applicable for Rep 1: well-defined and Rep 2: well-formed cases and 
 is availbale in the folder name pddl-parser-multiagent.
 
 3. For Rep 3 the relevant code is available in the folder name conc-aij-multiagent. 
